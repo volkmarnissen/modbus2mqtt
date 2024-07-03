@@ -3,23 +3,31 @@ entities:
     modbusAddress: 174
     converter:
       name: number
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
     converterParameters:
       multiplier: 1
       offset: 0
       numberFormat: 0
       identification:
-        min: 30
+        min: 31
         max: 70
     mqttname: hotwatertargettemperature
     valid: true
     registerType: 3
     readonly: false
+    identified: 1
+    mqttValue: 48
+    modbusValue:
+      - 48
   - id: 0
     modbusAddress: 1
     converter:
       name: number
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -33,11 +41,17 @@ entities:
     valid: true
     registerType: 3
     readonly: false
+    identified: 1
+    mqttValue: 19.2
+    modbusValue:
+      - 192
   - id: 2
     modbusAddress: 3
     converter:
       name: number
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -51,11 +65,17 @@ entities:
     valid: true
     registerType: 3
     readonly: false
+    identified: 1
+    mqttValue: 47.5
+    modbusValue:
+      - 475
   - id: 3
     modbusAddress: 11
     converter:
       name: number
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -69,11 +89,17 @@ entities:
     valid: true
     registerType: 3
     readonly: false
+    identified: 1
+    mqttValue: 23.9
+    modbusValue:
+      - 239
   - id: 5
     modbusAddress: 47
     converter:
       name: number
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -88,11 +114,17 @@ entities:
     icon: alarm
     registerType: 3
     readonly: false
+    identified: 1
+    mqttValue: 3.8
+    modbusValue:
+      - 38
   - id: 4
     modbusAddress: 46
     converter:
       name: number
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -106,9 +138,16 @@ entities:
     valid: true
     registerType: 3
     readonly: false
+    identified: 1
+    mqttValue: 20.6
+    modbusValue:
+      - 206
   - converter:
       name: select
-      registerTypes: []
+      registerTypes:
+        - 3
+        - 4
+        - 1
     modbusAddress: 192
     id: 7
     converterParameters:
@@ -128,16 +167,26 @@ entities:
     mqttname: selecttimetable
     registerType: 3
     readonly: true
+    identified: 1
+    mqttValue: 2.HC Subsidence
+    modbusValue:
+      - 3
   - id: 6
     modbusAddress: 3
     converter:
       name: binary
-      registerTypes: []
+      registerTypes:
+        - 1
+        - 3
     converterParameters: {}
     mqttname: externalloack
     valid: true
     registerType: 1
     readonly: false
+    identified: 1
+    mqttValue: OFF
+    modbusValue:
+      - 0
 i18n:
   - lang: en
     texts:
@@ -212,18 +261,18 @@ i18n:
       - textId: name
         text: Dimplex PCO5
 filename: dimplexpco5
-status: 1
+status: 4
 version: "0.2"
 testdata:
   holdingRegisters:
     - address: 174
       value: 48
     - address: 1
-      value: 183
+      value: 192
     - address: 3
-      value: 414
+      value: 475
     - address: 11
-      value: 240
+      value: 239
     - address: 47
       value: 38
     - address: 46
@@ -237,3 +286,4 @@ model: SI 6
 manufacturer: Dimplex
 name: Dimplex PCO5
 nextEntityId: 6
+pullNumber: 197
