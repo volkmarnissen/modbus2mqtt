@@ -1,4 +1,3 @@
-identified: 1
 entities:
   - id: 1
     modbusAddress: 174
@@ -6,10 +5,8 @@ entities:
       name: number
       registerTypes: []
     converterParameters:
-      multiplier: 0.1
+      multiplier: 1
       offset: 0
-      device_class: temperature
-      uom: °C
       numberFormat: 0
       identification:
         min: 30
@@ -215,43 +212,24 @@ i18n:
       - textId: name
         text: Dimplex PCO5
 filename: dimplexpco5
-status: 2
+status: 1
 version: "0.2"
 testdata:
   holdingRegisters:
-    - address: 125
-      value: null
-    - address: 4
-      value: null
-    - address: 5
-      value: null
-    - address: 6
-      value: null
-    - address: 7
-      value: null
     - address: 174
-      value: 450
+      value: 48
     - address: 1
-      value: 200
+      value: 183
     - address: 3
-      value: 480
+      value: 414
     - address: 11
-      value: 208
+      value: 240
     - address: 47
-      value: 30
+      value: 38
     - address: 46
-      value: 209
+      value: 206
     - address: 192
-      value: 0
-  analogInputs:
-    - address: 0
-      value: null
-    - address: 1
-      value: null
-    - address: 2
-      value: null
-    - address: 3
-      value: null
+      value: 3
   coils:
     - address: 3
       value: 0
