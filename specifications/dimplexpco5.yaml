@@ -13,14 +13,12 @@ entities:
       identification:
         min: 31
         max: 70
+      uom: °C
     mqttname: hotwatertargettemperature
     valid: true
     registerType: 3
     readonly: false
-    identified: 1
-    mqttValue: 48
-    modbusValue:
-      - 48
+    modbusError: ""
   - id: 0
     modbusAddress: 1
     converter:
@@ -40,11 +38,8 @@ entities:
     mqttname: outertemperature
     valid: true
     registerType: 3
-    readonly: false
-    identified: 1
-    mqttValue: 19.2
-    modbusValue:
-      - 192
+    readonly: true
+    modbusError: ""
   - id: 2
     modbusAddress: 3
     converter:
@@ -64,11 +59,8 @@ entities:
     mqttname: hotwatertemperature
     valid: true
     registerType: 3
-    readonly: false
-    identified: 1
-    mqttValue: 47.5
-    modbusValue:
-      - 475
+    readonly: true
+    modbusError: ""
   - id: 3
     modbusAddress: 11
     converter:
@@ -79,20 +71,16 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
-      device_class: temperature
-      uom: °C
       numberFormat: 0
       identification:
         min: 15
         max: 30
+      device_class: temperature
     mqttname: roomtemperature
     valid: true
     registerType: 3
-    readonly: false
-    identified: 1
-    mqttValue: 23.9
-    modbusValue:
-      - 239
+    readonly: true
+    modbusError: ""
   - id: 5
     modbusAddress: 47
     converter:
@@ -103,7 +91,7 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
-      device_class: temperature
+      device_class: None
       uom: °C
       numberFormat: 0
       identification:
@@ -111,13 +99,10 @@ entities:
         max: 5
     mqttname: hysteresis
     valid: true
-    icon: alarm
+    icon: mdi:alarm
     registerType: 3
     readonly: false
-    identified: 1
-    mqttValue: 3.8
-    modbusValue:
-      - 38
+    modbusError: ""
   - id: 4
     modbusAddress: 46
     converter:
@@ -138,10 +123,7 @@ entities:
     valid: true
     registerType: 3
     readonly: false
-    identified: 1
-    mqttValue: 20.6
-    modbusValue:
-      - 206
+    modbusError: ""
   - converter:
       name: select
       registerTypes:
@@ -166,11 +148,8 @@ entities:
     valid: true
     mqttname: selecttimetable
     registerType: 3
-    readonly: true
-    identified: 1
-    mqttValue: 2.HC Subsidence
-    modbusValue:
-      - 3
+    readonly: false
+    modbusError: ""
   - id: 6
     modbusAddress: 3
     converter:
@@ -183,10 +162,7 @@ entities:
     valid: true
     registerType: 1
     readonly: false
-    identified: 1
-    mqttValue: OFF
-    modbusValue:
-      - 0
+    modbusError: ""
 i18n:
   - lang: en
     texts:
@@ -261,29 +237,242 @@ i18n:
       - textId: name
         text: Dimplex PCO5
 filename: dimplexpco5
-status: 4
-version: "0.2"
+version: "0.3"
 testdata:
   holdingRegisters:
-    - address: 174
-      value: 48
     - address: 1
-      value: 192
+      value: 235
+    - address: 2
+      value: 255
     - address: 3
-      value: 475
+      value: 446
+    - address: 4
+      value: 65456
+    - address: 5
+      value: 260
+    - address: 6
+      value: 55537
+    - address: 7
+      value: 247
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
     - address: 11
-      value: 239
-    - address: 47
-      value: 38
+      value: 261
     - address: 46
       value: 206
+    - address: 47
+      value: 38
+    - address: 174
+      value: 48
     - address: 192
-      value: 3
+      value: 4
+    - address: 1
+      value: 235
+    - address: 2
+      value: 255
+    - address: 3
+      value: 446
+    - address: 4
+      value: 65456
+    - address: 5
+      value: 260
+    - address: 6
+      value: 55537
+    - address: 7
+      value: 247
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 11
+      value: 261
+    - address: 46
+      value: 206
+    - address: 47
+      value: 38
+    - address: 174
+      value: 48
+    - address: 192
+      value: 4
+    - address: 1
+      value: 235
+    - address: 2
+      value: 255
+    - address: 3
+      value: 446
+    - address: 4
+      value: 65456
+    - address: 5
+      value: 260
+    - address: 6
+      value: 55537
+    - address: 7
+      value: 247
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 11
+      value: 261
+    - address: 46
+      value: 206
+    - address: 47
+      value: 38
+    - address: 174
+      value: 48
+    - address: 192
+      value: 4
+    - address: 1
+      value: 235
+    - address: 2
+      value: 255
+    - address: 3
+      value: 446
+    - address: 4
+      value: 65456
+    - address: 5
+      value: 260
+    - address: 6
+      value: 55537
+    - address: 7
+      value: 247
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 11
+      value: 261
+    - address: 46
+      value: 206
+    - address: 47
+      value: 38
+    - address: 174
+      value: 48
+    - address: 192
+      value: 4
+    - address: 1
+      value: 235
+    - address: 2
+      value: 255
+    - address: 3
+      value: 446
+    - address: 4
+      value: 65456
+    - address: 5
+      value: 260
+    - address: 6
+      value: 55537
+    - address: 7
+      value: 247
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 11
+      value: 261
+    - address: 46
+      value: 206
+    - address: 47
+      value: 38
+    - address: 174
+      value: 48
+    - address: 192
+      value: 4
   coils:
     - address: 3
+      value: 0
+    - address: 4
+      value: 0
+    - address: 5
+      value: 0
+    - address: 6
+      value: 0
+    - address: 7
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 3
+      value: 0
+    - address: 4
+      value: 0
+    - address: 5
+      value: 0
+    - address: 6
+      value: 0
+    - address: 7
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 3
+      value: 0
+    - address: 4
+      value: 0
+    - address: 5
+      value: 0
+    - address: 6
+      value: 0
+    - address: 7
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 3
+      value: 0
+    - address: 4
+      value: 0
+    - address: 5
+      value: 0
+    - address: 6
+      value: 0
+    - address: 7
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 3
+      value: 0
+    - address: 4
+      value: 0
+    - address: 5
+      value: 0
+    - address: 6
+      value: 0
+    - address: 7
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
       value: 0
 model: SI 6
 manufacturer: Dimplex
 name: Dimplex PCO5
 nextEntityId: 6
-pullNumber: 197
+pullUrl: https://github.com/volkmarnissen/modbus2mqtt.config/pull/197
