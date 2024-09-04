@@ -1,0 +1,968 @@
+entities:
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 0
+    id: 2
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 300
+    valid: true
+    mqttname: p1act2neutralvolts
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 200
+    id: 29
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+    valid: true
+    mqttname: l1tol2volts
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 202
+    id: 30
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+    valid: true
+    mqttname: l2tol3volts
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 204
+    id: 31
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+    valid: true
+    mqttname: l3tol1volts
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 206
+    id: 32
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+    valid: true
+    mqttname: avgline2linevolts
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 42
+    id: 19
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 100
+        max: 250
+    valid: true
+    mqttname: avgneutralvolts
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 8
+    id: 3
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+    valid: true
+    mqttname: p1current
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 8
+    id: 21
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+    valid: true
+    mqttname: avgcurrent
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 48
+    id: 20
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+    valid: true
+    mqttname: sumofcurrents
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 224
+    id: 33
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+    valid: true
+    mqttname: avgneutralcurrent
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 8
+    id: 4
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+    valid: true
+    mqttname: p2current
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 10
+    id: 5
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+    valid: true
+    mqttname: p3current
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 12
+    id: 6
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p1actpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 52
+    id: 22
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: totalsyspower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 56
+    id: 23
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: totalvoltamps
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 60
+    id: 24
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: totalvoltampsreactive
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 14
+    id: 7
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p2aqctpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 16
+    id: 8
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p2actpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 18
+    id: 9
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p1apppower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 20
+    id: 10
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p2apppower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 22
+    id: 12
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p3apppower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 24
+    id: 13
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p1reactpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 26
+    id: 14
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p2reactpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 28
+    id: 15
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 7800
+    valid: true
+    mqttname: p3reactpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 30
+    id: 16
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 1
+    valid: true
+    mqttname: p1powerfact
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 62
+    id: 25
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 1
+    valid: true
+    mqttname: totalsyspowerfactor
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 32
+    id: 17
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 1
+    valid: true
+    mqttname: p2powerfact
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 34
+    id: 18
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 1
+    valid: true
+    mqttname: p3powerfact
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 70
+    id: 26
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 70
+      device_class: frequency
+    valid: true
+    mqttname: freqofsupplyvolt
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 72
+    id: 27
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: impactenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 74
+    id: 28
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: expactenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 342
+    id: 34
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: totalactrenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 344
+    id: 35
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: totalreactiveenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 384
+    id: 36
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: resetbltotactenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 386
+    id: 37
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: resetbltotreactenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 388
+    id: 38
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: resetbltotimpenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 386
+    id: 39
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: energy
+    valid: true
+    mqttname: resettabletotalexportenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 1280
+    id: 40
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: power
+    valid: true
+    mqttname: totalimpactivepower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 1282
+    id: 41
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 100000
+      device_class: power
+    valid: true
+    mqttname: totexpactivepower
+i18n:
+  - lang: en
+    texts:
+      - textId: name
+        text: Eastron SDM 720-M
+      - textId: e2
+        text: "Phase 1 line to neutral volts "
+      - textId: e3
+        text: Phase 1 Current
+      - textId: e4
+        text: Phase 2 Current
+      - textId: e5
+        text: Phase 3 current
+      - textId: e6
+        text: Phase 1 active power
+      - textId: e7
+        text: Phase 2 active power
+      - textId: e8
+        text: Phase 3 active power
+      - textId: e9
+        text: Phase 1 apparent power
+      - textId: e10
+        text: Phase 2 apparent power
+      - textId: e12
+        text: Phase 3 apparent power
+      - textId: e13
+        text: Phase 1 reactive power
+      - textId: e14
+        text: Phase 2 reactive power
+      - textId: e15
+        text: Phase 3 reactive power
+      - textId: e16
+        text: Phase 1 power factor
+      - textId: e17
+        text: Phase 1 power factor
+      - textId: e18
+        text: Phase 3 power factor
+      - textId: e19
+        text: Average line to neutral volts
+      - textId: e21
+        text: Average line current
+      - textId: e20
+        text: Sum of line currents
+      - textId: e22
+        text: Total system power
+      - textId: e23
+        text: Total Volt Amps
+      - textId: e24
+        text: Total volt amps reactive
+      - textId: e25
+        text: Total system power factor
+      - textId: e26
+        text: Frequency of supply voltages
+      - textId: e27
+        text: Import active Energy
+      - textId: e28
+        text: Export active energy
+      - textId: e29
+        text: L1 to L2 volts
+      - textId: e30
+        text: L2 to L3 volts
+      - textId: e31
+        text: L3 to L1 volts
+      - textId: e32
+        text: Average line to line volts
+      - textId: e33
+        text: Average neutral current
+      - textId: e34
+        text: Total active energy
+      - textId: e35
+        text: Total reactive energy
+      - textId: e36
+        text: resettable total active energy
+      - textId: e37
+        text: resettable total reactive energy
+      - textId: e38
+        text: Resettable total import energy
+      - textId: e39
+        text: Resettable total export energy
+      - textId: e40
+        text: "Total import active power "
+      - textId: e41
+        text: "Total export active power "
+filename: eastronsdm720-m
+nextEntityId: 42
+version: "0.3"
+testdata:
+  analogInputs:
+    - address: 0
+      value: 17254
+    - address: 1
+      value: 10976
+    - address: 200
+      value: 17351
+    - address: 201
+      value: 21302
+    - address: 202
+      value: 17352
+    - address: 203
+      value: 40636
+    - address: 204
+      value: 17352
+    - address: 205
+      value: 11824
+    - address: 206
+      value: 17352
+    - address: 207
+      value: 2742
+    - address: 42
+      value: 17254
+    - address: 43
+      value: 65221
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 48
+      value: 0
+    - address: 49
+      value: 0
+    - address: 224
+      value: 0
+    - address: 225
+      value: 0
+    - address: 8
+      value: 0
+    - address: 9
+      value: 0
+    - address: 10
+      value: 0
+    - address: 11
+      value: 0
+    - address: 12
+      value: 0
+    - address: 13
+      value: 0
+    - address: 52
+      value: 0
+    - address: 53
+      value: 0
+    - address: 56
+      value: 0
+    - address: 57
+      value: 0
+    - address: 60
+      value: 0
+    - address: 61
+      value: 0
+    - address: 14
+      value: 0
+    - address: 15
+      value: 0
+    - address: 16
+      value: 0
+    - address: 17
+      value: 0
+    - address: 18
+      value: 0
+    - address: 19
+      value: 0
+    - address: 20
+      value: 0
+    - address: 21
+      value: 0
+    - address: 22
+      value: 0
+    - address: 23
+      value: 0
+    - address: 24
+      value: 0
+    - address: 25
+      value: 0
+    - address: 26
+      value: 0
+    - address: 27
+      value: 0
+    - address: 28
+      value: 0
+    - address: 29
+      value: 0
+    - address: 30
+      value: 0
+    - address: 31
+      value: 0
+    - address: 62
+      value: 0
+    - address: 63
+      value: 0
+    - address: 32
+      value: 0
+    - address: 33
+      value: 0
+    - address: 34
+      value: 0
+    - address: 35
+      value: 0
+    - address: 70
+      value: 16967
+    - address: 71
+      value: 49807
+    - address: 72
+      value: 17435
+    - address: 73
+      value: 10945
+    - address: 74
+      value: 0
+    - address: 75
+      value: 0
+    - address: 342
+      value: 17435
+    - address: 343
+      value: 10945
+    - address: 344
+      value: 17356
+    - address: 345
+      value: 21856
+    - address: 384
+      value: 17435
+    - address: 385
+      value: 10945
+    - address: 386
+      value: 17356
+    - address: 387
+      value: 21856
+    - address: 388
+      value: 17435
+    - address: 389
+      value: 10945
+    - address: 386
+      value: 17356
+    - address: 387
+      value: 21856
+    - address: 1280
+      value: 0
+    - address: 1281
+      value: 0
+    - address: 1282
+      value: 32768
+    - address: 1283
+      value: 0
