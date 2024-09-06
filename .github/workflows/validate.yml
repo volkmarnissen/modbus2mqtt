@@ -8,6 +8,8 @@ on:
         type: string
         default: '0'
         description: Enter Pull Request number
+permissions:
+  contents: write
 jobs:
   validate_and_release:
     runs-on: ubuntu-latest
@@ -35,4 +37,6 @@ jobs:
         run: npx validate --pr_number  ${{ env.PR_NUMBER }}
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
-          
+      - id: automerge
+        name: automerge
+        uses: "pascalgn/automerge-action@v0.16.3"        
