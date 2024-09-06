@@ -30,14 +30,23 @@ jobs:
       - name: set PR_NUMBER from event
         if: ${{ github.event_name != 'workflow_dispatch' }}
         run:   echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
-      - name: printenv
-        run: printenv
-      - name: validation 
-        run: npx validate --pr_number  ${{ env.PR_NUMBER }}
+      - uses: 8BitJonny/gh-get-current-pr@3.0.0
+        with:
+          filterOutClosed: 1
+          filterOutDraft: 1
+        id: PR
+      - run:   echo PR_NUMBER=${{ steps.PR.outputs.number }}  >> $GITHUB_ENV
+
+      - run: npx validate --pr_number  ${{ env.prNumber }} --pr_mergedAt  ${{ env.prMergedAt }} --pr_createdAt  ${{ env.prCreatedAt }}
+        if: steps.PR.outputs.pr_found == 'true'
         env:
-          PR_NUMBER: ${{ env.PR_NUMBER }}
+          # JSON object with the full PR object
+          prNumber: ${{ steps.PR.outputs.number }}
+          prCreatedAt: ${{ steps.PR.outputs.pr_created_at }}
+          prMergedAt: ${{ steps.PR.outputs.pr_merged_at }}
+          prClosedAt: ${{ steps.PR.outputs.pr_closed_at }}
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.3"        
         with:
-          PULL_REQUEST: ${{ env.PR_NUMBER }}
+          PULL_REQUEST: ${{ env.prNumber }}
