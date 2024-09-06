@@ -24,10 +24,10 @@ jobs:
       - run: echo '{} ' >package.json
       - run: npm install modbus2mqtt/specification
       - name: set PR_NUMBER
-        if:  ${{ inputs.pr_number  != 0 }}
+        if:  ${{ github.event_name == 'workflow_dispatch' }}
         run: echo PR_NUMBER=${{ inputs.pr_number }} >> $GITHUB_ENV
       - name: set PR_NUMBER from event
-        if: ${{ github.event.number > 0 }} 
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         run:   echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
       - name: validation 
         run: npx validate 
