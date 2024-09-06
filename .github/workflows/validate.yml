@@ -32,7 +32,7 @@ jobs:
       - name: printenv
         run: printenv
       - name: validation 
-        run: npx -c validate
+        run: npx validate --pr_number  ${{ env.PR_NUMBER }}
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
           
