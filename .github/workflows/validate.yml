@@ -29,6 +29,8 @@ jobs:
       - name: set PR_NUMBER from event
         if: ${{ github.event_name != 'workflow_dispatch' }}
         run:   echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
+      - name: printenv
+        run: printenv
       - name: validation 
         run: npx validate 
           
