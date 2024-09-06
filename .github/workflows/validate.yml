@@ -19,7 +19,7 @@ jobs:
           node-version: 20.x
       - run: echo '{} ' >package.json
       - run: npm install modbus2mqtt/specification
-      - run: if(( ${{ github.event.number }} > 0 )); echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
-      - run: if(( ${{ github.event.number }} <= 0 )); echo PR_NUMBER=${{ inputs.pr_number }} >> $GITHUB_ENV
+      - run: if(( "${{ github.event.number }}" > 0 )); echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
+      - run: if(( "${{ github.event.number }}" <= 0 )); echo PR_NUMBER=${{ inputs.pr_number }} >> $GITHUB_ENV
       - run: npx validate 
           
