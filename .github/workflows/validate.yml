@@ -8,9 +8,7 @@ on:
         type: string
         default: '0'
         description: Enter Pull Request number
-permissions:
-  contents: write
-  pull-requests: write
+permissions: write-all
 jobs:
   validate_and_release:
     runs-on: ubuntu-latest
