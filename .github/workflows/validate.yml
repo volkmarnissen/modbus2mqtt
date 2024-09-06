@@ -40,3 +40,5 @@ jobs:
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.3"        
+        with:
+          PULL_REQUEST: ${{ env.PR_NUMBER }}
