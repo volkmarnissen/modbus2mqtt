@@ -40,9 +40,13 @@ jobs:
           filterOutDraft: 1
           sha: ${{ inputs.pr_sha}}
         id: PR
-      - run:   echo ${{ env.prJSON }}
+      - run:   echo ${{ env.prNumber }}  ${{ env.prCreatedAt }}  ${{ env.prMergedAt }}
         env:
-          prJSON: ${{ toJSON(fromJSON(steps.PR.outputs.pr)) }}
+          prNumber: ${{ steps.PR.outputs.number }}
+          prCreatedAt: ${{ steps.PR.outputs.pr_created_at }}
+          prMergedAt: ${{ steps.PR.outputs.pr_merged_at }}
+          prClosedAt: ${{ steps.PR.outputs.pr_closed_at }}
+          
       - run: npx validate --pr_number  ${{ env.prNumber }} --pr_mergedAt  ${{ env.prMergedAt }} --pr_createdAt  ${{ env.prCreatedAt }}
         if: steps.PR.outputs.pr_found == 'true'
         env:
