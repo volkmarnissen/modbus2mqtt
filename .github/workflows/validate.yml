@@ -4,13 +4,13 @@ on:
     types: opened, reopened
   workflow_dispatch:
     inputs:
-      pr_number:
+      pr_owner:
         type: string
-        default: '0'
-        description: Enter Pull Request number
+        default: 'volkmarnissen'
+        description: Enter Pull Request owner
       pr_sha:
         type: string
-        default: '0'
+        default: '6bcda01ef2c772d93fcf47d74c516d0056bf87ac'
         description: Enter Pull Request sha
 permissions: write-all
 jobs:
