@@ -38,7 +38,7 @@ jobs:
         with:
           filterOutClosed: 1
           filterOutDraft: 1
-          sha: inputs.pr_sha
+          sha: ${{ inputs.pr_sha}}
         id: PR
       - run:   echo ${{ env.prJSON }}
         env:
