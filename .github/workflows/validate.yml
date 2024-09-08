@@ -3,7 +3,7 @@ on:
   repository_dispatch:
     types: [create-pull-request]
   pull_request:
-    types: opened, reopened,edited
+    types: [opened, reopened, edited]
   workflow_dispatch:
     inputs:
       pr_owner:
