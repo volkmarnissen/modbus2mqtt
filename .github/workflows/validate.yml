@@ -36,8 +36,6 @@ jobs:
         run:   echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
       - uses: 8BitJonny/gh-get-current-pr@3.0.0
         with:
-          filterOutClosed: 1
-          filterOutDraft: 1
           sha: ${{ inputs.pr_sha}}
         id: PR
       - run:   echo ${{ env.prNumber }}  ${{ env.prCreatedAt }}  ${{ env.prMergedAt }}
