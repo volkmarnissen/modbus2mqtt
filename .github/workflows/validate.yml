@@ -34,6 +34,7 @@ jobs:
         with:
           filterOutClosed: 1
           filterOutDraft: 1
+          sha: 6bcda01ef2c772d93fcf47d74c516d0056bf87ac
         id: PR
       - run:   echo PR_NUMBER=${{ steps.PR.outputs.number }}  >> $GITHUB_ENV
 
