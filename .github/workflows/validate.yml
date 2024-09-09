@@ -14,6 +14,7 @@ on:
         type: string
         default: '33'
         description: Enter Pull Request number
+
 permissions: 
   contents: write
   issues: write
@@ -44,9 +45,10 @@ jobs:
         with:
           path: 'local'
       - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
+        
         id: validate_specs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
       - id: automerge
         if: ${{ steps.validate_specs.outputs.SPECS_ONLY != '' }}
         name: automerge
