@@ -38,7 +38,9 @@ jobs:
         run:   echo PR_NUMBER=${{ github.event.number }} >> $GITHUB_ENV
       - name: Check out
         uses: actions/checkout@v4
-      - run: npx validate --pr_number  ${{ env.PR_NUMBER }}
+        with:
+          path: 'local'
+      - run: node node_modules/@modbus2mqtt/specification/validate.ja --pr_sha  ${{ github.sha }} --pr_owner ${{github.actor}}
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.3"        
