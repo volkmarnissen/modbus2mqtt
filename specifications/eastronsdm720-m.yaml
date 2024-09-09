@@ -17,7 +17,6 @@ entities:
         max: 300
     valid: true
     mqttname: p1act2neutralvolts
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -37,7 +36,6 @@ entities:
       device_class: voltage
     valid: true
     mqttname: l1tol2volts
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -57,7 +55,6 @@ entities:
       device_class: voltage
     valid: true
     mqttname: l2tol3volts
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -77,7 +74,6 @@ entities:
       device_class: voltage
     valid: true
     mqttname: l3tol1volts
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -97,7 +93,6 @@ entities:
       device_class: voltage
     valid: true
     mqttname: avgline2linevolts
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -116,7 +111,6 @@ entities:
         max: 250
     valid: true
     mqttname: avgneutralvolts
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -136,7 +130,6 @@ entities:
       device_class: current
     valid: true
     mqttname: p1current
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -156,7 +149,6 @@ entities:
       device_class: current
     valid: true
     mqttname: avgcurrent
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -176,7 +168,6 @@ entities:
       device_class: current
     valid: true
     mqttname: sumofcurrents
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -196,7 +187,6 @@ entities:
       device_class: current
     valid: true
     mqttname: avgneutralcurrent
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -216,7 +206,6 @@ entities:
       device_class: current
     valid: true
     mqttname: p2current
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -236,7 +225,6 @@ entities:
       device_class: current
     valid: true
     mqttname: p3current
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -255,7 +243,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p1actpower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -274,7 +261,6 @@ entities:
         max: 7800
     valid: true
     mqttname: totalsyspower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -293,7 +279,6 @@ entities:
         max: 7800
     valid: true
     mqttname: totalvoltamps
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -312,7 +297,6 @@ entities:
         max: 7800
     valid: true
     mqttname: totalvoltampsreactive
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -331,7 +315,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p2aqctpower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -350,7 +333,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p2actpower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -369,7 +351,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p1apppower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -388,7 +369,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p2apppower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -407,7 +387,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p3apppower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -426,7 +405,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p1reactpower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -445,7 +423,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p2reactpower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -464,7 +441,6 @@ entities:
         max: 7800
     valid: true
     mqttname: p3reactpower
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -483,7 +459,6 @@ entities:
         max: 1
     valid: true
     mqttname: p1powerfact
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -502,7 +477,6 @@ entities:
         max: 1
     valid: true
     mqttname: totalsyspowerfactor
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -521,7 +495,6 @@ entities:
         max: 1
     valid: true
     mqttname: p2powerfact
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -540,7 +513,6 @@ entities:
         max: 1
     valid: true
     mqttname: p3powerfact
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -560,7 +532,6 @@ entities:
       device_class: frequency
     valid: true
     mqttname: freqofsupplyvolt
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -580,7 +551,6 @@ entities:
       device_class: energy
     valid: true
     mqttname: impactenergy
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -600,7 +570,6 @@ entities:
       device_class: energy
     valid: true
     mqttname: expactenergy
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -759,7 +728,7 @@ i18n:
       - textId: name
         text: Eastron SDM 720-M
       - textId: e2
-        text: "Phase 1 line to neutral volts "
+        text: Phase 1 line to neutral volts
       - textId: e3
         text: Phase 1 Current
       - textId: e4
@@ -842,29 +811,29 @@ version: "0.3"
 testdata:
   analogInputs:
     - address: 0
-      value: 17252
+      value: 17251
     - address: 1
-      value: 51515
+      value: 42039
     - address: 200
-      value: 17350
+      value: 17349
     - address: 201
-      value: 8436
+      value: 9012
     - address: 202
-      value: 17351
+      value: 17349
     - address: 203
-      value: 17387
+      value: 40249
     - address: 204
-      value: 17350
+      value: 17348
     - address: 205
-      value: 24174
+      value: 46176
     - address: 206
-      value: 17350
+      value: 17349
     - address: 207
-      value: 38511
+      value: 9966
     - address: 42
-      value: 17253
+      value: 17251
     - address: 43
-      value: 20708
+      value: 43141
     - address: 8
       value: 0
     - address: 9
@@ -956,39 +925,39 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 49807
+      value: 55050
     - address: 72
-      value: 17436
+      value: 17438
     - address: 73
-      value: 51528
+      value: 3932
     - address: 74
       value: 0
     - address: 75
       value: 0
     - address: 342
-      value: 17436
+      value: 17438
     - address: 343
-      value: 51528
+      value: 3932
     - address: 344
-      value: 17358
+      value: 17359
     - address: 345
-      value: 23429
+      value: 61538
     - address: 384
-      value: 17436
+      value: 17438
     - address: 385
-      value: 51528
+      value: 3932
     - address: 386
-      value: 17358
+      value: 17359
     - address: 387
-      value: 23429
+      value: 61538
     - address: 388
-      value: 17436
+      value: 17438
     - address: 389
-      value: 51528
+      value: 3932
     - address: 386
-      value: 17358
+      value: 17359
     - address: 387
-      value: 23429
+      value: 61538
     - address: 1280
       value: 0
     - address: 1281
@@ -997,5 +966,5 @@ testdata:
       value: 32768
     - address: 1283
       value: 0
-pullNumber: {}
-pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/[object Object]
+pullNumber: 25
+pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/25
