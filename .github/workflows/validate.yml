@@ -41,6 +41,8 @@ jobs:
         with:
           path: 'local'
       - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_sha  ${{ github.sha }} --pr_owner ${{github.actor}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.3"        
