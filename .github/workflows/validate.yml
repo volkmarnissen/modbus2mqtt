@@ -8,12 +8,12 @@ on:
     inputs:
       pr_owner:
         type: string
-        default: 'volkmarnissen'
+        default: 'modbus2mqtt'
         description: Enter Pull Request owner
-      pr_sha:
-        type: string
-        default: '6bcda01ef2c772d93fcf47d74c516d0056bf87ac'
-        description: Enter Pull Request sha
+      pr_number:
+        type: integer
+        default: '33'
+        description: Enter Pull Request number
 permissions: write-all
 jobs:
   validate_and_release:
@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: 'local'
-      - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_sha  ${{ github.event.pull_request.sha }} --pr_owner ${{github.repository_owner}}
+      - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: automerge
