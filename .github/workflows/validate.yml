@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: 'local'
-      - run: node node_modules/@modbus2mqtt/specification/validate.ja --pr_sha  ${{ github.sha }} --pr_owner ${{github.actor}}
+      - run: node node_modules/@modbus2mqtt/specification/validate.js --pr_sha  ${{ github.sha }} --pr_owner ${{github.actor}}
       - id: automerge
         name: automerge
         uses: "pascalgn/automerge-action@v0.16.3"        
