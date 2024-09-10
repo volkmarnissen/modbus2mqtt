@@ -40,13 +40,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: 'local'
-      - uses: mshick/add-pr-comment@v2
-        with:
-          issue: ${{ env.PR_NUMBER }} 
-          message: |
-            **Hello**
-            🌏
-            !
       - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
         id: validate_specs
         env:
