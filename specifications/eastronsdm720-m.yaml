@@ -726,7 +726,7 @@ i18n:
   - lang: en
     texts:
       - textId: name
-        text: Eastron SDM 720-ME
+        text: Eastron SDM 720-MF
       - textId: e2
         text: Phase 1 line to neutral volt
       - textId: e3
@@ -811,29 +811,29 @@ version: "0.3"
 testdata:
   analogInputs:
     - address: 0
-      value: 17254
+      value: 17253
     - address: 1
-      value: 54570
+      value: 21692
     - address: 200
-      value: 17351
+      value: 17350
     - address: 201
-      value: 59206
+      value: 39364
     - address: 202
-      value: 17353
+      value: 17351
     - address: 203
-      value: 6149
+      value: 11829
     - address: 204
-      value: 17352
+      value: 17351
     - address: 205
-      value: 53259
+      value: 35308
     - address: 206
-      value: 17352
+      value: 17351
     - address: 207
-      value: 39538
+      value: 6987
     - address: 42
-      value: 17255
+      value: 17253
     - address: 43
-      value: 45165
+      value: 59983
     - address: 8
       value: 0
     - address: 9
@@ -925,7 +925,7 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 60293
+      value: 55050
     - address: 72
       value: 17438
     - address: 73
@@ -966,4 +966,5 @@ testdata:
       value: 32768
     - address: 1283
       value: 0
-pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/37
+pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/45
+pullNumber: 46
