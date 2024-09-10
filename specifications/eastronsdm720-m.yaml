@@ -17,6 +17,7 @@ entities:
         max: 300
     valid: true
     mqttname: p1act2neutralvolts
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -36,6 +37,7 @@ entities:
       device_class: voltage
     valid: true
     mqttname: l1tol2volts
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -55,6 +57,7 @@ entities:
       device_class: voltage
     valid: true
     mqttname: l2tol3volts
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -74,6 +77,7 @@ entities:
       device_class: voltage
     valid: true
     mqttname: l3tol1volts
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -93,6 +97,7 @@ entities:
       device_class: voltage
     valid: true
     mqttname: avgline2linevolts
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -111,6 +116,7 @@ entities:
         max: 250
     valid: true
     mqttname: avgneutralvolts
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -130,6 +136,7 @@ entities:
       device_class: current
     valid: true
     mqttname: p1current
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -149,6 +156,7 @@ entities:
       device_class: current
     valid: true
     mqttname: avgcurrent
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -168,6 +176,7 @@ entities:
       device_class: current
     valid: true
     mqttname: sumofcurrents
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -187,6 +196,7 @@ entities:
       device_class: current
     valid: true
     mqttname: avgneutralcurrent
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -206,6 +216,7 @@ entities:
       device_class: current
     valid: true
     mqttname: p2current
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -225,8 +236,9 @@ entities:
       device_class: current
     valid: true
     mqttname: p3current
+    entityCategory: diagnostic
   - registerType: 4
-    readonly: true
+    readonly: false
     converter:
       name: number
       registerTypes:
@@ -279,6 +291,7 @@ entities:
         max: 7800
     valid: true
     mqttname: totalvoltamps
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -297,6 +310,7 @@ entities:
         max: 7800
     valid: true
     mqttname: totalvoltampsreactive
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -315,6 +329,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p2aqctpower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -351,6 +366,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p1apppower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -369,6 +385,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p2apppower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -387,6 +404,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p3apppower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -405,6 +423,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p1reactpower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -423,6 +442,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p2reactpower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -441,6 +461,7 @@ entities:
         max: 7800
     valid: true
     mqttname: p3reactpower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -459,6 +480,7 @@ entities:
         max: 1
     valid: true
     mqttname: p1powerfact
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -477,6 +499,7 @@ entities:
         max: 1
     valid: true
     mqttname: totalsyspowerfactor
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -495,6 +518,7 @@ entities:
         max: 1
     valid: true
     mqttname: p2powerfact
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -513,6 +537,7 @@ entities:
         max: 1
     valid: true
     mqttname: p3powerfact
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -532,6 +557,7 @@ entities:
       device_class: frequency
     valid: true
     mqttname: freqofsupplyvolt
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -551,6 +577,7 @@ entities:
       device_class: energy
     valid: true
     mqttname: impactenergy
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -570,6 +597,7 @@ entities:
       device_class: energy
     valid: true
     mqttname: expactenergy
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -608,6 +636,7 @@ entities:
       device_class: energy
     valid: true
     mqttname: totalreactiveenergy
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -627,6 +656,7 @@ entities:
       device_class: energy
     valid: true
     mqttname: resetbltotactenergy
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -646,6 +676,7 @@ entities:
       device_class: energy
     valid: true
     mqttname: resetbltotreactenergy
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -665,6 +696,7 @@ entities:
       device_class: energy
     valid: true
     mqttname: resetbltotimpenergy
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -703,6 +735,7 @@ entities:
       device_class: power
     valid: true
     mqttname: totalimpactivepower
+    entityCategory: diagnostic
   - registerType: 4
     readonly: true
     converter:
@@ -722,11 +755,12 @@ entities:
       device_class: power
     valid: true
     mqttname: totexpactivepower
+    entityCategory: diagnostic
 i18n:
   - lang: en
     texts:
       - textId: name
-        text: Eastron SDM 720-MF
+        text: Eastron SDM 720-M
       - textId: e2
         text: Phase 1 line to neutral volt
       - textId: e3
@@ -811,29 +845,29 @@ version: "0.3"
 testdata:
   analogInputs:
     - address: 0
-      value: 17253
+      value: 17251
     - address: 1
-      value: 21692
+      value: 63536
     - address: 200
-      value: 17350
+      value: 17349
     - address: 201
-      value: 39364
+      value: 27628
     - address: 202
-      value: 17351
+      value: 17350
     - address: 203
-      value: 11829
+      value: 12794
     - address: 204
-      value: 17351
+      value: 17349
     - address: 205
-      value: 35308
+      value: 40580
     - address: 206
-      value: 17351
+      value: 17349
     - address: 207
-      value: 6987
+      value: 48846
     - address: 42
-      value: 17253
+      value: 17252
     - address: 43
-      value: 59983
+      value: 22501
     - address: 8
       value: 0
     - address: 9
@@ -925,7 +959,7 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 55050
+      value: 57672
     - address: 72
       value: 17438
     - address: 73
@@ -966,5 +1000,6 @@ testdata:
       value: 32768
     - address: 1283
       value: 0
-pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/45
-pullNumber: 46
+pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/46
+model: SDM 720-M
+manufacturer: Eastron
