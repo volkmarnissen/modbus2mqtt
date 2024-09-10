@@ -48,7 +48,7 @@ jobs:
         
         id: validate_specs
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: automerge
         if: ${{ steps.validate_specs.outputs.SPECS_ONLY != '' }}
         name: automerge
