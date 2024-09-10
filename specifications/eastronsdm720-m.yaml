@@ -726,7 +726,7 @@ i18n:
   - lang: en
     texts:
       - textId: name
-        text: Eastron SDM 720-MY
+        text: Eastron SDM 720-MZ
       - textId: e2
         text: Phase 1 line to neutral volt
       - textId: e3
