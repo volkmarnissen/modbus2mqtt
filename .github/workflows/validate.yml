@@ -63,6 +63,7 @@ jobs:
       - id: automerge
         if: ${{ steps.validate_specs.outputs.SPECS_ONLY != '' }}
         name: automerge
-        uses: "pascalgn/automerge-action@v0.16.3"        
-        with:
+        uses: "pascalgn/automerge-action@v0.16.3" 
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           PULL_REQUEST: ${{ env.PR_NUMBER }}
