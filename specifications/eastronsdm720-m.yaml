@@ -726,7 +726,7 @@ i18n:
   - lang: en
     texts:
       - textId: name
-        text: Eastron SDM 720-MX
+        text: Eastron SDM 720-M
       - textId: e2
         text: Phase 1 line to neutral volt
       - textId: e3
@@ -813,27 +813,27 @@ testdata:
     - address: 0
       value: 17252
     - address: 1
-      value: 13851
+      value: 33728
     - address: 200
       value: 17349
     - address: 201
-      value: 41355
+      value: 58569
     - address: 202
       value: 17350
     - address: 203
-      value: 30258
+      value: 10249
     - address: 204
       value: 17349
     - address: 205
-      value: 27872
+      value: 43574
     - address: 206
       value: 17349
     - address: 207
-      value: 55008
+      value: 59309
     - address: 42
       value: 17252
     - address: 43
-      value: 29616
+      value: 34583
     - address: 8
       value: 0
     - address: 9
@@ -925,7 +925,7 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 47186
+      value: 55050
     - address: 72
       value: 17438
     - address: 73
@@ -966,4 +966,5 @@ testdata:
       value: 32768
     - address: 1283
       value: 0
-pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/29
+pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/36
+pullNumber: 37
