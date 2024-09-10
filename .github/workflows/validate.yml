@@ -48,3 +48,5 @@ jobs:
         uses: "pascalgn/automerge-action@v0.16.3"        
         with:
           PULL_REQUEST: ${{ env.PR_NUMBER }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
