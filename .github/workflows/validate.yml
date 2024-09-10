@@ -55,6 +55,11 @@ jobs:
 
             [1]: https://github.com/peter-evans/create-or-update-comment
           reactions: '+1'
+          
+      - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
+        id: validate_specs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: automerge
         if: ${{ steps.validate_specs.outputs.SPECS_ONLY != '' }}
         name: automerge
@@ -62,8 +67,3 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.PAT }}"
           PULL_REQUEST: ${{ env.PR_NUMBER }}
-          
-      - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
-        id: validate_specs
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
