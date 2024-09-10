@@ -14,16 +14,11 @@ on:
         type: string
         default: '33'
         description: Enter Pull Request number
-permissions: 
-  contents: write
-  issues: write
-  pull-requests: write
+permissions: write-all
 jobs:
   validate_and_release:
     runs-on: ubuntu-latest
     environment: validate
-    permissions:
-      pull-requests: write
     steps:
       - name: Dump GitHub context
         env:
