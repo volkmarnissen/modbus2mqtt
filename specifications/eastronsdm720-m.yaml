@@ -726,7 +726,7 @@ i18n:
   - lang: en
     texts:
       - textId: name
-        text: Eastron SDM 720-M
+        text: Eastron SDM 720-MY
       - textId: e2
         text: Phase 1 line to neutral volt
       - textId: e3
@@ -811,29 +811,29 @@ version: "0.3"
 testdata:
   analogInputs:
     - address: 0
-      value: 17252
+      value: 17250
     - address: 1
-      value: 33728
+      value: 35161
     - address: 200
-      value: 17349
+      value: 17348
     - address: 201
-      value: 58569
+      value: 11837
     - address: 202
       value: 17350
     - address: 203
-      value: 10249
+      value: 21388
     - address: 204
-      value: 17349
+      value: 17348
     - address: 205
-      value: 43574
+      value: 58957
     - address: 206
       value: 17349
     - address: 207
-      value: 59309
+      value: 8882
     - address: 42
-      value: 17252
+      value: 17251
     - address: 43
-      value: 34583
+      value: 41889
     - address: 8
       value: 0
     - address: 9
@@ -925,11 +925,11 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 55050
+      value: 60293
     - address: 72
       value: 17438
     - address: 73
-      value: 3932
+      value: 35095
     - address: 74
       value: 0
     - address: 75
@@ -937,27 +937,27 @@ testdata:
     - address: 342
       value: 17438
     - address: 343
-      value: 3932
+      value: 35095
     - address: 344
-      value: 17359
+      value: 17360
     - address: 345
-      value: 61538
+      value: 36798
     - address: 384
       value: 17438
     - address: 385
-      value: 3932
+      value: 35095
     - address: 386
-      value: 17359
+      value: 17360
     - address: 387
-      value: 61538
+      value: 36798
     - address: 388
       value: 17438
     - address: 389
-      value: 3932
+      value: 35095
     - address: 386
-      value: 17359
+      value: 17360
     - address: 387
-      value: 61538
+      value: 36798
     - address: 1280
       value: 0
     - address: 1281
@@ -966,5 +966,4 @@ testdata:
       value: 32768
     - address: 1283
       value: 0
-pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/36
-pullNumber: 37
+pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/37
