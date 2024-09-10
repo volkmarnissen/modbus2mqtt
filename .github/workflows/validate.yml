@@ -1,9 +1,7 @@
 name: Validate and merge Pull request
 on:
-  repository_dispatch:
-    types: [create-pull-request]
-  pull_request:
-    types: [opened, reopened, edited]
+  pull_request_target:
+    types: [opened, reopened]
   workflow_dispatch:
     inputs:
       pr_owner:
@@ -43,4 +41,4 @@ jobs:
       - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
         id: validate_specs
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
