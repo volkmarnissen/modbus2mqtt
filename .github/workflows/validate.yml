@@ -47,6 +47,7 @@ jobs:
           path: 'local'
       - uses: mshick/add-pr-comment@v2
         with:
+          issue: ${{ env.PR_NUMBER }} 
           message: |
             **Hello**
             🌏
