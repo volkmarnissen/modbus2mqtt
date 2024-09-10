@@ -726,7 +726,7 @@ i18n:
   - lang: en
     texts:
       - textId: name
-        text: Eastron SDM 720-MC
+        text: Eastron SDM 720-MD
       - textId: e2
         text: Phase 1 line to neutral volt
       - textId: e3
@@ -811,29 +811,29 @@ version: "0.3"
 testdata:
   analogInputs:
     - address: 0
-      value: 17249
+      value: 17253
     - address: 1
-      value: 30200
+      value: 9990
     - address: 200
-      value: 17347
+      value: 17350
     - address: 201
-      value: 16278
+      value: 28495
     - address: 202
-      value: 17348
+      value: 17352
     - address: 203
-      value: 45514
+      value: 8062
     - address: 204
-      value: 17348
+      value: 17350
     - address: 205
-      value: 5935
+      value: 46687
     - address: 206
-      value: 17348
+      value: 17351
     - address: 207
-      value: 731
+      value: 5903
     - address: 42
-      value: 17250
+      value: 17253
     - address: 43
-      value: 24316
+      value: 56707
     - address: 8
       value: 0
     - address: 9
@@ -925,7 +925,7 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 57672
+      value: 55050
     - address: 72
       value: 17438
     - address: 73
