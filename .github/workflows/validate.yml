@@ -59,10 +59,3 @@ jobs:
         id: validate_specs
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-      - id: automerge
-        if: ${{ steps.validate_specs.outputs.SPECS_ONLY != '' }}
-        name: automerge
-        uses: "pascalgn/automerge-action@v0.16.3" 
-        env:
-          GITHUB_TOKEN: "${{ secrets.PAT }}"
-          PULL_REQUEST: ${{ env.PR_NUMBER }}
