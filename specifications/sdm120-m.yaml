@@ -1,0 +1,798 @@
+entities:
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 0
+    id: 2
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 240
+      device_class: voltage
+      uom: Volts
+    valid: true
+    mqttname: voltage
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 6
+    id: 3
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 45
+      device_class: current
+      uom: Amps
+    valid: true
+    mqttname: current
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 12
+    id: 4
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 2500
+      device_class: power
+      uom: Amps
+    valid: true
+    mqttname: activepower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 342
+    id: 5
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: energy
+      uom: kWh
+    valid: true
+    mqttname: totalactiveenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 18
+    id: 6
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: apparent_power
+      uom: VA
+    valid: true
+    mqttname: apparentpower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 24
+    id: 7
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: reactive_power
+      uom: VAr
+    valid: true
+    mqttname: reactivepower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 30
+    id: 8
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power_factor
+    valid: true
+    mqttname: powerfactor
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 70
+    id: 9
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 49
+        max: 51
+      device_class: frequency
+      uom: Hz
+    valid: true
+    mqttname: frequency
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 72
+    id: 10
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: energy
+      uom: kWh
+    valid: true
+    mqttname: importactiveenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 74
+    id: 11
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: energy
+      uom: kWh
+    valid: true
+    mqttname: exportactiveenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 76
+    id: 12
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: energy
+      uom: kvarh
+    valid: true
+    mqttname: importreactiveenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 78
+    id: 13
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: energy
+      uom: kvarh
+    valid: true
+    mqttname: exportreactiveenergy
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 84
+    id: 14
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: totalsystempowerdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 86
+    id: 15
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: maximumtotalsystempowerdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 88
+    id: 16
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: importsystempowerdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 90
+    id: 17
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: maximumimportsystempowerdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 92
+    id: 18
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: exportsystempowerdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 94
+    id: 19
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: maximumexportsystempowerdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 258
+    id: 20
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: current
+      uom: Amps
+    valid: true
+    mqttname: currentdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 264
+    id: 21
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: current
+      uom: Amps
+    valid: true
+    mqttname: maximumcurrentdemand
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 344
+    id: 22
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      device_class: energy
+      uom: Kvarh
+    valid: true
+    mqttname: totalreactiveenergy
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 12
+    id: 23
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 60
+        max: 200
+    valid: true
+    mqttname: relaypulsewidth
+    commandTopic: modbus2mqtt/set/0s1/e23
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 18
+    id: 24
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 3
+    valid: true
+    mqttname: networkparitystop
+    commandTopic: modbus2mqtt/set/0s1/e24
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 20
+    id: 25
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 1
+        max: 247
+    valid: true
+    mqttname: meterid
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 28
+    id: 26
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 5
+    valid: true
+    mqttname: baudrate
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 86
+    id: 27
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      identification:
+        min: 1
+        max: 8
+    valid: true
+    mqttname: pulse1outputmode
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 63744
+    id: 28
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      step: 1
+      identification:
+        min: 0
+        max: 30
+    valid: true
+    mqttname: timeofscrolldisplay
+    commandTopic: modbus2mqtt/set/0s1/e28
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 3760
+    id: 29
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 1
+      step: 1
+      identification:
+        min: 0
+        max: 3
+    valid: true
+    mqttname: pulse1output
+    commandTopic: modbus2mqtt/set/0s1/e29
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 63776
+    id: 30
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+      step: 1
+      identification:
+        min: 1
+        max: 3
+    valid: true
+    mqttname: measurementmode
+    entityCategory: config
+    commandTopic: modbus2mqtt/set/0s1/e30
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 64512
+    id: 31
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+    valid: true
+    mqttname: serialnumber
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 64514
+    id: 32
+    converterParameters:
+      stringlength: 2
+      identification: null
+      options: []
+    valid: true
+    mqttname: metercode
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 64515
+    id: 33
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+    valid: true
+    mqttname: softwareversion
+    entityCategory: diagnostic
+i18n:
+  - lang: en
+    texts:
+      - textId: name
+        text: SDM120-M
+      - textId: e2
+        text: Voltage
+      - textId: e3
+        text: Current
+      - textId: e4
+        text: Active power
+      - textId: e5
+        text: Total active energy
+      - textId: e6
+        text: Apparent power
+      - textId: e7
+        text: Reactive power
+      - textId: e8
+        text: Power factor
+      - textId: e9
+        text: Frequency
+      - textId: e10
+        text: Import active energy
+      - textId: e11
+        text: Export active energy
+      - textId: e12
+        text: Import reactive energy
+      - textId: e13
+        text: Export reactive energy
+      - textId: e14
+        text: Total system power demand
+      - textId: e15
+        text: Maximum total system power demand
+      - textId: e16
+        text: Import system power demand
+      - textId: e17
+        text: Maximum Import system power demand
+      - textId: e18
+        text: Export system power demand
+      - textId: e19
+        text: Maximum Export system power demand
+      - textId: e20
+        text: current demand
+      - textId: e21
+        text: Maximum current demand
+      - textId: e22
+        text: Total reactive energy
+      - textId: e23
+        text: Relay Pulse Width
+      - textId: e24
+        text: Network Parity Stop
+      - textId: e25
+        text: Meter ID
+      - textId: e26
+        text: Baud rate
+      - textId: e27
+        text: Pulse 1 output mode
+      - textId: e28
+        text: Time of scroll display
+      - textId: e29
+        text: Pulse 1 output
+      - textId: e30
+        text: Measurement mode
+      - textId: e31
+        text: Serial Number
+      - textId: e32
+        text: Meter code
+      - textId: e33
+        text: Software version
+filename: sdm120-m
+model: SDM120-M
+manufacturer: EASTRON
+nextEntityId: 34
+version: "0.3"
+testdata:
+  holdingRegisters:
+    - address: 12
+      value: 17008
+    - address: 13
+      value: 0
+    - address: 18
+      value: 0
+    - address: 19
+      value: 0
+    - address: 20
+      value: 16256
+    - address: 21
+      value: 0
+    - address: 28
+      value: 16384
+    - address: 29
+      value: 0
+    - address: 86
+      value: 16640
+    - address: 87
+      value: 0
+    - address: 63744
+      value: 0
+    - address: 63745
+      value: 0
+    - address: 3760
+      value: 0
+    - address: 3761
+      value: 0
+    - address: 63776
+      value: 1
+    - address: 64512
+      value: 3670
+    - address: 64514
+      value: 4
+    - address: 64515
+      value: 261
+  analogInputs:
+    - address: 0
+      value: 17250
+    - address: 1
+      value: 63314
+    - address: 6
+      value: 16444
+    - address: 7
+      value: 21258
+    - address: 12
+      value: 17435
+    - address: 13
+      value: 46020
+    - address: 342
+      value: 16747
+    - address: 343
+      value: 15204
+    - address: 18
+      value: 17446
+    - address: 19
+      value: 63295
+    - address: 24
+      value: 17039
+    - address: 25
+      value: 37631
+    - address: 30
+      value: 16238
+    - address: 31
+      value: 34172
+    - address: 70
+      value: 16968
+    - address: 71
+      value: 0
+    - address: 72
+      value: 16747
+    - address: 73
+      value: 15204
+    - address: 74
+      value: 0
+    - address: 75
+      value: 0
+    - address: 76
+      value: 16387
+    - address: 77
+      value: 4719
+    - address: 78
+      value: 15507
+    - address: 79
+      value: 29884
+    - address: 84
+      value: 17360
+    - address: 85
+      value: 49367
+    - address: 86
+      value: 17654
+    - address: 87
+      value: 12485
+    - address: 88
+      value: 17360
+    - address: 89
+      value: 49367
+    - address: 90
+      value: 17654
+    - address: 91
+      value: 12485
+    - address: 92
+      value: 0
+    - address: 93
+      value: 0
+    - address: 94
+      value: 0
+    - address: 95
+      value: 0
+    - address: 258
+      value: 16384
+    - address: 259
+      value: 23940
+    - address: 264
+      value: 16654
+    - address: 265
+      value: 15524
+    - address: 344
+      value: 16387
+    - address: 345
+      value: 4719
+stateTopic: modbus2mqtt/0s1/state
+statePayload: |-
+  {
+   "voltage": 226.96609,
+   "current": 2.94257,
+   "activepower": 622.80884,
+   "totalactiveenergy": 14.702,
+   "apparentpower": 667.86322,
+   "reactivepower": 71.7871,
+   "powerfactor": 0.93172,
+   "frequency": 50,
+   "importactiveenergy": 14.702,
+   "importreactiveenergy": 2.048,
+   "exportreactiveenergy": 0.018,
+   "totalsystempowerdemand": 417.50656,
+   "maximumtotalsystempowerdemand": 1969.52405,
+   "importsystempowerdemand": 417.50656,
+   "maximumimportsystempowerdemand": 1969.52405,
+   "currentdemand": 2.00571,
+   "maximumcurrentdemand": 8.8898,
+   "totalreactiveenergy": 2.048,
+   "relaypulsewidth": 60,
+   "meterid": 1,
+   "baudrate": 2,
+   "pulse1outputmode": 8,
+   "measurementmode": 1,
+   "serialnumber": 3670,
+   "metercode": 4,
+   "softwareversion": 261
+  }
+triggerPollTopic: modbus2mqtt/triggerPoll/0s1
