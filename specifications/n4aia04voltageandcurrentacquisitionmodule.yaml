@@ -1,0 +1,221 @@
+entities:
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 0
+    id: 2
+    converterParameters:
+      multiplier: 0.01
+      offset: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 5
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: ch1v1voltagevalue
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 1
+    id: 3
+    converterParameters:
+      multiplier: 0.01
+      offset: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 10
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: ch2v2voltagevalue
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 2
+    id: 7
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 20
+      device_class: current
+      uom: mA
+    valid: true
+    mqttname: ch3c1currentvalue
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 3
+    id: 8
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      numberFormat: 0
+      identification:
+        min: 4
+        max: 20
+      device_class: current
+      uom: mA
+    valid: true
+    mqttname: ch4c2currentvalue
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 7
+    id: 9
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+      step: 1
+      identification:
+        min: 0
+        max: 2000
+    valid: true
+    mqttname: ch1v1voltageratio
+    entityCategory: config
+    commandTopic: modbus2mqtt/set/0s30/e9
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 8
+    id: 10
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+      step: 1
+      identification:
+        min: 0
+        max: 2000
+    valid: true
+    mqttname: ch2v2voltageratio
+    entityCategory: config
+    commandTopic: modbus2mqtt/set/0s30/e10
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 9
+    id: 11
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+      step: 1
+      identification:
+        min: 0
+        max: 2000
+    valid: true
+    mqttname: ch3c1currentratio
+    entityCategory: config
+    commandTopic: modbus2mqtt/set/0s30/e11
+  - registerType: 3
+    readonly: false
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 10
+    id: 12
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      numberFormat: 0
+      step: 1
+      identification:
+        min: 0
+        max: 2000
+    valid: true
+    mqttname: ch4c2currentratio
+    entityCategory: config
+    commandTopic: modbus2mqtt/set/0s30/e12
+i18n:
+  - lang: en
+    texts:
+      - textId: name
+        text: N4AIA04 voltage and current acquisition module
+      - textId: e2
+        text: (CH1)V1 Voltage value
+      - textId: e3
+        text: (CH2)V2 Voltage value
+      - textId: e7
+        text: (CH3)C1 Current value
+      - textId: e8
+        text: (CH4)C2 Current value
+      - textId: e9
+        text: (CH1)V1 Voltage ratio
+      - textId: e10
+        text: (CH2)V2 Voltage ratio
+      - textId: e11
+        text: (CH3)C1 Current ratio
+      - textId: e12
+        text: (CH4)C2 Current ratio
+filename: n4aia04voltageandcurrentacquisitionmodule
+model: N4AIA04
+manufacturer: eletechsup
+nextEntityId: 13
+version: "0.3"
+testdata:
+  holdingRegisters:
+    - address: 0
+      value: 326
+    - address: 1
+      value: 2
+    - address: 2
+      value: 0
+    - address: 3
+      value: 79
+    - address: 7
+      value: 1000
+    - address: 8
+      value: 1000
+    - address: 9
+      value: 1000
+    - address: 10
+      value: 1000
+stateTopic: modbus2mqtt/0s30/state
+statePayload: |-
+  {
+   "ch1v1voltagevalue": 3.26,
+   "ch2v2voltagevalue": 0.02,
+   "ch4c2currentvalue": 7.9,
+   "ch1v1voltageratio": 1000,
+   "ch2v2voltageratio": 1000,
+   "ch3c1currentratio": 1000,
+   "ch4c2currentratio": 1000
+  }
+triggerPollTopic: modbus2mqtt/triggerPoll/0s30
