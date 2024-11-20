@@ -18,7 +18,7 @@ entities:
     valid: true
     registerType: 3
     readonly: false
-    commandTopic: modbus2mqtt/set/0s3/e1
+    commandTopic: modbus2mqtt/set/1s3/e1
   - id: 0
     modbusAddress: 1
     converter:
@@ -96,7 +96,7 @@ entities:
     icon: mdi:alarm
     registerType: 3
     readonly: false
-    commandTopic: modbus2mqtt/set/0s3/e5
+    commandTopic: modbus2mqtt/set/1s3/e5
   - id: 14
     modbusAddress: 252
     converter:
@@ -113,7 +113,7 @@ entities:
         max: 15
       device_class: temperature
     mqttname: hysteresishotwater
-    valid: true
+    valid: false
     icon: mdi:alarm
     registerType: 3
     readonly: true
@@ -137,7 +137,7 @@ entities:
     valid: true
     registerType: 3
     readonly: false
-    commandTopic: modbus2mqtt/set/0s3/e4
+    commandTopic: modbus2mqtt/set/1s3/e4
   - converter:
       name: select
       registerTypes:
@@ -163,8 +163,8 @@ entities:
     mqttname: selecttimetable
     registerType: 3
     readonly: false
-    commandTopic: modbus2mqtt/set/0s3/e7
-    commandTopicModbus: modbus2mqtt/set/0s3/e7/modbusValues
+    commandTopic: modbus2mqtt/set/1s3/e7
+    commandTopicModbus: modbus2mqtt/set/1s3/e7/modbusValues
   - id: 6
     modbusAddress: 3
     converter:
@@ -177,7 +177,7 @@ entities:
     valid: true
     registerType: 1
     readonly: false
-    commandTopic: modbus2mqtt/set/0s3/e6
+    commandTopic: modbus2mqtt/set/1s3/e6
   - registerType: 3
     readonly: true
     converter:
@@ -200,7 +200,8 @@ entities:
         - 11
         - 24
         - 30
-    valid: true
+      options: []
+    valid: false
     mqttname: status
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
@@ -221,7 +222,8 @@ entities:
         - 3
         - 4
         - 5
-    valid: true
+      options: []
+    valid: false
     mqttname: operatingmode
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
@@ -263,7 +265,8 @@ entities:
         - 33
         - 34
         - 35
-    valid: true
+      options: []
+    valid: false
     mqttname: locks
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
@@ -302,7 +305,8 @@ entities:
         - 30
         - 31
         - 32
-    valid: true
+      options: []
+    valid: false
     mqttname: error
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
@@ -345,7 +349,8 @@ entities:
         - 28
         - 29
         - 30
-    valid: true
+      options: []
+    valid: false
     mqttname: sensorerror
     commandTopicModbus: undefined/modbusValues
   - registerType: 1
@@ -358,7 +363,7 @@ entities:
     modbusAddress: 45
     id: 13
     converterParameters: {}
-    valid: true
+    valid: false
     mqttname: heatcircuit1pump
     entityCategory: diagnostic
 i18n:
@@ -638,6 +643,20 @@ i18n:
         text: Außentemperatur
       - textId: name
         text: Dimplex PCO5
+      - textId: e8
+        text: Status
+      - textId: e14
+        text: Hysterese Warmwasser
+      - textId: e13
+        text: Heizkreis 1 Pumpe (M13)
+      - textId: e12
+        text: Sensorfehler
+      - textId: e11
+        text: Fehler
+      - textId: e10
+        text: Sperren
+      - textId: e9
+        text: Betriebsart
 filename: dimplexpco5
 version: "0.3"
 testdata:
@@ -645,11 +664,11 @@ testdata:
     - address: 174
       value: 46
     - address: 1
-      value: 78
+      value: 85
     - address: 3
-      value: 444
+      value: 447
     - address: 11
-      value: 223
+      value: 226
     - address: 47
       value: 5
     - address: 252
@@ -678,17 +697,17 @@ manufacturer: Dimplex
 name: Dimplex PCO5
 nextEntityId: 15
 pullUrl: https://github.com/volkmarnissen/modbus2mqtt.config/pull/197
-stateTopic: modbus2mqtt/0s3/state
+stateTopic: modbus2mqtt/1s3/state
 statePayload: |-
   {
    "hotwatertargettemperature": 46,
-   "outertemperature": 7.8,
-   "hotwatertemperature": 44.4,
-   "roomtemperature": 22.3,
+   "outertemperature": 8.5,
+   "hotwatertemperature": 44.7,
+   "roomtemperature": 22.6,
    "hysteresis": 0.5,
    "hysteresishotwater": 3,
    "targetroomtemperature": 20,
-   "selecttimetable": "Not Selected",
+   "selecttimetable": "Nicht ausgewählt",
    "modbusValues": {
     "selecttimetable": 0,
     "status": 1,
@@ -705,4 +724,4 @@ statePayload: |-
    "sensorerror": "None",
    "heatcircuit1pump": "ON"
   }
-triggerPollTopic: modbus2mqtt/triggerPoll/0s3
+triggerPollTopic: modbus2mqtt/triggerPoll/1s3
