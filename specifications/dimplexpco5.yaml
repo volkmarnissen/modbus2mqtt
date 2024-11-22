@@ -113,7 +113,7 @@ entities:
         max: 15
       device_class: temperature
     mqttname: hysteresishotwater
-    valid: false
+    valid: true
     icon: mdi:alarm
     registerType: 3
     readonly: true
@@ -310,7 +310,7 @@ entities:
     mqttname: error
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
-    readonly: true
+    readonly: false
     converter:
       name: select
       registerTypes:
@@ -352,7 +352,8 @@ entities:
       options: []
     valid: false
     mqttname: sensorerror
-    commandTopicModbus: undefined/modbusValues
+    commandTopicModbus: modbus2mqtt/set/1s3/e12/modbusValues
+    commandTopic: modbus2mqtt/set/1s3/e12
   - registerType: 1
     readonly: true
     converter:
@@ -363,7 +364,7 @@ entities:
     modbusAddress: 45
     id: 13
     converterParameters: {}
-    valid: false
+    valid: true
     mqttname: heatcircuit1pump
     entityCategory: diagnostic
 i18n:
@@ -442,7 +443,7 @@ i18n:
       - textId: e10
         text: Locks
       - textId: e10o.0
-        text: None
+        text: No lock
       - textId: e10o.2
         text: Volume Flow
       - textId: e10o.5
@@ -498,7 +499,7 @@ i18n:
       - textId: e11
         text: Error
       - textId: e11o.0
-        text: None
+        text: No error
       - textId: e11o.1
         text: Error N17.1
       - textId: e11o.2
@@ -662,13 +663,13 @@ version: "0.3"
 testdata:
   holdingRegisters:
     - address: 174
-      value: 46
+      value: 49
     - address: 1
-      value: 85
+      value: 45
     - address: 3
-      value: 447
+      value: 475
     - address: 11
-      value: 226
+      value: 200
     - address: 47
       value: 5
     - address: 252
@@ -700,10 +701,10 @@ pullUrl: https://github.com/volkmarnissen/modbus2mqtt.config/pull/197
 stateTopic: modbus2mqtt/1s3/state
 statePayload: |-
   {
-   "hotwatertargettemperature": 46,
-   "outertemperature": 8.5,
-   "hotwatertemperature": 44.7,
-   "roomtemperature": 22.6,
+   "hotwatertargettemperature": 49,
+   "outertemperature": 4.5,
+   "hotwatertemperature": 47.5,
+   "roomtemperature": 20,
    "hysteresis": 0.5,
    "hysteresishotwater": 3,
    "targetroomtemperature": 20,
@@ -719,8 +720,8 @@ statePayload: |-
    "externallock": "OFF",
    "status": "Off",
    "operatingmode": "Party",
-   "locks": "None",
-   "error": "None",
+   "locks": "No lock",
+   "error": "No error",
    "sensorerror": "None",
    "heatcircuit1pump": "ON"
   }
