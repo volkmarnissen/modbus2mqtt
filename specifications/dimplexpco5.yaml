@@ -282,7 +282,7 @@ entities:
     valid: false
     mqttname: locks
     commandTopicModbus: undefined/modbusValues
-    entityCategory: config
+    entityCategory: diagnostic
   - registerType: 3
     readonly: true
     converter:
@@ -706,11 +706,11 @@ testdata:
     - address: 174
       value: 50
     - address: 1
-      value: 50
+      value: 53
     - address: 3
-      value: 503
+      value: 485
     - address: 11
-      value: 201
+      value: 199
     - address: 47
       value: 5
     - address: 252
@@ -730,7 +730,7 @@ testdata:
     - address: 106
       value: 0
     - address: 53
-      value: 224
+      value: 276
   coils:
     - address: 3
       value: 0
