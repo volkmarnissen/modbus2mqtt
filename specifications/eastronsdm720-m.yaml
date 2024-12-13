@@ -11,11 +11,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 300
-    valid: false
+      device_class: voltage
+      uom: V
+    valid: true
     mqttname: p1act2neutralvolts
     entityCategory: diagnostic
   - registerType: 4
@@ -30,13 +33,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 500
       device_class: voltage
       uom: V
-    valid: false
+    valid: true
     mqttname: l1tol2volts
     entityCategory: diagnostic
   - registerType: 4
@@ -51,13 +55,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 500
       device_class: voltage
       uom: V
-    valid: false
+    valid: true
     mqttname: l2tol3volts
     entityCategory: diagnostic
   - registerType: 4
@@ -72,13 +77,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 500
       device_class: voltage
       uom: V
-    valid: false
+    valid: true
     mqttname: l3tol1volts
     entityCategory: diagnostic
   - registerType: 4
@@ -93,33 +99,15 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 500
       device_class: voltage
       uom: V
-    valid: false
+    valid: true
     mqttname: avgline2linevolts
-    entityCategory: diagnostic
-  - registerType: 4
-    readonly: true
-    converter:
-      name: number
-      registerTypes:
-        - 3
-        - 4
-    modbusAddress: 42
-    id: 19
-    converterParameters:
-      multiplier: 1
-      offset: 0
-      numberFormat: 1
-      identification:
-        min: 100
-        max: 250
-    valid: false
-    mqttname: avgneutralvolts
     entityCategory: diagnostic
   - registerType: 4
     readonly: true
@@ -133,13 +121,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100
       device_class: current
       uom: A
-    valid: false
+    valid: true
     mqttname: p1current
     entityCategory: diagnostic
   - registerType: 4
@@ -154,13 +143,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100
       device_class: current
       uom: A
-    valid: false
+    valid: true
     mqttname: avgcurrent
     entityCategory: diagnostic
   - registerType: 4
@@ -175,13 +165,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100
       device_class: current
       uom: A
-    valid: false
+    valid: true
     mqttname: sumofcurrents
     entityCategory: diagnostic
   - registerType: 4
@@ -196,13 +187,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100
       device_class: current
       uom: A
-    valid: false
+    valid: true
     mqttname: avgneutralcurrent
     entityCategory: diagnostic
   - registerType: 4
@@ -217,13 +209,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100
       device_class: current
       uom: A
-    valid: false
+    valid: true
     mqttname: p2current
     entityCategory: diagnostic
   - registerType: 4
@@ -238,13 +231,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100
       device_class: current
       uom: A
-    valid: false
+    valid: true
     mqttname: p3current
     entityCategory: diagnostic
   - registerType: 4
@@ -259,11 +253,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: apparent_power
+      uom: VA
+    valid: true
     mqttname: p1actpower
   - registerType: 4
     readonly: true
@@ -277,11 +274,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: power
+      uom: W
+    valid: true
     mqttname: totalsyspower
   - registerType: 4
     readonly: true
@@ -299,7 +299,9 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: power
+      uom: W
+    valid: true
     mqttname: totalvoltamps
     entityCategory: diagnostic
   - registerType: 4
@@ -314,11 +316,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: reactive_power
+      uom: var
+    valid: true
     mqttname: totalvoltampsreactive
     entityCategory: diagnostic
   - registerType: 4
@@ -333,11 +338,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: apparent_power
+      uom: VA
+    valid: true
     mqttname: p2aqctpower
     entityCategory: diagnostic
   - registerType: 4
@@ -352,11 +360,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: apparent_power
+      uom: VA
+    valid: true
     mqttname: p2actpower
   - registerType: 4
     readonly: true
@@ -370,11 +381,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: reactive_power
+      uom: var
+    valid: true
     mqttname: p1apppower
     entityCategory: diagnostic
   - registerType: 4
@@ -389,11 +403,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: reactive_power
+      uom: var
+    valid: true
     mqttname: p2apppower
     entityCategory: diagnostic
   - registerType: 4
@@ -408,11 +425,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: apparent_power
+      uom: VA
+    valid: true
     mqttname: p3apppower
     entityCategory: diagnostic
   - registerType: 4
@@ -427,11 +447,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: reactive_power
+      uom: var
+    valid: true
     mqttname: p1reactpower
     entityCategory: diagnostic
   - registerType: 4
@@ -446,11 +469,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: reactive_power
+      uom: var
+    valid: true
     mqttname: p2reactpower
     entityCategory: diagnostic
   - registerType: 4
@@ -465,11 +491,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 7800
-    valid: false
+      device_class: reactive_power
+      uom: var
+    valid: true
     mqttname: p3reactpower
     entityCategory: diagnostic
   - registerType: 4
@@ -484,11 +513,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 2
       numberFormat: 1
       identification:
         min: 0
         max: 1
-    valid: false
+      device_class: power_factor
+      uom: "%³"
+    valid: true
     mqttname: p1powerfact
     entityCategory: diagnostic
   - registerType: 4
@@ -503,11 +535,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 2
       numberFormat: 1
       identification:
         min: 0
         max: 1
-    valid: false
+      device_class: power_factor
+      uom: "%³"
+    valid: true
     mqttname: totalsyspowerfactor
     entityCategory: diagnostic
   - registerType: 4
@@ -522,11 +557,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 2
       numberFormat: 1
       identification:
         min: 0
         max: 1
-    valid: false
+      device_class: power_factor
+      uom: "%³"
+    valid: true
     mqttname: p2powerfact
     entityCategory: diagnostic
   - registerType: 4
@@ -541,11 +579,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 2
       numberFormat: 1
       identification:
         min: 0
         max: 1
-    valid: false
+      device_class: power_factor
+      uom: "%³"
+    valid: true
     mqttname: p3powerfact
     entityCategory: diagnostic
   - registerType: 4
@@ -560,13 +601,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 70
       device_class: frequency
       uom: Hz
-    valid: false
+    valid: true
     mqttname: freqofsupplyvolt
     entityCategory: diagnostic
   - registerType: 4
@@ -581,13 +623,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: impactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -602,13 +645,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: expactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -623,13 +667,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: totalactrenergy
   - registerType: 4
     readonly: true
@@ -643,13 +688,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: totalreactiveenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -664,13 +710,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: resetbltotactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -685,13 +732,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: resetbltotreactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -706,13 +754,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: resetbltotimpenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -727,13 +776,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 1
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: energy
       uom: kWh
-    valid: false
+    valid: true
     mqttname: resettabletotalexportenergy
   - registerType: 4
     readonly: true
@@ -747,13 +797,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: power
       uom: W
-    valid: false
+    valid: true
     mqttname: totalimpactivepower
     entityCategory: diagnostic
   - registerType: 4
@@ -768,13 +819,14 @@ entities:
     converterParameters:
       multiplier: 1
       offset: 0
+      decimals: 0
       numberFormat: 1
       identification:
         min: 0
         max: 100000
       device_class: power
       uom: W
-    valid: false
+    valid: true
     mqttname: totexpactivepower
     entityCategory: diagnostic
 i18n:
@@ -814,8 +866,6 @@ i18n:
         text: Phase 1 power factor
       - textId: e18
         text: Phase 3 power factor
-      - textId: e19
-        text: Average line to neutral volts
       - textId: e21
         text: Average line current
       - textId: e20
@@ -883,7 +933,7 @@ i18n:
       - textId: e29
         text: Spannung L1 zu L2
       - textId: e28
-        text: Wirkenergie exportieren
+        text: Exportierte Wirkenergie XX
       - textId: e27
         text: Wirkenergie importieren
       - textId: e26
@@ -900,8 +950,6 @@ i18n:
         text: Summe der Leitungsströme
       - textId: e21
         text: Durchschnittlicher Leitungsstrom
-      - textId: e19
-        text: Durchschnittliche Spannung Leitung zu Neutralleiter
       - textId: e18
         text: Phase 3 Leistungsfaktor
       - textId: e17
@@ -933,7 +981,7 @@ i18n:
       - textId: e3
         text: Phase 1 Strom
       - textId: e2
-        text: Phase 1 Leitung zu Neutralleiterspannung
+        text: Phase 1 Spannung zu Neutralleiterspannung
       - textId: name
         text: Eastron SDM 720-M
       - textId: e30
@@ -948,29 +996,25 @@ version: "0.3"
 testdata:
   analogInputs:
     - address: 0
-      value: 17251
+      value: 17250
     - address: 1
-      value: 44385
+      value: 24309
     - address: 200
-      value: 17349
+      value: 17348
     - address: 201
-      value: 11043
+      value: 2439
     - address: 202
-      value: 17350
+      value: 17348
     - address: 203
-      value: 21750
+      value: 64423
     - address: 204
-      value: 17347
+      value: 17346
     - address: 205
-      value: 49729
+      value: 43656
     - address: 206
-      value: 17349
+      value: 17347
     - address: 207
-      value: 5662
-    - address: 42
-      value: 17251
-    - address: 43
-      value: 38171
+      value: 58685
     - address: 8
       value: 0
     - address: 9
@@ -980,13 +1024,13 @@ testdata:
     - address: 9
       value: 0
     - address: 48
-      value: 0
+      value: 16154
     - address: 49
-      value: 0
+      value: 2549
     - address: 224
-      value: 0
+      value: 16154
     - address: 225
-      value: 0
+      value: 2549
     - address: 8
       value: 0
     - address: 9
@@ -996,21 +1040,21 @@ testdata:
     - address: 11
       value: 0
     - address: 12
-      value: 0
+      value: 17152
     - address: 13
-      value: 0
+      value: 20524
     - address: 52
-      value: 0
+      value: 17152
     - address: 53
-      value: 0
+      value: 20524
     - address: 56
-      value: 0
+      value: 17160
     - address: 57
-      value: 0
+      value: 13805
     - address: 60
-      value: 0
+      value: 16948
     - address: 61
-      value: 0
+      value: 32198
     - address: 14
       value: 0
     - address: 15
@@ -1020,9 +1064,9 @@ testdata:
     - address: 17
       value: 0
     - address: 18
-      value: 0
+      value: 17160
     - address: 19
-      value: 0
+      value: 13805
     - address: 20
       value: 0
     - address: 21
@@ -1032,9 +1076,9 @@ testdata:
     - address: 23
       value: 0
     - address: 24
-      value: 0
+      value: 16948
     - address: 25
-      value: 0
+      value: 32198
     - address: 26
       value: 0
     - address: 27
@@ -1044,13 +1088,13 @@ testdata:
     - address: 29
       value: 0
     - address: 30
-      value: 0
+      value: 16241
     - address: 31
-      value: 0
+      value: 32921
     - address: 62
-      value: 0
+      value: 16241
     - address: 63
-      value: 0
+      value: 32921
     - address: 32
       value: 0
     - address: 33
@@ -1062,11 +1106,11 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 52429
+      value: 41943
     - address: 72
       value: 17555
     - address: 73
-      value: 27279
+      value: 52134
     - address: 74
       value: 0
     - address: 75
@@ -1074,31 +1118,31 @@ testdata:
     - address: 342
       value: 17555
     - address: 343
-      value: 27279
+      value: 52134
     - address: 344
-      value: 17481
+      value: 17482
     - address: 345
-      value: 26083
+      value: 1753
     - address: 384
       value: 17555
     - address: 385
-      value: 27279
+      value: 52134
     - address: 386
-      value: 17481
+      value: 17482
     - address: 387
-      value: 26083
+      value: 1753
     - address: 388
       value: 17555
     - address: 389
-      value: 27279
+      value: 52134
     - address: 386
-      value: 17481
+      value: 17482
     - address: 387
-      value: 26083
+      value: 1753
     - address: 1280
-      value: 0
+      value: 17152
     - address: 1281
-      value: 0
+      value: 20524
     - address: 1282
       value: 32768
     - address: 1283
