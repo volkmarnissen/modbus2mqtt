@@ -15,7 +15,7 @@ entities:
       identification:
         min: 0
         max: 300
-    valid: true
+    valid: false
     mqttname: p1act2neutralvolts
     entityCategory: diagnostic
   - registerType: 4
@@ -35,7 +35,8 @@ entities:
         min: 0
         max: 500
       device_class: voltage
-    valid: true
+      uom: V
+    valid: false
     mqttname: l1tol2volts
     entityCategory: diagnostic
   - registerType: 4
@@ -55,7 +56,8 @@ entities:
         min: 0
         max: 500
       device_class: voltage
-    valid: true
+      uom: V
+    valid: false
     mqttname: l2tol3volts
     entityCategory: diagnostic
   - registerType: 4
@@ -75,7 +77,8 @@ entities:
         min: 0
         max: 500
       device_class: voltage
-    valid: true
+      uom: V
+    valid: false
     mqttname: l3tol1volts
     entityCategory: diagnostic
   - registerType: 4
@@ -95,7 +98,8 @@ entities:
         min: 0
         max: 500
       device_class: voltage
-    valid: true
+      uom: V
+    valid: false
     mqttname: avgline2linevolts
     entityCategory: diagnostic
   - registerType: 4
@@ -114,7 +118,7 @@ entities:
       identification:
         min: 100
         max: 250
-    valid: true
+    valid: false
     mqttname: avgneutralvolts
     entityCategory: diagnostic
   - registerType: 4
@@ -134,7 +138,8 @@ entities:
         min: 0
         max: 100
       device_class: current
-    valid: true
+      uom: A
+    valid: false
     mqttname: p1current
     entityCategory: diagnostic
   - registerType: 4
@@ -154,7 +159,8 @@ entities:
         min: 0
         max: 100
       device_class: current
-    valid: true
+      uom: A
+    valid: false
     mqttname: avgcurrent
     entityCategory: diagnostic
   - registerType: 4
@@ -174,7 +180,8 @@ entities:
         min: 0
         max: 100
       device_class: current
-    valid: true
+      uom: A
+    valid: false
     mqttname: sumofcurrents
     entityCategory: diagnostic
   - registerType: 4
@@ -194,7 +201,8 @@ entities:
         min: 0
         max: 100
       device_class: current
-    valid: true
+      uom: A
+    valid: false
     mqttname: avgneutralcurrent
     entityCategory: diagnostic
   - registerType: 4
@@ -214,7 +222,8 @@ entities:
         min: 0
         max: 100
       device_class: current
-    valid: true
+      uom: A
+    valid: false
     mqttname: p2current
     entityCategory: diagnostic
   - registerType: 4
@@ -234,7 +243,8 @@ entities:
         min: 0
         max: 100
       device_class: current
-    valid: true
+      uom: A
+    valid: false
     mqttname: p3current
     entityCategory: diagnostic
   - registerType: 4
@@ -253,7 +263,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p1actpower
   - registerType: 4
     readonly: true
@@ -271,7 +281,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: totalsyspower
   - registerType: 4
     readonly: true
@@ -289,7 +299,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: totalvoltamps
     entityCategory: diagnostic
   - registerType: 4
@@ -308,7 +318,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: totalvoltampsreactive
     entityCategory: diagnostic
   - registerType: 4
@@ -327,7 +337,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p2aqctpower
     entityCategory: diagnostic
   - registerType: 4
@@ -346,7 +356,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p2actpower
   - registerType: 4
     readonly: true
@@ -364,7 +374,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p1apppower
     entityCategory: diagnostic
   - registerType: 4
@@ -383,7 +393,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p2apppower
     entityCategory: diagnostic
   - registerType: 4
@@ -402,7 +412,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p3apppower
     entityCategory: diagnostic
   - registerType: 4
@@ -421,7 +431,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p1reactpower
     entityCategory: diagnostic
   - registerType: 4
@@ -440,7 +450,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p2reactpower
     entityCategory: diagnostic
   - registerType: 4
@@ -459,7 +469,7 @@ entities:
       identification:
         min: 0
         max: 7800
-    valid: true
+    valid: false
     mqttname: p3reactpower
     entityCategory: diagnostic
   - registerType: 4
@@ -478,7 +488,7 @@ entities:
       identification:
         min: 0
         max: 1
-    valid: true
+    valid: false
     mqttname: p1powerfact
     entityCategory: diagnostic
   - registerType: 4
@@ -497,7 +507,7 @@ entities:
       identification:
         min: 0
         max: 1
-    valid: true
+    valid: false
     mqttname: totalsyspowerfactor
     entityCategory: diagnostic
   - registerType: 4
@@ -516,7 +526,7 @@ entities:
       identification:
         min: 0
         max: 1
-    valid: true
+    valid: false
     mqttname: p2powerfact
     entityCategory: diagnostic
   - registerType: 4
@@ -535,7 +545,7 @@ entities:
       identification:
         min: 0
         max: 1
-    valid: true
+    valid: false
     mqttname: p3powerfact
     entityCategory: diagnostic
   - registerType: 4
@@ -555,7 +565,8 @@ entities:
         min: 0
         max: 70
       device_class: frequency
-    valid: true
+      uom: Hz
+    valid: false
     mqttname: freqofsupplyvolt
     entityCategory: diagnostic
   - registerType: 4
@@ -575,7 +586,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: impactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -595,7 +607,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: expactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -615,7 +628,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: totalactrenergy
   - registerType: 4
     readonly: true
@@ -634,7 +648,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: totalreactiveenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -654,7 +669,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: resetbltotactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -674,7 +690,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: resetbltotreactenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -694,7 +711,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: resetbltotimpenergy
     entityCategory: diagnostic
   - registerType: 4
@@ -714,7 +732,8 @@ entities:
         min: 0
         max: 100000
       device_class: energy
-    valid: true
+      uom: kWh
+    valid: false
     mqttname: resettabletotalexportenergy
   - registerType: 4
     readonly: true
@@ -733,7 +752,8 @@ entities:
         min: 0
         max: 100000
       device_class: power
-    valid: true
+      uom: W
+    valid: false
     mqttname: totalimpactivepower
     entityCategory: diagnostic
   - registerType: 4
@@ -753,7 +773,8 @@ entities:
         min: 0
         max: 100000
       device_class: power
-    valid: true
+      uom: W
+    valid: false
     mqttname: totexpactivepower
     entityCategory: diagnostic
 i18n:
@@ -839,6 +860,88 @@ i18n:
         text: "Total import active power "
       - textId: e41
         text: "Total export active power "
+  - lang: de
+    texts:
+      - textId: e41
+        text: Gesamtexportwirkleistung
+      - textId: e40
+        text: Gesamtimportwirkleistung
+      - textId: e39
+        text: Rücksetzbare Gesamtexportenergie
+      - textId: e38
+        text: Rücksetzbare Gesamtimportenergie
+      - textId: e37
+        text: Rücksetzbare Gesamtblindenergie Energie
+      - textId: e36
+        text: Rücksetzbare Gesamtwirkenergie
+      - textId: e35
+        text: Gesamtblindenergie
+      - textId: e34
+        text: Gesamtwirkenergie
+      - textId: e33
+        text: Durchschnittlicher Neutralleiterstrom
+      - textId: e29
+        text: Spannung L1 zu L2
+      - textId: e28
+        text: Wirkenergie exportieren
+      - textId: e27
+        text: Wirkenergie importieren
+      - textId: e26
+        text: Frequenz der Versorgungsspannungen
+      - textId: e25
+        text: Gesamtsystem Leistungsfaktor
+      - textId: e24
+        text: Gesamtvoltampere Blindleistung
+      - textId: e23
+        text: Gesamtleistung
+      - textId: e22
+        text: Gesamtsystemleistung
+      - textId: e20
+        text: Summe der Leitungsströme
+      - textId: e21
+        text: Durchschnittlicher Leitungsstrom
+      - textId: e19
+        text: Durchschnittliche Spannung Leitung zu Neutralleiter
+      - textId: e18
+        text: Phase 3 Leistungsfaktor
+      - textId: e17
+        text: Phase 1 Leistungsfaktor
+      - textId: e16
+        text: Phase 1 Leistungsfaktor
+      - textId: e15
+        text: Phase 3 Blindleistung
+      - textId: e14
+        text: Phase 2 Blindleistung
+      - textId: e13
+        text: Phase 1 Blindleistung
+      - textId: e12
+        text: Phase 3 Scheinleistung
+      - textId: e10
+        text: Phase 2 Scheinleistung
+      - textId: e9
+        text: Phase 1 Scheinleistung
+      - textId: e8
+        text: Phase 3 Wirkleistung
+      - textId: e7
+        text: Phase 2 Wirkleistung
+      - textId: e6
+        text: Phase 1 Wirkleistung
+      - textId: e5
+        text: Phase 3 Strom
+      - textId: e4
+        text: Phase 2 Strom
+      - textId: e3
+        text: Phase 1 Strom
+      - textId: e2
+        text: Phase 1 Leitung zu Neutralleiterspannung
+      - textId: name
+        text: Eastron SDM 720-M
+      - textId: e30
+        text: L2 zu L3 Spannung
+      - textId: e31
+        text: L3 zu L1 Spannung
+      - textId: e32
+        text: Durchschnittliche Spannung Leitung zu Leitung
 filename: eastronsdm720-m
 nextEntityId: 42
 version: "0.3"
@@ -847,27 +950,27 @@ testdata:
     - address: 0
       value: 17251
     - address: 1
-      value: 63536
+      value: 44385
     - address: 200
       value: 17349
     - address: 201
-      value: 27628
+      value: 11043
     - address: 202
       value: 17350
     - address: 203
-      value: 12794
+      value: 21750
     - address: 204
-      value: 17349
+      value: 17347
     - address: 205
-      value: 40580
+      value: 49729
     - address: 206
       value: 17349
     - address: 207
-      value: 48846
+      value: 5662
     - address: 42
-      value: 17252
+      value: 17251
     - address: 43
-      value: 22501
+      value: 38171
     - address: 8
       value: 0
     - address: 9
@@ -959,39 +1062,39 @@ testdata:
     - address: 70
       value: 16967
     - address: 71
-      value: 57672
+      value: 52429
     - address: 72
-      value: 17438
+      value: 17555
     - address: 73
-      value: 35095
+      value: 27279
     - address: 74
       value: 0
     - address: 75
       value: 0
     - address: 342
-      value: 17438
+      value: 17555
     - address: 343
-      value: 35095
+      value: 27279
     - address: 344
-      value: 17360
+      value: 17481
     - address: 345
-      value: 36798
+      value: 26083
     - address: 384
-      value: 17438
+      value: 17555
     - address: 385
-      value: 35095
+      value: 27279
     - address: 386
-      value: 17360
+      value: 17481
     - address: 387
-      value: 36798
+      value: 26083
     - address: 388
-      value: 17438
+      value: 17555
     - address: 389
-      value: 35095
+      value: 27279
     - address: 386
-      value: 17360
+      value: 17481
     - address: 387
-      value: 36798
+      value: 26083
     - address: 1280
       value: 0
     - address: 1281
@@ -1003,3 +1106,4 @@ testdata:
 pullUrl: https://github.com/modbus2mqtt/modbus2mqtt.config/pull/46
 model: SDM 720-M
 manufacturer: Eastron
+name: Eastron SDM 720-M
