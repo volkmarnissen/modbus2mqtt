@@ -13,12 +13,14 @@ entities:
       identification:
         min: 31
         max: 70
+      device_class: temperature
       uom: °C
     mqttname: hotwatertargettemperature
     valid: true
     registerType: 3
     readonly: false
     commandTopic: modbus2mqtt/set/0s3/e1
+    entityCategory: config
   - id: 0
     modbusAddress: 1
     converter:
@@ -33,6 +35,8 @@ entities:
       identification:
         min: -20
         max: 50
+      device_class: temperature
+      uom: °C
     mqttname: outertemperature
     valid: true
     registerType: 3
@@ -53,6 +57,7 @@ entities:
         max: 70
       device_class: temperature
       state_class: 1
+      uom: °C
     mqttname: hotwatertemperature
     valid: true
     registerType: 3
@@ -71,6 +76,8 @@ entities:
       identification:
         min: 15
         max: 30
+      device_class: temperature
+      uom: °C
     mqttname: roomtemperature
     valid: true
     registerType: 3
@@ -91,6 +98,7 @@ entities:
         min: 0.5
         max: 5
       device_class: temperature
+      uom: K
     mqttname: hysteresis
     valid: true
     icon: mdi:alarm
@@ -112,12 +120,14 @@ entities:
         min: 2
         max: 15
       device_class: temperature
+      uom: K
     mqttname: hysteresishotwater
     valid: true
     icon: mdi:alarm
     registerType: 3
     readonly: true
     commandTopic: modbus2mqtt/set/0s3/e5
+    entityCategory: diagnostic
   - id: 4
     modbusAddress: 46
     converter:
@@ -133,6 +143,8 @@ entities:
       identification:
         min: 15
         max: 30
+      device_class: temperature
+      uom: °C
     mqttname: roomtargettemperature
     valid: true
     registerType: 3
@@ -165,6 +177,7 @@ entities:
     readonly: false
     commandTopic: modbus2mqtt/set/0s3/e7
     commandTopicModbus: modbus2mqtt/set/0s3/e7/modbusValues
+    entityCategory: config
   - id: 6
     modbusAddress: 3
     converter:
@@ -200,7 +213,8 @@ entities:
         - 11
         - 24
         - 30
-    valid: true
+      options: []
+    valid: false
     mqttname: status
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
@@ -221,7 +235,8 @@ entities:
         - 3
         - 4
         - 5
-    valid: true
+      options: []
+    valid: false
     mqttname: operatingmode
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
@@ -263,9 +278,11 @@ entities:
         - 33
         - 34
         - 35
-    valid: true
+      options: []
+    valid: false
     mqttname: locks
     commandTopicModbus: undefined/modbusValues
+    entityCategory: config
   - registerType: 3
     readonly: true
     converter:
@@ -302,9 +319,11 @@ entities:
         - 30
         - 31
         - 32
-    valid: true
+      options: []
+    valid: false
     mqttname: error
     commandTopicModbus: undefined/modbusValues
+    entityCategory: diagnostic
   - registerType: 3
     readonly: false
     converter:
@@ -345,10 +364,12 @@ entities:
         - 28
         - 29
         - 30
-    valid: true
+      options: []
+    valid: false
     mqttname: sensorerror
     commandTopicModbus: modbus2mqtt/set/0s3/e12/modbusValues
     commandTopic: modbus2mqtt/set/0s3/e12
+    entityCategory: diagnostic
   - registerType: 1
     readonly: true
     converter:
@@ -361,6 +382,27 @@ entities:
     converterParameters: {}
     valid: true
     mqttname: heatcircuit1pump
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 53
+    id: 15
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 70
+      device_class: temperature
+      uom: °C
+    valid: true
+    mqttname: returhtemperature
     entityCategory: diagnostic
 i18n:
   - lang: en
@@ -603,6 +645,8 @@ i18n:
         text: Heat Circuit 1 Pump(M13)
       - textId: e14
         text: Hysteresis Hot Water
+      - textId: e15
+        text: Return Temperature
   - lang: de
     texts:
       - textId: e7o.7
@@ -653,24 +697,26 @@ i18n:
         text: Sperren
       - textId: e9
         text: Betriebsart
+      - textId: e15
+        text: Rücklauftemperatur
 filename: dimplexpco5
 version: "0.3"
 testdata:
   holdingRegisters:
     - address: 174
-      value: 48
+      value: 50
     - address: 1
-      value: 117
+      value: 50
     - address: 3
-      value: 463
+      value: 503
     - address: 11
-      value: 213
+      value: 201
     - address: 47
       value: 5
     - address: 252
       value: 30
     - address: 46
-      value: 205
+      value: 206
     - address: 192
       value: 0
     - address: 103
@@ -683,6 +729,8 @@ testdata:
       value: 0
     - address: 106
       value: 0
+    - address: 53
+      value: 224
   coils:
     - address: 3
       value: 0
@@ -691,7 +739,7 @@ testdata:
 model: SI 6
 manufacturer: Dimplex
 name: Dimplex PCO5
-nextEntityId: 15
+nextEntityId: 16
 pullUrl: https://github.com/volkmarnissen/modbus2mqtt.config/pull/197
 stateTopic: modbus2mqtt/0s3/state
 statePayload: |-
