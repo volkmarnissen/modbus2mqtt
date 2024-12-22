@@ -20,7 +20,7 @@ entities:
     registerType: 3
     readonly: false
     commandTopic: modbus2mqtt/set/0s3/e1
-    entityCategory: config
+    entityCategory: diagnostic
   - id: 0
     modbusAddress: 1
     converter:
@@ -51,6 +51,7 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
+      decimals: 1
       numberFormat: 2
       identification:
         min: 0
@@ -72,6 +73,7 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
+      decimals: 1
       numberFormat: 2
       identification:
         min: 15
@@ -138,6 +140,7 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
+      decimals: 1
       numberFormat: 2
       step: 0.1
       identification:
@@ -225,7 +228,7 @@ entities:
         - 3
         - 4
         - 1
-    modbusAddress: 222
+    modbusAddress: 142
     id: 9
     converterParameters:
       optionModbusValues:
@@ -704,25 +707,25 @@ version: "0.3"
 testdata:
   holdingRegisters:
     - address: 174
-      value: 50
-    - address: 1
       value: 53
+    - address: 1
+      value: 87
     - address: 3
-      value: 485
+      value: 493
     - address: 11
-      value: 199
+      value: 211
     - address: 47
       value: 5
     - address: 252
       value: 30
     - address: 46
-      value: 206
+      value: 221
     - address: 192
       value: 0
     - address: 103
       value: 1
-    - address: 222
-      value: 3
+    - address: 142
+      value: 1
     - address: 104
       value: 0
     - address: 105
@@ -730,7 +733,7 @@ testdata:
     - address: 106
       value: 0
     - address: 53
-      value: 276
+      value: 226
   coils:
     - address: 3
       value: 0
