@@ -398,6 +398,7 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
+      decimals: 1
       numberFormat: 0
       identification:
         min: 0
@@ -407,6 +408,25 @@ entities:
     valid: true
     mqttname: returhtemperature
     entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 53
+    id: 16
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      device_class: temperature
+      state_class: 1
+      uom: K
+    valid: true
+    mqttname: returhtemperaturetarget
 i18n:
   - lang: en
     texts:
@@ -650,6 +670,8 @@ i18n:
         text: Hysteresis Hot Water
       - textId: e15
         text: Return Temperature
+      - textId: e16
+        text: Return Temperature Target
   - lang: de
     texts:
       - textId: e7o.7
@@ -702,6 +724,8 @@ i18n:
         text: Betriebsart
       - textId: e15
         text: Rücklauftemperatur
+      - textId: e16
+        text: Rücklauftemperatur Soll
 filename: dimplexpco5
 version: "0.3"
 testdata:
@@ -709,9 +733,9 @@ testdata:
     - address: 174
       value: 53
     - address: 1
-      value: 87
+      value: 84
     - address: 3
-      value: 493
+      value: 495
     - address: 11
       value: 211
     - address: 47
@@ -733,7 +757,9 @@ testdata:
     - address: 106
       value: 0
     - address: 53
-      value: 226
+      value: 248
+    - address: 53
+      value: 248
   coils:
     - address: 3
       value: 0
@@ -742,7 +768,7 @@ testdata:
 model: SI 6
 manufacturer: Dimplex
 name: Dimplex PCO5
-nextEntityId: 16
+nextEntityId: 17
 pullUrl: https://github.com/volkmarnissen/modbus2mqtt.config/pull/197
 stateTopic: modbus2mqtt/0s3/state
 statePayload: |-
