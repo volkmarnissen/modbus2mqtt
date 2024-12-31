@@ -221,7 +221,7 @@ entities:
     mqttname: status
     commandTopicModbus: undefined/modbusValues
   - registerType: 3
-    readonly: true
+    readonly: false
     converter:
       name: select
       registerTypes:
@@ -731,25 +731,25 @@ version: "0.3"
 testdata:
   holdingRegisters:
     - address: 174
-      value: 53
+      value: 54
     - address: 1
-      value: 84
+      value: 29
     - address: 3
-      value: 495
+      value: 506
     - address: 11
-      value: 211
+      value: 203
     - address: 47
       value: 5
     - address: 252
-      value: 30
+      value: 60
     - address: 46
-      value: 221
+      value: 205
     - address: 192
       value: 0
     - address: 103
       value: 1
     - address: 142
-      value: 1
+      value: 0
     - address: 104
       value: 0
     - address: 105
@@ -757,9 +757,9 @@ testdata:
     - address: 106
       value: 0
     - address: 53
-      value: 248
+      value: 100
     - address: 53
-      value: 248
+      value: 100
   coils:
     - address: 3
       value: 0
