@@ -1,0 +1,399 @@
+entities:
+  - registerType: 3
+    readonly: true
+    converter:
+      name: select
+    modbusAddress: 0
+    id: 2
+    converterParameters:
+      optionModbusValues:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+    valid: true
+    mqttname: status
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 6
+    id: 3
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 1000
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: dc1voltage
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 7
+    id: 4
+    converterParameters:
+      multiplier: 0.01
+      offset: 0
+      decimals: 2
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: dc1current
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 10
+    id: 7
+    converterParameters:
+      multiplier: 10
+      offset: 0
+      decimals: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 20000
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: dc1power
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 12
+    id: 9
+    converterParameters:
+      multiplier: 10
+      offset: 0
+      decimals: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 20000
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: acpower
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 13
+    id: 10
+    converterParameters:
+      multiplier: 10
+      offset: 0
+      decimals: 1
+      numberFormat: 2
+      identification:
+        min: -10000
+        max: 10000
+      device_class: reactive_power
+      uom: var
+    valid: true
+    mqttname: acreactivepower
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 14
+    id: 11
+    converterParameters:
+      multiplier: 0.01
+      offset: 0
+      decimals: 2
+      numberFormat: 0
+      identification:
+        min: 40
+        max: 100
+      device_class: frequency
+      uom: Hz
+    valid: true
+    mqttname: acfrequency
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 15
+    id: 12
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 260
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: ac1voltage
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 16
+    id: 13
+    converterParameters:
+      multiplier: 0.01
+      offset: 0
+      decimals: 2
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: ac1current
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 21
+    id: 18
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 0
+      numberFormat: 3
+      device_class: energy
+      state_class: 3
+      uom: kWh
+    valid: true
+    mqttname: producedkwhtotal
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 23
+    id: 19
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 0
+      numberFormat: 3
+      device_class: duration
+      state_class: 3
+      uom: h
+    valid: true
+    mqttname: energygenerationhourstotal
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 25
+    id: 20
+    converterParameters:
+      multiplier: 0.01
+      offset: 0
+      decimals: 2
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 100
+      device_class: energy
+      state_class: 3
+      uom: kWh
+    valid: true
+    mqttname: producedkwhtoday
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 26
+    id: 21
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 0
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 1440
+      device_class: duration
+      state_class: 3
+      uom: min
+    valid: true
+    mqttname: energygenerationminutestoday
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 27
+    id: 22
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      identification:
+        min: -30
+        max: 100
+      device_class: temperature
+      uom: °C
+    valid: true
+    mqttname: moduletemperature
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 28
+    id: 23
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      identification:
+        min: -30
+        max: 100
+      device_class: temperature
+      uom: °C
+    valid: true
+    mqttname: invertertemperature
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 29
+    id: 24
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 1000
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: busvoltage
+    entityCategory: diagnostic
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 32
+    id: 25
+    converterParameters: {}
+    valid: true
+    mqttname: count-downtime
+    entityCategory: diagnostic
+i18n:
+  - lang: en
+    texts:
+      - textId: e2
+        text: Status
+      - textId: e3
+        text: DC1 Voltage
+      - textId: e4
+        text: DC1 Current
+      - textId: name
+        text: SofarSolar TL-G3
+      - textId: e7
+        text: DC1 Power
+      - textId: e9
+        text: AC Power
+      - textId: e10
+        text: AC Reactive power
+      - textId: e11
+        text: AC Frequency
+      - textId: e12
+        text: AC1 Voltage
+      - textId: e13
+        text: AC1 Current
+      - textId: e18
+        text: Produced kWh total
+      - textId: e19
+        text: Energy generation hours total
+      - textId: e20
+        text: Produced kWh today
+      - textId: e21
+        text: Energy generation minutes today
+      - textId: e22
+        text: Module temperature
+      - textId: e23
+        text: Inverter temperature
+      - textId: e24
+        text: Bus voltage
+      - textId: e2o.0
+        text: Wait
+      - textId: e2o.1
+        text: Check
+      - textId: e2o.2
+        text: Normal
+      - textId: e2o.3
+        text: Fault
+      - textId: e2o.4
+        text: Permanent
+      - textId: e25
+        text: Count-down time
+filename: sofarsolar-tl-g3
+nextEntityId: 29
+model: TL-G3
+manufacturer: SofarSolar
+version: "0.3"
+testdata:
+  holdingRegisters:
+    - address: 0
+      value: 2
+    - address: 6
+      value: 1255
+    - address: 7
+      value: 48
+    - address: 10
+      value: 6
+    - address: 12
+      value: 5
+    - address: 13
+      value: 0
+    - address: 14
+      value: 4999
+    - address: 15
+      value: 2383
+    - address: 16
+      value: 33
+    - address: 21
+      value: 0
+    - address: 22
+      value: 2359
+    - address: 23
+      value: 0
+    - address: 24
+      value: 5498
+    - address: 25
+      value: 1
+    - address: 26
+      value: 25
+    - address: 27
+      value: 22
+    - address: 28
+      value: 38
+    - address: 29
+      value: 3770
+    - address: 32
+      value: 60

@@ -1,0 +1,9 @@
+version: "0.1"
+files:
+  - url: specifications/files/sofarsolar-ktl-x/SOFARSOLAR ModBus-RTU Communication
+      Protocol.pdf
+    fileLocation: 0
+    usage: doc
+  - url: specifications/files/sofarsolar-tl-g3/Inwerter-SOFAR-1600-TL-G3.jpg
+    fileLocation: 0
+    usage: img
