@@ -1,8 +1,8 @@
 version: "0.1"
 files:
-  - url: specifications/files/_new/SDM120-MODBUS_Protocol.pdf
+  - url: specifications/files/sdm120-m/SDM120-MODBUS_Protocol.pdf
     fileLocation: 0
     usage: doc
-  - url: specifications/files/_new/sdm120modbus_001_600x600.jpg
+  - url: specifications/files/sdm120-m/sdm120modbus_001_600x600.jpg
     fileLocation: 0
     usage: img
