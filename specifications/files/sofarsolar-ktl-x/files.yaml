@@ -1,0 +1,9 @@
+version: "0.1"
+files:
+  - url: specifications/files/sofarsolar-ktl-x/SOFARSOLAR ModBus-RTU Communication
+      Protocol.pdf
+    fileLocation: 0
+    usage: doc
+  - url: specifications/files/sofarsolar-ktl-x/inwerter-sofar-solar-ktl-x.jpg
+    fileLocation: 0
+    usage: img
