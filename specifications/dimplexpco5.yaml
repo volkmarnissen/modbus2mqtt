@@ -24,6 +24,7 @@ entities:
     converterParameters:
       multiplier: 0.1
       offset: 0
+      decimals: 1
       numberFormat: 2
       identification:
         min: -20
@@ -66,6 +67,7 @@ entities:
         min: 15
         max: 30
       device_class: temperature
+      state_class: 1
       uom: °C
     mqttname: roomtemperature
     valid: true
@@ -145,6 +147,7 @@ entities:
         - 3
         - 1
         - 0
+        - 60
     valid: true
     mqttname: selecttimetable
     registerType: 3
@@ -321,7 +324,7 @@ entities:
     readonly: true
     converter:
       name: number
-    modbusAddress: 53
+    modbusAddress: 2
     id: 15
     converterParameters:
       multiplier: 0.1
@@ -352,6 +355,24 @@ entities:
       uom: K
     valid: true
     mqttname: returhtemperaturetarget
+  - registerType: 3
+    readonly: true
+    converter:
+      name: number
+    modbusAddress: 5
+    id: 17
+    converterParameters:
+      multiplier: 0.1
+      offset: 0
+      decimals: 1
+      numberFormat: 0
+      identification:
+        min: 20
+        max: 70
+      device_class: temperature
+      uom: °C
+    valid: true
+    mqttname: flowtemperature
 i18n:
   - lang: en
     texts:
@@ -597,6 +618,10 @@ i18n:
         text: Return Temperature
       - textId: e16
         text: Return Temperature Target
+      - textId: e7o.60
+        text: unknown
+      - textId: e17
+        text: Flow Temperature
   - lang: de
     texts:
       - textId: e7o.7
@@ -658,21 +683,21 @@ testdata:
     - address: 174
       value: 54
     - address: 1
-      value: 50
+      value: 87
     - address: 3
-      value: 499
+      value: 495
     - address: 11
-      value: 228
+      value: 222
     - address: 47
-      value: 5
+      value: 40
     - address: 252
       value: 60
     - address: 46
-      value: 228
+      value: 236
     - address: 192
       value: 0
     - address: 103
-      value: 2
+      value: 1
     - address: 142
       value: 1
     - address: 104
@@ -681,10 +706,12 @@ testdata:
       value: 0
     - address: 106
       value: 0
+    - address: 2
+      value: 250
     - address: 53
-      value: 310
-    - address: 53
-      value: 310
+      value: 255
+    - address: 5
+      value: 262
   coils:
     - address: 3
       value: 0
@@ -693,5 +720,5 @@ testdata:
 model: SI 6
 manufacturer: Dimplex
 name: Dimplex PCO5
-nextEntityId: 17
+nextEntityId: 18
 pullUrl: https://github.com/volkmarnissen/modbus2mqtt.config/pull/197
