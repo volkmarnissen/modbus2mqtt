@@ -338,7 +338,6 @@ entities:
     valid: true
     mqttname: currentdemand
     entityCategory: diagnostic
-    modbusError: Timed out
   - registerType: 4
     readonly: true
     converter:
@@ -664,88 +663,86 @@ testdata:
       value: 516
   analogInputs:
     - address: 0
-      value: 17264
+      value: 17262
     - address: 1
-      value: 0
+      value: 45875
     - address: 6
-      value: 15874
+      value: 15859
     - address: 7
-      value: 3146
+      value: 46662
     - address: 12
       value: 0
     - address: 13
       value: 0
     - address: 342
-      value: 17347
+      value: 17353
     - address: 343
-      value: 52068
+      value: 51937
     - address: 18
-      value: 16799
+      value: 16798
     - address: 19
-      value: 19026
+      value: 6105
     - address: 24
-      value: 49568
+      value: 49574
     - address: 25
-      value: 0
+      value: 26214
     - address: 30
-      value: 15805
+      value: 15621
     - address: 31
-      value: 7709
+      value: 11737
     - address: 70
-      value: 16967
+      value: 16968
     - address: 71
-      value: 52429
+      value: 0
     - address: 72
-      value: 17347
+      value: 17353
     - address: 73
-      value: 49906
+      value: 49742
     - address: 74
-      value: 15751
+      value: 15753
     - address: 75
-      value: 11010
+      value: 14156
     - address: 76
-      value: 16917
+      value: 16923
     - address: 77
-      value: 34603
+      value: 54264
     - address: 78
-      value: 17197
+      value: 17201
     - address: 79
-      value: 29753
+      value: 61538
     - address: 84
-      value: 16291
+      value: 16284
     - address: 85
-      value: 34543
+      value: 42410
     - address: 86
       value: 17669
     - address: 87
       value: 42232
     - address: 88
-      value: 16273
+      value: 16270
     - address: 89
-      value: 2736
+      value: 16895
     - address: 90
       value: 17669
     - address: 91
       value: 42232
     - address: 92
-      value: 15891
+      value: 15846
     - address: 93
-      value: 57845
+      value: 15031
     - address: 94
       value: 16095
     - address: 95
       value: 38506
     - address: 258
-      value: 15872
-      error: Timed out
+      value: 15862
     - address: 259
-      value: 45950
-      error: Timed out
+      value: 51829
     - address: 264
       value: 16657
     - address: 265
       value: 16177
     - address: 344
-      value: 17234
+      value: 17240
     - address: 345
-      value: 54788
+      value: 58720
