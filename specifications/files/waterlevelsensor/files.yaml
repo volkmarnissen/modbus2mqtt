@@ -1,0 +1,8 @@
+version: "0.1"
+files:
+  - url: specifications/files/_new/waterleveltransmitter.pdf
+    fileLocation: 0
+    usage: doc
+  - url: specifications/files/_new/waterlevel.jpg
+    fileLocation: 0
+    usage: img

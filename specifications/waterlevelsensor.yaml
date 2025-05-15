@@ -1,0 +1,35 @@
+entities:
+  - registerType: 3
+    readonly: true
+    converter: number
+    modbusAddress: 4
+    id: 2
+    converterParameters:
+      multiplier: 0.095
+      offset: 10
+      decimals: -1
+      numberFormat: 0
+      identification:
+        min: 0
+        max: 100
+      device_class: None
+      state_class: 1
+      uom: "%"
+    valid: true
+    mqttname: waterlevel
+i18n:
+  - lang: en
+    texts:
+      - textId: name
+        text: Water Level Sensor
+      - textId: e2
+        text: Water Level
+filename: waterlevelsensor
+model: QDY30A
+manufacturer: unknown
+nextEntityId: 3
+version: "0.4"
+testdata:
+  holdingRegisters:
+    - address: 4
+      value: 919
