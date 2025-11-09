@@ -37,8 +37,8 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
         with:
-          path: 'local'
-      - run: node node_modules/@modbus2mqtt/specification/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
+          path: 'modbus2mqtt'
+      - run: node node_modules/@modbus2mqtt/validator/dist/validate.js --pr_number  ${{ env.PR_NUMBER }} --pr_owner ${{github.repository_owner}}
         id: validate_specs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
