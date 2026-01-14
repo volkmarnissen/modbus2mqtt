@@ -177,3 +177,36 @@ test('poll with processing= true for first Slave', (done) => {
     done()
   })
 })
+
+test('poll counter resets at threshold and allows re-polling', (done) => {
+  let fd = getFakeDiscovery()
+  copySubscribedSlaves(fd.msub['subscribedSlaves'], fakeDiscovery.msub['subscribedSlaves'])
+  
+  // Initial poll at count 0
+  fd.mdl['poll']!(Bus.getBus(0)!).then(() => {
+    // After first poll, count should be > 0 and processing should be false (after completion)
+    let pollInfo1 = fd.mdl!['slavePollInfo'].get(1)
+    expect(pollInfo1).toBeDefined()
+    expect(pollInfo1!.count).toBeGreaterThan(0)
+    
+    // Simulate reaching the threshold (default is 50)
+    fd.mdl!['slavePollInfo'].set(1, { count: 50, processing: false })
+    
+    fd.fake.isAsExpected = false
+    fd.fake.fakeMode = FakeModes.Poll
+    
+    // Poll again - should trigger because count >= threshold resets to 0
+    fd.mdl['poll']!(Bus.getBus(0)!).then(() => {
+      // Should have triggered a poll (isAsExpected set to true in FakeMqtt.publish)
+      expect(fd.fake.isAsExpected).toBeTruthy()
+      
+      // Count should have reset and incremented again
+      let pollInfo2 = fd.mdl!['slavePollInfo'].get(1)
+      expect(pollInfo2).toBeDefined()
+      expect(pollInfo2!.count).toBeGreaterThan(0)
+      expect(pollInfo2!.count).toBeLessThan(50)
+      
+      done()
+    })
+  })
+})
