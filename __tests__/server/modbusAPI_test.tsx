@@ -63,7 +63,7 @@ function testRead(
                 expect(value!.data![1]).toBe(value2)
                 fc.bind(modbusAPI)(XYslaveid, address2, 2)
                   .then((_value) => {
-                    // Unerwarteter Erfolg: erst sauber schließen, dann Test fehlschlagen
+                    // Unexpected success: close cleanly first, then fail the test
                     modbusAPI['closeRTU']('test', () => {
                       tcpServer.stopServer(resolve)
                     })
@@ -85,7 +85,7 @@ function testRead(
           })
         })
         .catch((e) => {
-          // Start fehlgeschlagen (z.B. EADDRINUSE) – Test markieren und beenden
+          // Start failed (e.g., EADDRINUSE) – mark test and finish
           debug(e.message)
           expect(true).toBeFalsy()
           resolve()
@@ -116,7 +116,7 @@ function testWrite(
                   buffer: [0],
                 })
                   .then(() => {
-                    // Unerwarteter Erfolg: erst sauber schließen, dann Test fehlschlagen
+                    // Unexpected success: close cleanly first, then fail the test
                     expect(true).toBeFalsy()
                     modbusAPI['closeRTU']('test', () => {
                       tcpServer.stopServer(resolve)
@@ -137,7 +137,7 @@ function testWrite(
           })
         })
         .catch((e) => {
-          // Start fehlgeschlagen (z.B. EADDRINUSE) – Test markieren und beenden
+          // Start failed (e.g., EADDRINUSE) – mark test and finish
           debug(e.message)
           expect(true).toBeFalsy()
           resolve()

@@ -20,17 +20,17 @@ ConfigSpecification['configDir'] = configDir
 ConfigSpecification['dataDir'] = dataDir
 ConfigSpecification.setMqttdiscoverylanguage('en')
 
-// Test Helper für Datei-Backups
+// Test helper for file backups
 let testHelper: SpecificationTestHelper
 
 beforeEach(() => {
   testHelper = new SpecificationTestHelper()
-  // Backup der wichtigsten Dateien vor jedem Test
+  // Backup essential files before each test
   testHelper.backupAll(configDir)
 })
 
 afterEach(() => {
-  // Wiederherstellen aller Dateien nach jedem Test
+  // Restore all files after each test
   testHelper.restoreAll()
 })
 

@@ -6,9 +6,13 @@ const config: Config = {
   testEnvironment: 'node',
   roots: ['__tests__/server', '__tests__/specification'],
   transform: {
-    '^.+\\.tsx+$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  testRegex: '(.*|(\\.|/)(test|spec))(\\.tsx)+$',
+  testMatch: [
+    '**/*.test.ts?(x)',
+    '**/*.spec.ts?(x)',
+    '**/*_test.ts?(x)'
+  ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleDirectories: ['src', 'node_modules'],
   maxWorkers: 1,

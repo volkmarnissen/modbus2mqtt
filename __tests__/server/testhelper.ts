@@ -190,7 +190,7 @@ export class MigrationTestHelper {
     // Helper cleanup
     this.helper.cleanup()
 
-    // Temporäre Verzeichnisse löschen
+    // Remove temporary directories
     for (const dirPath of this.tempDirs) {
       if (fs.existsSync(dirPath)) {
         fs.rmSync(dirPath, { recursive: true, force: true })

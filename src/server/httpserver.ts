@@ -1,4 +1,4 @@
-// Alias für typisierte Express-Requests mit Route-Parametern
+// Alias for typed Express requests with route parameters
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TypedParamsRequest<P = object> = ExpressRequest<P, any, any, any>
 import Debug from 'debug'
@@ -22,7 +22,7 @@ import path, { join } from 'path'
 import multer from 'multer'
 import { ParsedQs } from 'qs'
 
-// Alias für typisierte Express-Requests mit Query-Parametern
+// Alias for typed Express requests with query parameters
 type TypedQueryRequest<Q = ParsedQs> = ExpressRequest<object, object, object, Q>
 
 import { fileStorage, zipStorage } from './httpFileUpload'

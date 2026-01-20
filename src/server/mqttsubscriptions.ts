@@ -247,7 +247,7 @@ export class MqttSubscriptions {
 
   // Expose command handling for tests invoking this method dynamically
   public onMqttCommandMessage(topic: string, payload: Buffer): string {
-    let s = this.subscribedSlaves.find((s) => topic.startsWith(s.getBaseTopic()!))
+    const s = this.subscribedSlaves.find((s) => topic.startsWith(s.getBaseTopic()!))
     // Handle reversed format: m2m/set/<base>/<entity>/modbusValues
     if (!s && topic.includes('/set/')) {
       const parts = topic.split('/')

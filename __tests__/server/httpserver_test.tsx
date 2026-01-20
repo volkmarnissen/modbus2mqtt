@@ -638,7 +638,7 @@ describe('http POST', () => {
   })
 })
 
-// Global cleanup für secrets.yaml
+// Global cleanup for secrets.yaml
 afterAll(() => {
   httpTestHelper.restore()
 })

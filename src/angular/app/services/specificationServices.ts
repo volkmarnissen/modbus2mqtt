@@ -22,7 +22,7 @@ export class SpecificationServices {
   getValidationMessage(spec: IbaseSpecification, message: Imessage): string {
     switch (message.type) {
       case MessageTypes.noDocumentation:
-        return $localize`No documenation file or URL`
+        return $localize`No documentation file or URL`
       case MessageTypes.nameTextMissing:
         return $localize`The specification has no Name`
       case MessageTypes.entityTextMissing: {
@@ -40,7 +40,7 @@ export class SpecificationServices {
       case MessageTypes.noEntity:
         return $localize`No entity defined for this specification`
       case MessageTypes.noDocumentation:
-        return $localize`No dcoumenation file or URL`
+        return $localize`No documentation file or URL`
       case MessageTypes.noImage:
         return $localize`No image file or URL`
       case MessageTypes.nonUniqueName:

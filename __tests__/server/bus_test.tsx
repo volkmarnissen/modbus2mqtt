@@ -12,12 +12,12 @@ const debug = Debug('bustest')
 const testPort = 8888
 setConfigsDirsForTest()
 
-// Test Helper für Bus-Dateien
+// Test helper for bus files
 let busTestHelper: FileBackupHelper
 
 beforeEach(() => {
   busTestHelper = new FileBackupHelper()
-  // Backup aller relevanten Bus-Dateien
+  // Backup all relevant bus files
   const configDir = Config.configDir
   if (configDir) {
     busTestHelper.backup(`${configDir}/modbus2mqtt/busses/bus.0/s2.yaml`)
@@ -26,7 +26,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  // Wiederherstellen aller Dateien nach jedem Test
+  // Restore all files after each test
   if (busTestHelper) {
     busTestHelper.restoreAll()
   }

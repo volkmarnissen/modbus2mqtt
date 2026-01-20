@@ -10,7 +10,7 @@ export default [
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ['dist/**'],
+    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs'],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       jest,
