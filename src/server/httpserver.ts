@@ -770,9 +770,9 @@ export class HttpServer extends HttpServerBase {
             // req.body.documents
             const config = new ConfigSpecification()
             const f: string[] = []
-              ; (req.files as Express.Multer.File[])!.forEach((f0) => {
-                f.push(f0.originalname)
-              })
+            ;(req.files as Express.Multer.File[])!.forEach((f0) => {
+              f.push(f0.originalname)
+            })
             if (req.query['usage'] === undefined) {
               this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
             }
@@ -801,7 +801,7 @@ export class HttpServer extends HttpServerBase {
         if (req.files) {
           // req.body.documents
 
-          ; (req.files as Express.Multer.File[])!.forEach((f) => {
+          ;(req.files as Express.Multer.File[])!.forEach((f) => {
             try {
               const zipfilename = join(f.destination, f.filename)
               const errors = ConfigSpecification.importSpecificationZip(zipfilename)

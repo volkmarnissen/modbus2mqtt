@@ -76,7 +76,7 @@ function queueOneRegister<T>(
 
 export class ModbusTcpRtuBridge {
   serverTCP: ServerTCP | undefined = undefined
-  constructor(private queue: ModbusRTUQueue) { }
+  constructor(private queue: ModbusRTUQueue) {}
 
   static getDefaultPort(): number {
     return Config.getConfiguration().tcpBridgePort!

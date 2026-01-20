@@ -215,7 +215,7 @@ export class ConfigBus {
 
     const s = stringify(o)
     fs.writeFileSync(newFilePath, s, { encoding: 'utf8' })
-    if (oldFilePath !== newFilePath && fs.existsSync(oldFilePath)) fs.unlink(oldFilePath, () => { })
+    if (oldFilePath !== newFilePath && fs.existsSync(oldFilePath)) fs.unlink(oldFilePath, () => {})
     if (slave.specificationid) {
       ConfigBus.addSpecification(slave)
       const o = new Slave(busid, slave, Config.getConfiguration().mqttbasetopic)

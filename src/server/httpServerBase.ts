@@ -157,7 +157,7 @@ export class HttpServerBase {
       func(req, response)
     })
   }
-  validate() { }
+  validate() {}
   authenticate(req: Request, res: http.ServerResponse, next: NextFunction) {
     //  req.header('')
     // All api calls and a user registration when a user is already registered needs authorization
@@ -221,7 +221,7 @@ export class HttpServerBase {
     return
   }
 
-  initApp() { }
+  initApp() {}
   init(): Promise<void> {
     return new Promise<void>((resolve) => {
       try {

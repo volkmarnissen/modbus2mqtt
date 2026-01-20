@@ -84,8 +84,8 @@ export class ModbusAPI implements IModbusAPI, IconsumerModbusAPI {
                 {
                   slaveId: slaveId,
                   address: addr,
-                  onResolve: () => { },
-                  onError: () => { },
+                  onResolve: () => {},
+                  onError: () => {},
                   options: { task: ModbusTasks.initialConnect, errorHandling: {} },
                 },
                 ModbusErrorStates.initialConnect,

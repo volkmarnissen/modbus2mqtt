@@ -10,7 +10,7 @@ export class Slave {
     private busid: number,
     private slave: Islave,
     private mqttBaseTopic: string
-  ) { }
+  ) {}
   getStateTopic(): string {
     return this.getBaseTopic() + '/state/'
   }
