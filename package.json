@@ -31,6 +31,8 @@
     "cypress:open": "npm run cypress -- open",
     "cypress:component": "npm run cypress -- run --component",
     "server": "npm run build && node dist/modbus2mqtt.js -s ../ssl -y ../yaml-dir",
+    "lint": "eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish .",
+    "lint:fix": "eslint --cache --fix --fix-type=layout --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish .",
     "e2e:start": "npm run build.dev && ./cypress/servers/testall.py startServers",
     "e2e:restart": "npm run build.dev && ./cypress/servers/testall.py restartServers",
     "e2e:stop": "./cypress/servers/testall.py killServers",
