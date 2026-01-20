@@ -42,7 +42,7 @@ const values = {
 
 function getCoil(addr: number, unitID: number): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    let v = values.coils.find((v) => v.slaveid == unitID && v.address == addr)
+    const v = values.coils.find((v) => v.slaveid == unitID && v.address == addr)
     if (v) {
       debug('getCoil: slave: ' + unitID + 'address: ' + addr + 'v: ' + v.value)
       resolve(v.value)
@@ -56,7 +56,7 @@ function getCoil(addr: number, unitID: number): Promise<boolean> {
 const vector: IServiceVector = {
   getInputRegister: function (addr: number, unitID: number): Promise<number> {
     return new Promise<number>((resolve, reject) => {
-      let v = values.inputRegisters.find((v) => v.slaveid == unitID && v.address == addr)
+      const v = values.inputRegisters.find((v) => v.slaveid == unitID && v.address == addr)
       if (v) {
         debug('getInputRegister slave:' + addr + 'unit' + unitID + 'v: ' + v.value)
         resolve(v.value)
@@ -68,7 +68,7 @@ const vector: IServiceVector = {
   },
   getHoldingRegister: function (addr: number, unitID: number): Promise<number> {
     return new Promise<number>((resolve, reject) => {
-      let v = values.holdingRegisters.find((v) => v.slaveid == unitID && v.address == addr)
+      const v = values.holdingRegisters.find((v) => v.slaveid == unitID && v.address == addr)
       if (v) {
         debug('getHoldingRegister addr:' + addr + ' slave: ' + unitID + 'v: ' + v.value)
         resolve(v.value)
@@ -79,9 +79,9 @@ const vector: IServiceVector = {
     })
   },
   getMultipleInputRegisters: (addr: number, length: number, unitID: number, cb: FCallbackVal<number[]>): void => {
-    let rc: number[] = []
+    const rc: number[] = []
     for (let idx = 0; idx < length; idx++) {
-      let v = values.inputRegisters.find((v) => v.slaveid == unitID && v.address == addr + idx)
+      const v = values.inputRegisters.find((v) => v.slaveid == unitID && v.address == addr + idx)
       if (v) rc.push(v.value)
       else {
         debug('getMultipleInputRegisters not found addr:' + addr + ' slave: ' + unitID)
@@ -93,9 +93,9 @@ const vector: IServiceVector = {
     cb(null, rc)
   },
   getMultipleHoldingRegisters: (addr: number, length: number, unitID: number, cb: FCallbackVal<number[]>): void => {
-    let rc: number[] = []
+    const rc: number[] = []
     for (let idx = 0; idx < length; idx++) {
-      let v = values.holdingRegisters.find((v) => v.slaveid == unitID && v.address == addr + idx)
+      const v = values.holdingRegisters.find((v) => v.slaveid == unitID && v.address == addr + idx)
       if (v) rc.push(v.value)
       else {
         log.log(LogLevelEnum.info, 'Invalid holding reg s:' + unitID + ' a: ' + addr + idx)
@@ -111,7 +111,7 @@ const vector: IServiceVector = {
 
   setRegister: (addr: number, value: number, unitID: number): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
-      let v = values.holdingRegisters.find((v) => v.slaveid == unitID && v.address == addr)
+      const v = values.holdingRegisters.find((v) => v.slaveid == unitID && v.address == addr)
       if (v) {
         v.value = value
         resolve()
@@ -119,7 +119,7 @@ const vector: IServiceVector = {
     })
   },
   setCoil: (addr: number, value: boolean, unitID: number, cb: FCallbackVal<number>): void => {
-    let v = values.coils.find((v) => v.slaveid == unitID && v.address == addr)
+    const v = values.coils.find((v) => v.slaveid == unitID && v.address == addr)
     if (v) {
       v.value = value
       cb(null, value ? 1 : 0)
@@ -142,7 +142,7 @@ export class ModbusServer {
   }
 
   async startServer(port: number): Promise<ServerTCP> {
-    let rc = new Promise<ServerTCP>((resolve, reject) => {
+    const rc = new Promise<ServerTCP>((resolve, reject) => {
       this.serverTCP = new ServerTCP(vector, {
         host: '0.0.0.0',
         port: port,
@@ -246,25 +246,25 @@ export function startModbusTCPserver(configDir: string, dataDir: string, busId: 
   return new Promise<void>((resolve, reject) => {
     debug('starting')
     if (process.pid) log.log(LogLevelEnum.info, 'PROCESSID=' + process.pid)
-    let gh = new M2mGitHub(null, ConfigSpecification.getPublicDir())
+    const gh = new M2mGitHub(null, ConfigSpecification.getPublicDir())
     gh.init()
       .then(() => {
         let port = 502
         clearRegisterValues()
-        let directoryBus = ConfigSpecification.getLocalDir() + '/busses/bus.' + busId
-        let directoryPublicSpecs = ConfigSpecification.getPublicDir() + '/specifications'
-        let directoryLocalSpecs = ConfigSpecification.getLocalDir() + '/specifications'
+        const directoryBus = ConfigSpecification.getLocalDir() + '/busses/bus.' + busId
+        const directoryPublicSpecs = ConfigSpecification.getPublicDir() + '/specifications'
+        const directoryLocalSpecs = ConfigSpecification.getLocalDir() + '/specifications'
         if (!fs.existsSync(directoryBus)) {
           log.log(LogLevelEnum.error, 'Unable to start TCP server: Bus directory not found ' + directoryBus)
           return
         }
-        let files = fs.readdirSync(directoryBus)
+        const files = fs.readdirSync(directoryBus)
         files.forEach((slaveFileName) => {
           if (slaveFileName == 'bus.yaml') {
-            let content = fs.readFileSync(join(directoryBus, slaveFileName), {
+            const content = fs.readFileSync(join(directoryBus, slaveFileName), {
               encoding: 'utf8',
             })
-            let connection: IModbusConnection = parse(content.toString())
+            const connection: IModbusConnection = parse(content.toString())
             port = (connection as ITCPConnection).port
           }
 
@@ -273,9 +273,9 @@ export function startModbusTCPserver(configDir: string, dataDir: string, busId: 
               let content = fs.readFileSync(join(directoryBus, slaveFileName), {
                 encoding: 'utf8',
               })
-              let slave = parse(content.toString())
-              let slaveid = slave.slaveid
-              let specFilename = slave.specificationid
+              const slave = parse(content.toString())
+              const slaveid = slave.slaveid
+              const specFilename = slave.specificationid
               if (specFilename) {
                 let fn = join(directoryLocalSpecs, specFilename + '.yaml')
                 if (!fs.existsSync(fn)) fn = join(directoryPublicSpecs, specFilename + '.yaml')
@@ -285,20 +285,20 @@ export function startModbusTCPserver(configDir: string, dataDir: string, busId: 
                   let spec: IfileSpecification = parse(content.toString())
                   spec = new Migrator().migrate(spec)
                   if (spec.testdata) {
-                    let testdata = spec.testdata
+                    const testdata = spec.testdata
                     if (spec.testdata.analogInputs)
                       spec.testdata.analogInputs.forEach((avp) => {
-                        let a = avp.address
+                        const a = avp.address
                         if (avp.value != undefined) addRegisterValue(slaveid, a, ModbusRegisterType.AnalogInputs, avp.value)
                       })
                     if (spec.testdata.holdingRegisters)
                       spec.testdata.holdingRegisters.forEach((avp) => {
-                        let a = avp.address
+                        const a = avp.address
                         if (avp.value != undefined) addRegisterValue(slaveid, a, ModbusRegisterType.HoldingRegister, avp.value)
                       })
                     if (spec.testdata.coils)
                       spec.testdata.coils.forEach((avp) => {
-                        let a = avp.address
+                        const a = avp.address
                         if (avp.value != undefined) addRegisterValue(slaveid, a, ModbusRegisterType.Coils, avp.value)
                       })
                   }

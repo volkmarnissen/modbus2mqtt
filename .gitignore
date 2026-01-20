@@ -154,3 +154,6 @@ alpine-package/
 alpine-repo/
 distprod
 cypress/servers/__pycache__/
+
+# Local toggle to skip pre-commit hooks
+.skip-precommit

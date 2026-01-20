@@ -14,7 +14,7 @@ export class ConverterMap extends Map<Converters, Converter> {
   }
 
   static getConverters(): Converters[] {
-    let rc: Converters[] = []
+    const rc: Converters[] = []
     ConverterMap.getConverterMap().forEach((con, name) => {
       rc.push(name)
     })

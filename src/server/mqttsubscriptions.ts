@@ -39,10 +39,10 @@ export class MqttSubscriptions {
   }
   private onMqttCommandMessage(topic: string, payload: Buffer): string {
     try {
-      let busAndSlave = MqttSubscriptions.getBusAndSlaveFromTopic(topic)
+      const busAndSlave = MqttSubscriptions.getBusAndSlaveFromTopic(topic)
       if (undefined == busAndSlave.slave.specificationid) throw new Error('No specification Id for slave available')
       const spec = ConfigSpecification.getSpecificationByFilename(busAndSlave.slave.specificationid)
-      let parts = topic.split('/')
+      const parts = topic.split('/')
       if (spec && parts.length >= 4) {
         const entity = spec.entities.find((ent) => {
           return 'e' + ent.id == parts[3]
@@ -51,7 +51,7 @@ export class MqttSubscriptions {
           const cnv = ConverterMap.getConverter(entity)
           if (cnv) {
             let promise: Promise<void>
-            let modbus = parts.length == 5 && parts[4] == modbusValues
+            const modbus = parts.length == 5 && parts[4] == modbusValues
             if (!Config.getConfiguration().fakeModbus) {
               if (modbus)
                 promise = Modbus.writeEntityModbus(
@@ -88,7 +88,7 @@ export class MqttSubscriptions {
           Number.parseInt(payload),
         ])
       else {
-        let spec = ConfigSpecification.getSpecificationByFilename(slave.getSpecificationId())
+        const spec = ConfigSpecification.getSpecificationByFilename(slave.getSpecificationId())
         if (spec)
           return Modbus.writeEntityMqtt(
             Bus.getBus(slave.getBusId())!.getModbusAPI(),
@@ -105,7 +105,7 @@ export class MqttSubscriptions {
   }
 
   sendEntityCommandWithPublish(slave: Slave, topic: string, payload: string): Promise<ImodbusSpecification> {
-    let entity = slave.getEntityFromCommandTopic(topic)
+    const entity = slave.getEntityFromCommandTopic(topic)
     if (entity && !entity.readonly)
       return new Promise<ImodbusSpecification>((resolve, reject) => {
         this.sendEntityCommand(slave, topic, payload.toString())
@@ -120,7 +120,7 @@ export class MqttSubscriptions {
     })
   }
   sendEntityCommand(slave: Slave, topic: string, payload: string): Promise<void> {
-    let entity = slave.getEntityFromCommandTopic(topic)
+    const entity = slave.getEntityFromCommandTopic(topic)
     if (entity && !entity.readonly) return this.sendCommandModbus(slave, entity, topic.endsWith('/set/modbus/'), payload.toString())
     log.log(LogLevelEnum.error, 'No writable entity found for topic ' + topic)
     return new Promise<void>((_resolve, reject) => {
@@ -129,7 +129,7 @@ export class MqttSubscriptions {
   }
   publishState(slave: Slave): Promise<ImodbusSpecification> {
     return new Promise<ImodbusSpecification>((resolve, reject) => {
-      let obs = MqttSubscriptions.readModbus(slave)
+      const obs = MqttSubscriptions.readModbus(slave)
       if (obs)
         obs.subscribe((spec) => {
           this.publishStateLocal(slave, spec)
@@ -141,9 +141,9 @@ export class MqttSubscriptions {
     })
   }
   static readModbus(slave: Slave): Observable<ImodbusSpecification> | undefined {
-    let bus = Bus.getBus(slave.getBusId())
+    const bus = Bus.getBus(slave.getBusId())
     if (bus) {
-      let s = bus.getSlaveBySlaveId(slave.getSlaveId()!)
+      const s = bus.getSlaveBySlaveId(slave.getSlaveId()!)
       return Modbus.getModbusSpecification(ModbusTasks.poll, bus.getModbusAPI(), s!, slave.getSpecificationId(), (e) => {
         log.log(LogLevelEnum.error, 'reading spec failed' + e.message)
         //Ignore this error continue with next
@@ -156,8 +156,8 @@ export class MqttSubscriptions {
       debug('publish State aquire mqttClient')
       this.connector.getMqttClient((mqttClient) => {
         debug('publish State executing')
-        let topic = slave.getStateTopic()
-        let bus = Bus.getBus(slave.getBusId())
+        const topic = slave.getStateTopic()
+        const bus = Bus.getBus(slave.getBusId())
         if (mqttClient && bus && spec) {
           try {
             debug('PublishState')
@@ -181,13 +181,13 @@ export class MqttSubscriptions {
     })
   }
   private static getBusAndSlaveFromTopic(topic: string): { bus: Bus; slave: Islave } {
-    let parts = topic.split('/')
-    let msg = ''
+    const parts = topic.split('/')
+    const msg = ''
 
     if (parts.length > 2) {
-      let busid = Number.parseInt(parts[2].substring(0, 1))
-      let slaveid = Number.parseInt(parts[2].substring(2))
-      let bus = Bus.getBus(busid)
+      const busid = Number.parseInt(parts[2].substring(0, 1))
+      const slaveid = Number.parseInt(parts[2].substring(2))
+      const bus = Bus.getBus(busid)
       if (!bus) {
         log.log(LogLevelEnum.error, 'getBusAndSlaveFromTopic: invalid busid ' + busid)
         throw new Error('getBusAndSlaveFromTopic' + busid)
@@ -204,7 +204,7 @@ export class MqttSubscriptions {
     throw new Error('Invalid topic. No bus and slave information: ' + topic)
   }
   private getEntityFromSlave(slave: Slave, mqttname: string): Ientity | undefined {
-    let spec = slave.getSpecification()
+    const spec = slave.getSpecification()
     let entity: Ientity | undefined
     if (spec) entity = spec.entities.find((e) => e.mqttname == mqttname)
     return entity
@@ -212,22 +212,22 @@ export class MqttSubscriptions {
 
   sendCommand(slave: Slave, payload: string): Promise<ImodbusSpecification> {
     return new Promise<ImodbusSpecification>((resolve, reject) => {
-      let p = JSON.parse(payload)
-      let promisses: Promise<void>[] = []
+      const p = JSON.parse(payload)
+      const promisses: Promise<void>[] = []
       if (typeof p != 'object') {
         reject(new Error('Send Command failed: payload is an object ' + payload))
         return
       }
       if (p.modbusValues) {
         Object.getOwnPropertyNames(p.modbusValues).forEach((propName) => {
-          let entity: Ientity | undefined = this.getEntityFromSlave(slave, propName)
+          const entity: Ientity | undefined = this.getEntityFromSlave(slave, propName)
           if (entity && !entity.readonly)
             promisses.push(this.sendCommandModbus(slave, entity, true, p.modbusValues[propName].toString()))
         })
       }
       Object.getOwnPropertyNames(p).forEach((propName) => {
-        let value = p[propName].toString()
-        let entity: Ientity | undefined = this.getEntityFromSlave(slave, propName)
+        const value = p[propName].toString()
+        const entity: Ientity | undefined = this.getEntityFromSlave(slave, propName)
         if (entity && !entity.readonly && (p.modbusValues == undefined || p.modbusValues[propName] == undefined))
           promisses.push(this.sendCommandModbus(slave, entity, false, value))
       })
@@ -239,7 +239,7 @@ export class MqttSubscriptions {
     })
   }
   private containsTopic(tp: ItopicAndPayloads, tps: ItopicAndPayloads[]) {
-    let t = tps.findIndex((t) => tp.topic === t.topic)
+    const t = tps.findIndex((t) => tp.topic === t.topic)
     return -1 != t
   }
   getSubscribedSlave(slave: Slave | undefined): Slave | undefined {
@@ -247,7 +247,7 @@ export class MqttSubscriptions {
     return this.subscribedSlaves.find((s) => 0 == Slave.compareSlaves(s, slave))
   }
   addSubscribedSlave(newSlave: Slave): boolean {
-    let s: Slave | undefined = undefined
+    const s: Slave | undefined = undefined
     let idx = -1
     idx = this.subscribedSlaves.findIndex((s) => 0 == Slave.compareSlaves(s, newSlave))
     if (idx < 0) {
@@ -258,7 +258,7 @@ export class MqttSubscriptions {
     return false
   }
   updateSubscribedSlave(slave: Slave, newSlave: Slave): void {
-    let s: Slave | undefined = undefined
+    const s: Slave | undefined = undefined
     let idx = -1
     idx = this.subscribedSlaves.findIndex((s) => 0 == Slave.compareSlaves(s, slave))
     if (idx < 0) {
@@ -269,13 +269,13 @@ export class MqttSubscriptions {
   deleteSubscribedSlave(slave: Slave | undefined, mqttClient?: MqttClient): void {
     if (!slave) return
 
-    let idx = this.subscribedSlaves.findIndex((s) => 0 == Slave.compareSlaves(s, slave))
+    const idx = this.subscribedSlaves.findIndex((s) => 0 == Slave.compareSlaves(s, slave))
     if (idx >= 0) {
       this.subscribedSlaves.splice(idx, 1)
     }
-    let fct = (mqttClient: MqttClient) => {
+    const fct = (mqttClient: MqttClient) => {
       mqttClient.unsubscribe(slave.getTriggerPollTopic())
-      let cmdTopic = slave.getCommandTopic()
+      const cmdTopic = slave.getCommandTopic()
       if (cmdTopic) {
         mqttClient.unsubscribe(cmdTopic)
         mqttClient.unsubscribe(slave.getEntityCommandTopicFilter())
@@ -289,14 +289,14 @@ export class MqttSubscriptions {
   }
 
   getSubscribedSlavesForBus(busid: number): Slave[] {
-    let s: Slave | undefined = undefined
+    const s: Slave | undefined = undefined
     return this.subscribedSlaves.filter((s) => s.getBusId() == busid)
   }
   // returns a promise for testing
   private onMqttMessage(topic: string, payload: Buffer): Promise<void> {
     if (topic) {
       debug('onMqttMessage: ' + topic)
-      let s = this.subscribedSlaves.find((s) => topic.startsWith(s.getBaseTopic()!))
+      const s = this.subscribedSlaves.find((s) => topic.startsWith(s.getBaseTopic()!))
       if (s) {
         if (s.getTriggerPollTopic() == topic) {
           debug('Triggering Poll')
@@ -316,9 +316,9 @@ export class MqttSubscriptions {
 
   resubscribe(mqttClient: MqttClient): void {
     this.subscribedSlaves.forEach((slave) => {
-      let options = { qos: MqttDiscover.generateQos(slave, slave.getSpecification()) }
+      const options = { qos: MqttDiscover.generateQos(slave, slave.getSpecification()) }
       mqttClient.subscribe(slave.getTriggerPollTopic(), options)
-      let cmdTopic = slave.getCommandTopic()
+      const cmdTopic = slave.getCommandTopic()
       if (cmdTopic) {
         mqttClient.subscribe(cmdTopic, options)
         mqttClient.subscribe(slave.getEntityCommandTopicFilter(), options)
@@ -327,13 +327,13 @@ export class MqttSubscriptions {
   }
 
   private getSubscribedSlaveFromDiscoveryTopic(topic: string): { slave?: Slave; entityId?: number } {
-    let pathes = topic.split('/')
+    const pathes = topic.split('/')
 
     if (pathes[2].match(/^[0-9]*s[0-9]*$/g) == null || pathes[3].match(/^e[0-9]*$/g) == null) return {}
-    let busSlave = pathes[2].split('s')
-    let busId = parseInt(busSlave[0])
-    let slaveId = parseInt(busSlave[1])
-    let entityId = parseInt(pathes[3].substring(1))
+    const busSlave = pathes[2].split('s')
+    const busId = parseInt(busSlave[0])
+    const slaveId = parseInt(busSlave[1])
+    const entityId = parseInt(pathes[3].substring(1))
     return {
       slave: this.subscribedSlaves.find((s) => s.getBusId() == busId && s.getSlaveId() == slaveId),
       entityId: entityId,

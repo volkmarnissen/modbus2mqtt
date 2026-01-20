@@ -23,14 +23,14 @@ export class SelectConverter extends Converter {
     super(component)
   }
   private getOptions(spec: Ispecification, entityid: number): IselectOption[] {
-    let entity = spec.entities.find((e) => e.id == entityid)
+    const entity = spec.entities.find((e) => e.id == entityid)
     if (entity && entity.converterParameters) {
       if ('options' in entity.converterParameters && entity.converterParameters.options) {
         return entity.converterParameters.options
       } else if ('optionModbusValues' in entity.converterParameters && entity.converterParameters.optionModbusValues) {
-        let options: IselectOption[] = []
+        const options: IselectOption[] = []
         entity.converterParameters.optionModbusValues.forEach((option) => {
-          let name = getSpecificationI18nEntityOptionName(spec, ConfigSpecification.mqttdiscoverylanguage!, entityid, option)
+          const name = getSpecificationI18nEntityOptionName(spec, ConfigSpecification.mqttdiscoverylanguage!, entityid, option)
           options.push({ key: option, name: name ? name : '' })
         })
         return options
@@ -43,18 +43,18 @@ export class SelectConverter extends Converter {
     return true
   }
   override modbus2mqtt(spec: Ispecification, entityid: number, value: number[]): number | string {
-    let entity = spec.entities.find((e) => e.id == entityid)
+    const entity = spec.entities.find((e) => e.id == entityid)
     var msg = ''
     if (entity) {
-      let opts: IselectOption[] | undefined = (entity.converterParameters as Iselect).options
+      const opts: IselectOption[] | undefined = (entity.converterParameters as Iselect).options
       if (opts && opts.length > 0) {
-        let opt = (entity.converterParameters as Iselect)!.options!.find((opt) => opt.key == value[0])
+        const opt = (entity.converterParameters as Iselect)!.options!.find((opt) => opt.key == value[0])
         return opt && opt.name ? opt.name : ''
       } else {
-        var rc = getSpecificationI18nEntityOptionName(spec, ConfigSpecification.mqttdiscoverylanguage!, entityid, value[0])
+        const rc = getSpecificationI18nEntityOptionName(spec, ConfigSpecification.mqttdiscoverylanguage!, entityid, value[0])
         if (rc) return rc
       }
-      let options = this.getOptions(spec, entityid)
+      const options = this.getOptions(spec, entityid)
       var msg =
         'option not found spec: ' +
         spec.filename +
@@ -68,19 +68,19 @@ export class SelectConverter extends Converter {
     return msg
   }
   override mqtt2modbus(spec: Ispecification, entityid: number, name: string): number[] {
-    let entity = spec.entities.find((e) => e.id == entityid)
+    const entity = spec.entities.find((e) => e.id == entityid)
     if (!entity) throw new Error('entity not found in entities')
 
     if (this.component === 'binary') return []
-    let val = getSpecificationI18nEntityOptionId(spec, ConfigSpecification.mqttdiscoverylanguage!, entityid, name)
+    const val = getSpecificationI18nEntityOptionId(spec, ConfigSpecification.mqttdiscoverylanguage!, entityid, name)
     if (val) {
-      let buf = Buffer.alloc(2)
+      const buf = Buffer.alloc(2)
       buf.writeInt16BE(val[0])
       return val
     }
 
-    let options = this.getOptions(spec, entityid)
-    var msg = 'unknown option  entity id: ' + entity.id + '(assuming: name = 0)' + name + 'options: ' + options
+    const options = this.getOptions(spec, entityid)
+    const msg = 'unknown option  entity id: ' + entity.id + '(assuming: name = 0)' + name + 'options: ' + options
     log.log(LogLevelEnum.error, msg)
     return []
   }

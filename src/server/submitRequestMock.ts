@@ -4,7 +4,7 @@ import { IModbusResultOrError, ImodbusValues, emptyModbusValues } from '../speci
 import { ImodbusAddress } from '../server.shared'
 
 export function getReadRegisterResult(n: number): IModbusResultOrError {
-  let one: IModbusResultOrError = {
+  const one: IModbusResultOrError = {
     data: [n],
   }
   return one
@@ -12,14 +12,14 @@ export function getReadRegisterResult(n: number): IModbusResultOrError {
 
 export function submitGetHoldingRegisterRequest(slaveid: number, addresses: Set<ImodbusAddress>): Promise<ImodbusValues> {
   return new Promise<ImodbusValues>((resolve, reject) => {
-    let rc = emptyModbusValues()
+    const rc = emptyModbusValues()
     if (slaveid > 10) {
       reject(new Error('terminate more slaveid '))
       return
     }
 
     addresses.forEach((addr) => {
-      let a = addr.address
+      const a = addr.address
       let m = rc.holdingRegisters
       switch (addr.registerType) {
         case ModbusRegisterType.AnalogInputs:

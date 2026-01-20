@@ -42,7 +42,7 @@ export class M2mGitHub {
             type: 'all',
           })
           .then((repos) => {
-            let found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
+            const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
             if (found == null && !M2mGitHub.forking) this.createOwnModbus2MqttRepo().then(resolve).catch(reject)
             else {
               if (found != null) M2mGitHub.forking = false
@@ -124,7 +124,7 @@ export class M2mGitHub {
             type: 'all',
           })
           .then((repos) => {
-            let found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
+            const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
             if (found) {
               debug('checkRepo: sync fork')
               M2mGitHub.forking = false
@@ -135,7 +135,7 @@ export class M2mGitHub {
                   resolve(true)
                 })
                 .catch((e) => {
-                  let e1 = new Error(e.message)
+                  const e1 = new Error(e.message)
                   ;(e1 as any).step = e.step
                   e1.stack = e.stack
                   if (e.code == 422)
@@ -163,7 +163,7 @@ export class M2mGitHub {
           let count = 0
 
           // Once per second for 30 seconds, then once per minute
-          let interval = setInterval(() => {
+          const interval = setInterval(() => {
             debug('inInterval')
             if (!this.isRunning && (count > 30 ? Math.floor(count % 60) == 0 : true)) {
               this.isRunning = true
@@ -212,7 +212,7 @@ export class M2mGitHub {
   fetchPublicFiles(): void {
     debug('Fetch public files')
     if (existsSync(join(this.publicRoot, '.git'))) {
-      let msg = execSync('git pull', { cwd: this.publicRoot }).toString()
+      const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
       // log more than two lines only. Two lines usually means up-to-date 1th line + \n
       if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
     } // creating a repo is worth a notice
@@ -301,8 +301,8 @@ export class M2mGitHub {
   private uploadFileAndCreateTreeParameter(root: string, filename: string): Promise<ITreeParam> {
     return new Promise<ITreeParam>((resolve, reject) => {
       debug('uploadFileAndCreateTreeParameter')
-      let encoding: BufferEncoding = filename.endsWith('.yaml') ? 'utf8' : 'base64'
-      let params = {
+      const encoding: BufferEncoding = filename.endsWith('.yaml') ? 'utf8' : 'base64'
+      const params = {
         owner: this.ownOwner!,
         repo: githubPublicNames.modbus2mqttRepo,
         encoding: encoding == 'utf8' ? 'utf-8' : encoding,
@@ -380,10 +380,10 @@ export class M2mGitHub {
     })
   }
   private checkFiles(root: string, files: string[]): Promise<ITreeParam>[] {
-    let all: Promise<ITreeParam>[] = []
+    const all: Promise<ITreeParam>[] = []
     files.forEach((file) => {
       debug('root: ' + root + ' file: ' + file)
-      let fullPath = join(root, file)
+      const fullPath = join(root, file)
       if (!fs.existsSync(fullPath)) {
         if (fullPath.indexOf('/files/') != -1 && !fullPath.endsWith('files.yaml')) {
           // Can be ignored if the files are missing, they have been published already
@@ -417,7 +417,7 @@ export class M2mGitHub {
                 debug('start committing')
                 let all: Promise<ITreeParam>[]
                 try {
-                  let all = this.checkFiles(root, files)
+                  const all = this.checkFiles(root, files)
 
                   Promise.all(all!)
                     .then((trees) => {
@@ -428,7 +428,7 @@ export class M2mGitHub {
                         ref: 'heads/' + githubPublicNames.modbus2mqttBranch,
                       })
                         .then((ref) => {
-                          let sha = ref.data.object.sha
+                          const sha = ref.data.object.sha
                           // create a new branch
                           this.octokit!.git.createRef({
                             owner: this.ownOwner!,

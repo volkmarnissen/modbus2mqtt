@@ -50,14 +50,14 @@ export class Modbus2Mqtt {
       })
   }
   init() {
-    let cli = new Command()
+    const cli = new Command()
     cli.usage('[--ssl <ssl-dir>][--yaml <yaml-dir>][ --port <TCP port>] --term <exit code for SIGTERM>')
     cli.option('-s, --ssl <ssl-dir>', 'set directory for certificates')
     cli.option('-c, --config <config-dir>', 'set directory for add on configuration')
     cli.option('-d, --data <data-dir>', 'set directory for persistent data (public specifications)')
     cli.option('--term <exit code for SIGTERM>', 'sets exit code in case of SIGTERM')
     cli.parse(process.argv)
-    let options = cli.opts()
+    const options = cli.opts()
     if (options['data']) {
       Config.dataDir = options['data']
       ConfigSpecification.dataDir = options['data']
@@ -104,20 +104,20 @@ export class Modbus2Mqtt {
         debug(Config.getConfiguration().mqttconnect.mqttserverurl)
         log.log(LogLevelEnum.info, 'Modbus2mqtt version: ' + Config.getConfiguration().appVersion)
         // hard coded workaround
-        let angulardir = join(require.resolve('./mqttdiscover'), '../../angular/browser')
+        const angulardir = join(require.resolve('./mqttdiscover'), '../../angular/browser')
         // Did not work in github workflow for testing
 
         if (!angulardir || !fs.existsSync(angulardir)) {
           log.log(LogLevelEnum.error, 'Unable to find angular start file ' + angulardir)
           process.exit(2)
         } else log.log(LogLevelEnum.info, 'angulardir is ' + angulardir)
-        let angulardirLang = path.parse(angulardir).dir
+        const angulardirLang = path.parse(angulardir).dir
         debug('http root : ' + angulardir)
-        let gh = new M2mGitHub(
+        const gh = new M2mGitHub(
           Config.getConfiguration().githubPersonalToken ? Config.getConfiguration().githubPersonalToken! : null,
           ConfigSpecification.getPublicDir()
         )
-        let startServer = () => {
+        const startServer = () => {
           MqttDiscover.getInstance()
           ConfigBus.readBusses()
           Bus.readBussesFromConfig().then(() => {
@@ -172,7 +172,7 @@ export class Modbus2Mqtt {
       })
   }
 }
-let m = new Modbus2Mqtt()
+const m = new Modbus2Mqtt()
 m.init()
 
 //module.exports = {connectMqtt, init}

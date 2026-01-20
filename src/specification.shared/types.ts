@@ -81,9 +81,9 @@ export interface Icvtparameter {
   needsOptions: boolean
 }
 
-export function jsonConverter<K, V>(body: Object, cnv: (a: string) => K): Map<K, V> {
-  let m = new Map<K, V>()
-  for (var prop in body) {
+export function jsonConverter<K, V>(body: object, cnv: (a: string) => K): Map<K, V> {
+  const m = new Map<K, V>()
+  for (const prop in body) {
     if (Object.prototype.hasOwnProperty.call(body, prop)) {
       m.set(cnv(prop), (body as any)[prop])
     }
@@ -161,8 +161,8 @@ export function getParameterType(converter: Converters | null | undefined): stri
   return undefined
 }
 export function cleanConverterParameters(entity: Ientity) {
-  let o: any = entity.converterParameters
-  var validKeys: string[] | undefined = undefined
+  const o: any = entity.converterParameters
+  let validKeys: string[] | undefined = undefined
   switch (getParameterType(entity.converter)) {
     case 'Inumber':
       validKeys = ['multiplier', 'offset', 'uom', 'device_class', 'identification']
@@ -178,8 +178,8 @@ export function cleanConverterParameters(entity: Ientity) {
       break
   }
   if (!validKeys) return
-  let availableKeys = Object(o)
-  for (let k in availableKeys) {
+  const availableKeys = Object(o)
+  for (const k in availableKeys) {
     if (
       validKeys.findIndex((vk) => {
         return k === vk
@@ -189,7 +189,7 @@ export function cleanConverterParameters(entity: Ientity) {
   }
 }
 export function removeModbusData(entity: Ientity) {
-  let o: any = entity
+  const o: any = entity
   delete o.modbusValue
   delete o.mqttValue
   delete o.identified
@@ -299,14 +299,14 @@ export function getSpecificationI18nText(
   noFallbackLanguage: boolean = false
 ): string | null {
   if (!spec || !spec.i18n) return null
-  let texts = spec.i18n.find((i18) => i18.lang === language)
-  let enTexts = spec.i18n.find((i18) => i18.lang === 'en')
+  const texts = spec.i18n.find((i18) => i18.lang === language)
+  const enTexts = spec.i18n.find((i18) => i18.lang === 'en')
   if (texts) {
-    let text = texts.texts.find((tx) => tx.textId === textId)
+    const text = texts.texts.find((tx) => tx.textId === textId)
     if (text) return text.text
   }
   if (enTexts && !noFallbackLanguage) {
-    let text = enTexts.texts.find((tx) => tx.textId === textId)
+    const text = enTexts.texts.find((tx) => tx.textId === textId)
     if (text) return text.text
   }
 
@@ -325,7 +325,7 @@ export function setSpecificationI18nText(
     else return
     texts = spec.i18n[spec.i18n.length - 1]
   }
-  let textIndex = texts.texts.findIndex((tx) => tx.textId === textId)
+  const textIndex = texts.texts.findIndex((tx) => tx.textId === textId)
 
   if (textIndex >= 0) {
     if (text) texts.texts[textIndex].text = text
@@ -336,7 +336,7 @@ export function deleteSpecificationI18nText(spec: IbaseSpecification, textId: st
   if (!spec || !spec.i18n) return
   spec.i18n.forEach((texts) => {
     if (texts) {
-      let textIndex = texts.texts.findIndex((tx) => tx.textId === textId)
+      const textIndex = texts.texts.findIndex((tx) => tx.textId === textId)
       if (textIndex >= 0) texts.texts.splice(textIndex, 1)
     }
   })
@@ -406,17 +406,17 @@ export function getSpecificationI18nEntityOptionId(
   noFallbackLanguage: boolean = false
 ): number[] {
   if (!spec || !spec.i18n) return [0]
-  let texts = spec.i18n.find((i18) => i18.lang === language)
-  let key = 'e' + entityId + 'o.'
-  let enTexts = spec.i18n.find((i18) => i18.lang === 'en')
+  const texts = spec.i18n.find((i18) => i18.lang === language)
+  const key = 'e' + entityId + 'o.'
+  const enTexts = spec.i18n.find((i18) => i18.lang === 'en')
   if (texts) {
-    let text: string | undefined = texts.texts.find((tx) => tx.text === mqttValue && tx.textId.startsWith(key))?.textId
+    const text: string | undefined = texts.texts.find((tx) => tx.text === mqttValue && tx.textId.startsWith(key))?.textId
     if (text) {
       return [parseInt(text.substring(key.length))]
     }
   }
   if (enTexts && !noFallbackLanguage) {
-    let text: string | undefined = enTexts.texts.find((tx) => tx.text === mqttValue && tx.textId.startsWith(key))?.textId
+    const text: string | undefined = enTexts.texts.find((tx) => tx.text === mqttValue && tx.textId.startsWith(key))?.textId
     if (text) return [parseInt(text.substring(key.length))]
   }
   return [0]
@@ -428,7 +428,7 @@ export function getCurrentLanguage(_ins: string) {
 export function getFileNameFromName(name: string): string | undefined {
   const searchRegExp = /[^a-z^A-Z^\.^0-9+-._]*/g
   if (!name) return undefined
-  let n = name.toLowerCase()
+  const n = name.toLowerCase()
   return n.replace(searchRegExp, '')
 }
 export const newSpecfilename: string = '_new'

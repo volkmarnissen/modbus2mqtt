@@ -55,8 +55,8 @@ export interface Imessage {
 export const editableConverters: string[] = ['binary_sensor', 'number', 'text', 'select', 'button']
 
 export function validateTranslation(spec: Ispecification, language: string, msgs: Imessage[]) {
-  let en = spec.i18n.find((l: { lang: string }) => l.lang === language)
-  let category = MessageCategories.validateTranslation
+  const en = spec.i18n.find((l: { lang: string }) => l.lang === language)
+  const category = MessageCategories.validateTranslation
   if (spec.entities.length > 0) {
     if (!en)
       msgs.push({
@@ -67,7 +67,7 @@ export function validateTranslation(spec: Ispecification, language: string, msgs
     else {
       spec.entities.forEach((ent: { variableConfiguration?: any; id: number }) => {
         if (!ent.variableConfiguration) {
-          let translation = en!.texts.find((tx: { textId: string }) => tx.textId == 'e' + ent.id)
+          const translation = en!.texts.find((tx: { textId: string }) => tx.textId == 'e' + ent.id)
           if (!translation)
             msgs.push({
               type: MessageTypes.entityTextMissing,
@@ -77,20 +77,20 @@ export function validateTranslation(spec: Ispecification, language: string, msgs
             })
         }
       })
-      let nameTranslation = en?.texts.find((tx: { textId: string }) => tx.textId == 'name')
+      const nameTranslation = en?.texts.find((tx: { textId: string }) => tx.textId == 'name')
       if (!nameTranslation) msgs.push({ type: MessageTypes.nameTextMissing, category: category })
     }
   }
 }
 
 export function getBaseFilename(filename: string): string {
-  let idx = filename.lastIndexOf('/')
+  const idx = filename.lastIndexOf('/')
   if (idx >= 0) return filename.substring(idx + 1)
   return filename
 }
 export function getUom(spec: ImodbusSpecification, entityId: number): string {
-  let ent = spec.entities.find((e) => e.id == entityId)
-  let entUom = spec.entities.find(
+  const ent = spec.entities.find((e) => e.id == entityId)
+  const entUom = spec.entities.find(
     (e) =>
       e.variableConfiguration &&
       e.variableConfiguration.targetParameter == VariableTargetParameters.entityUom &&

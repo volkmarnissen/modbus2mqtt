@@ -18,6 +18,7 @@ export default [
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
+        tsconfigRootDir: process.cwd(),
         sourceType: 'module',
         project: ['tsconfig.eslint.json'],
       },
@@ -35,6 +36,17 @@ export default [
     },
     rules: {
       'prettier/prettier': 'error',
+      // Prefer TS rule over core
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
     },
     settings: {
       'import/resolver': {

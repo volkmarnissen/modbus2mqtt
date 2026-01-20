@@ -17,7 +17,7 @@ declare global {
   }
 }
 
-let cli = new Command()
+const cli = new Command()
 cli.version(SPECIFICATION_VERSION)
 cli.usage('--config <config-dir> --data <data-dir> [--pr_number <pull request number>]')
 cli.option('-c, --config <config-dir>', 'set directory for add on configuration')
@@ -28,7 +28,7 @@ cli.option('-o, --pr_owner <owner>', 'Creator of the pull request')
 cli.parse(process.argv)
 let pr_number: number | undefined
 let pr_owner: string | undefined
-let options = cli.opts()
+const options = cli.opts()
 if (options['config']) {
   ConfigSpecification.configDir = options['config']
 } else {
@@ -46,7 +46,7 @@ if (options['pr_number']) {
 if (options['pr_owner']) {
   pr_owner = options['pr_owner']
 }
-let log = new Logger('validate')
+const log = new Logger('validate')
 
 function logAndExit(e: any) {
   let step = ''
@@ -72,13 +72,13 @@ function validate() {
     process.exit(2)
   }
   log.log(LogLevelEnum.info, 'pull request: ' + pr_number)
-  let gh = new M2mGithubValidate(process.env.GITHUB_TOKEN)
+  const gh = new M2mGithubValidate(process.env.GITHUB_TOKEN)
   gh.listPullRequestFiles(pr_owner, pr_number)
     .then((data) => {
-      let pr_number = data.pr_number
-      let s = new ConfigSpecification()
+      const pr_number = data.pr_number
+      const s = new ConfigSpecification()
       s.readYaml()
-      let messages: Imessage[] = []
+      const messages: Imessage[] = []
       let specnames: string = ''
       let lastSpec: IbaseSpecification | undefined
       let specsOnly = true
@@ -86,11 +86,11 @@ function validate() {
         if (!fname.startsWith('specifications/')) {
           specsOnly = false
         } else if (!fname.startsWith('specifications/files/')) {
-          let specname = fname.substring('specifications/'.length)
+          const specname = fname.substring('specifications/'.length)
           specnames = specnames + ', ' + specname
-          let fs = ConfigSpecification.getSpecificationByFilename(specname)
+          const fs = ConfigSpecification.getSpecificationByFilename(specname)
           if (fs) {
-            let m2mSpec = new M2mSpecification(fs)
+            const m2mSpec = new M2mSpecification(fs)
             lastSpec = fs
             messages.concat(m2mSpec.validate('en'))
           }
@@ -115,9 +115,9 @@ function validate() {
               logAndExit(e)
             })
         } else if (lastSpec) {
-          let m: string = ''
+          const m: string = ''
 
-          let errors = M2mSpecification.messages2Text(lastSpec, messages)
+          const errors = M2mSpecification.messages2Text(lastSpec, messages)
           log.log(
             LogLevelEnum.error,
             'not all specifications of \\space ' + specnames + '\\space are valid\\space Proceed manually'

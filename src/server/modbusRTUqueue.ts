@@ -49,7 +49,7 @@ export class ModbusRTUQueue {
     onError: (queueEntry: IQueueEntry, e: any) => void,
     options: IQueueOptions
   ) {
-    let entry: IQueueEntry = {
+    const entry: IQueueEntry = {
       slaveId: slaveId,
       address: address,
       onResolve: onResolve,

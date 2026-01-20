@@ -31,8 +31,8 @@
     "cypress:open": "npm run cypress -- open",
     "cypress:component": "npm run cypress -- run --component",
     "server": "npm run build && node dist/modbus2mqtt.js -s ../ssl -y ../yaml-dir",
-    "lint": "eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish .",
-    "lint:fix": "eslint --cache --fix --fix-type=layout --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish .",
+    "lint": "eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish src",
+    "lint:fix": "eslint --cache --fix --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish src",
     "e2e:start": "npm run build.dev && ./cypress/servers/testall.py startServers",
     "e2e:restart": "npm run build.dev && ./cypress/servers/testall.py restartServers",
     "e2e:stop": "./cypress/servers/testall.py killServers",
@@ -43,7 +43,7 @@
     "build.dev": "tsc -p tsconfig.json && ng build --configuration development",
     "build": "tsc -p tsconfig.json && ng build --configuration production && npx @opengovsg/credits-generator",
     "prettier": "./scripts/prettier-changed.sh",
-    "install-hooks": "git config core.hooksPath .githooks && chmod +x .githooks/* || true && echo 'Git hooks configured to use .githooks directory'"
+    "install-hooks": "mkdir -p .githooks && ln -sf ../scripts/pre-commit.sh .githooks/pre-commit && chmod +x .githooks/pre-commit && git config core.hooksPath .githooks && echo 'Git hooks configured to use .githooks directory and linked to scripts/pre-commit.sh'"
   },
   "dependencies": {
     "@octokit/rest": "^20.1.1",

@@ -72,15 +72,15 @@ export class ConfigSpecification {
     return join(ConfigSpecification.getContributedDir(), getSpecificationImageOrDocumentUrl('', specfilename, ''))
   }
   appendSpecificationUrls(specfilename: string, urls: IimageAndDocumentUrl[]): Promise<IimageAndDocumentUrl[] | undefined> {
-    let filesPath = ConfigSpecification.getLocalFilesPath(specfilename)
+    const filesPath = ConfigSpecification.getLocalFilesPath(specfilename)
     if (filesPath && !fs.existsSync(filesPath)) fs.mkdirSync(filesPath, { recursive: true })
     let files: IimageAndDocumentFilesType = { version: SPECIFICATION_FILES_VERSION, files: [] }
-    let filesName = join(filesPath, 'files.yaml')
+    const filesName = join(filesPath, 'files.yaml')
 
     return ConfigSpecification.filesMutex.runExclusive(() => {
       if (fs.existsSync(filesPath)) {
         try {
-          let content = fs.readFileSync(filesName, { encoding: 'utf8' })
+          const content = fs.readFileSync(filesName, { encoding: 'utf8' })
           files = parse(content.toString())
           files = new Migrator().migrateFiles(files)
         } catch (e: any) {
@@ -100,7 +100,7 @@ export class ConfigSpecification {
         encoding: 'utf8',
         flag: 'w',
       })
-      let spec = ConfigSpecification.specifications.find((spec) => spec.filename == specfilename)
+      const spec = ConfigSpecification.specifications.find((spec) => spec.filename == specfilename)
       if (spec) spec.files = files.files
 
       return files && files.files ? files.files : undefined
@@ -111,11 +111,11 @@ export class ConfigSpecification {
     filenames: string[],
     usage: SpecificationFileUsage
   ): Promise<IimageAndDocumentUrl[] | undefined> {
-    let iurls: IimageAndDocumentUrl[] = []
+    const iurls: IimageAndDocumentUrl[] = []
     filenames.forEach((filename) => {
       if (!usage) usage = M2mSpecification.getFileUsage(filename)
-      let url = getSpecificationImageOrDocumentUrl(undefined, specfilename, filename)
-      let iurl = { url: url, fileLocation: FileLocation.Local, usage: usage }
+      const url = getSpecificationImageOrDocumentUrl(undefined, specfilename, filename)
+      const iurl = { url: url, fileLocation: FileLocation.Local, usage: usage }
       iurls.push(iurl)
     })
 
@@ -128,10 +128,10 @@ export class ConfigSpecification {
   static configDir: string = ''
 
   private readFilesYaml(directory: string, spec: IfileSpecification) {
-    let fp = join(directory, 'files', spec.filename, 'files.yaml')
+    const fp = join(directory, 'files', spec.filename, 'files.yaml')
 
     if (fs.existsSync(fp)) {
-      let src = fs.readFileSync(fp, { encoding: 'utf8' })
+      const src = fs.readFileSync(fp, { encoding: 'utf8' })
       let f: IimageAndDocumentFilesType = parse(src)
       f = new Migrator().migrateFiles(f)
 
@@ -142,27 +142,27 @@ export class ConfigSpecification {
     }
     spec.files.forEach((file) => {
       if (file.fileLocation == FileLocation.Local) {
-        let url = getSpecificationImageOrDocumentUrl(undefined, spec.filename, file.url)
+        const url = getSpecificationImageOrDocumentUrl(undefined, spec.filename, file.url)
         file.url = url
       }
     })
   }
 
   private readspecifications(directory: string): IfileSpecification[] {
-    var rc: IfileSpecification[] = []
+    const rc: IfileSpecification[] = []
     if (!fs.existsSync(directory)) {
       //log.log(LogLevelEnum.info, 'specifications directory not found ' + directory)
       return rc
     }
-    var files: string[] = fs.readdirSync(directory)
+    const files: string[] = fs.readdirSync(directory)
     files.forEach((file: string) => {
       try {
         if (file.endsWith('.yaml')) {
-          let newfn = file.replace('.yaml', '')
-          var src: string = fs.readFileSync(directory + '/' + file, {
+          const newfn = file.replace('.yaml', '')
+          const src: string = fs.readFileSync(directory + '/' + file, {
             encoding: 'utf8',
           })
-          var o: IfileSpecification = parse(src)
+          let o: IfileSpecification = parse(src)
           if (o.version != SPECIFICATION_VERSION) {
             o = new Migrator().migrate(o)
           }
@@ -170,7 +170,7 @@ export class ConfigSpecification {
           this.readFilesYaml(directory, o)
           o.entities.forEach((entity) => {
             if (entity.converter != undefined) {
-              let inumber = entity.converterParameters as Inumber
+              const inumber = entity.converterParameters as Inumber
               if (inumber.multiplier != undefined && inumber.numberFormat == undefined) {
                 inumber.numberFormat = EnumNumberFormat.default
               }
@@ -192,16 +192,16 @@ export class ConfigSpecification {
   // set the base file for relative includes
   readYaml(): void {
     try {
-      var publishedSpecifications: IfileSpecification[] = this.readspecifications(
+      const publishedSpecifications: IfileSpecification[] = this.readspecifications(
         ConfigSpecification.getPublicDir() + '/specifications'
       )
-      var contributedSpecifications: IfileSpecification[] = this.readspecifications(
+      const contributedSpecifications: IfileSpecification[] = this.readspecifications(
         ConfigSpecification.getContributedDir() + '/specifications'
       )
       ConfigSpecification.specifications = this.readspecifications(ConfigSpecification.getLocalDir() + '/specifications')
       // Iterate over local files
       ConfigSpecification.specifications.forEach((specification: IfileSpecification) => {
-        let published = publishedSpecifications.find((obj) => {
+        const published = publishedSpecifications.find((obj) => {
           return obj.filename === specification.filename
         })
         if (!published)
@@ -224,7 +224,7 @@ export class ConfigSpecification {
             )
           })
         ) {
-          let published = publishedSpecifications.find((obj) => {
+          const published = publishedSpecifications.find((obj) => {
             return obj.filename === specification.filename
           })
           if (published) specification.publicSpecification = published
@@ -257,7 +257,7 @@ export class ConfigSpecification {
     }
   }
   filterAllSpecifications(specFunction: (spec: IfileSpecification) => void) {
-    for (let spec of ConfigSpecification.specifications) {
+    for (const spec of ConfigSpecification.specifications) {
       specFunction(spec)
     }
   }
@@ -266,7 +266,7 @@ export class ConfigSpecification {
   // removes non configuration data
   // Adds  testData array from Modbus values. They can be used to test specification
   static toFileSpecification(modbusSpec: ImodbusSpecification): IfileSpecification {
-    let fileSpec: IfileSpecification = structuredClone({
+    const fileSpec: IfileSpecification = structuredClone({
       ...modbusSpec,
       version: SPECIFICATION_VERSION,
       testdata: structuredClone(this.emptyTestData),
@@ -317,24 +317,24 @@ export class ConfigSpecification {
     return fileSpec
   }
   static deleteSpecificationFile(specfilename: string, url: string, usage: SpecificationFileUsage): IimageAndDocumentUrl[] {
-    let fname = getBaseFilename(url)
-    let decodedUrl = decodeURIComponent(url).replaceAll('+', ' ')
+    const fname = getBaseFilename(url)
+    const decodedUrl = decodeURIComponent(url).replaceAll('+', ' ')
     let deleteFlag: boolean = true
-    let yamlFile = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), specfilename, 'files.yaml')
+    const yamlFile = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), specfilename, 'files.yaml')
     let files: IimageAndDocumentFilesType = { version: SPECIFICATION_FILES_VERSION, files: [] }
     if (fs.existsSync(yamlFile)) {
       try {
-        let content = fs.readFileSync(yamlFile, { encoding: 'utf8' })
+        const content = fs.readFileSync(yamlFile, { encoding: 'utf8' })
         files = parse(content.toString())
         files = new Migrator().migrateFiles(files)
-        let imgFileIdx: number = files.files.findIndex(
+        const imgFileIdx: number = files.files.findIndex(
           (f) => decodeURIComponent(f.url).replaceAll('+', ' ') == decodedUrl && f.usage == SpecificationFileUsage.img
         )
-        let docFileIdx: number = files.files.findIndex(
+        const docFileIdx: number = files.files.findIndex(
           (f) => decodeURIComponent(f.url).replaceAll('+', ' ') == decodedUrl && f.usage == SpecificationFileUsage.documentation
         )
         if (imgFileIdx >= 0 && docFileIdx >= 0) deleteFlag = false
-        let idx = usage == SpecificationFileUsage.img ? imgFileIdx : docFileIdx
+        const idx = usage == SpecificationFileUsage.img ? imgFileIdx : docFileIdx
         if (idx >= 0) {
           files.files.splice(idx, 1)
 
@@ -342,7 +342,7 @@ export class ConfigSpecification {
             encoding: 'utf8',
             flag: 'w',
           })
-          let spec = ConfigSpecification.specifications.find((spec) => spec.filename == specfilename)
+          const spec = ConfigSpecification.specifications.find((spec) => spec.filename == specfilename)
           if (spec) spec.files = files.files
         }
       } catch (e: any) {
@@ -357,10 +357,10 @@ export class ConfigSpecification {
   private renameFilesPath(spec: IfileSpecification, oldfilename: string, newDirectory: string) {
     let oldDirectory = ConfigSpecification.getLocalDir()
     if (spec.status == SpecificationStatus.contributed) oldDirectory = ConfigSpecification.getContributedDir()
-    let specsDir = join(newDirectory, 'specifications')
-    let oldPath = getSpecificationImageOrDocumentUrl(oldDirectory, oldfilename, '')
-    let newPath = getSpecificationImageOrDocumentUrl(join(newDirectory), spec.filename, '')
-    let newParentDir = path.dirname(newPath)
+    const specsDir = join(newDirectory, 'specifications')
+    const oldPath = getSpecificationImageOrDocumentUrl(oldDirectory, oldfilename, '')
+    const newPath = getSpecificationImageOrDocumentUrl(join(newDirectory), spec.filename, '')
+    const newParentDir = path.dirname(newPath)
     if (!fs.existsSync(newParentDir)) fs.mkdirSync(newParentDir, { recursive: true })
     if (fs.existsSync(newPath)) fs.rmSync(newPath, { recursive: true })
     if (fs.existsSync(oldPath)) fs.renameSync(oldPath, newPath)
@@ -406,7 +406,7 @@ export class ConfigSpecification {
       case SpecificationStatus.cloned:
       case SpecificationStatus.added:
         if (spec.status == SpecificationStatus.contributed) {
-          let publicPath = ConfigSpecification.getPublicSpecificationPath(spec)
+          const publicPath = ConfigSpecification.getPublicSpecificationPath(spec)
           if (fs.existsSync(publicPath)) newStatus = SpecificationStatus.cloned
           else newStatus = SpecificationStatus.added
           newPath = ConfigSpecification.getSpecificationPath(spec)
@@ -424,9 +424,9 @@ export class ConfigSpecification {
       fs.renameSync(oldPath, newPath)
     } else {
       if (fs.existsSync(oldPath)) fs.rmSync(oldPath, { recursive: true }) // public directory was already fetched
-      let specDir = path.parse(oldPath).dir
+      const specDir = path.parse(oldPath).dir
 
-      let filesDir = join(specDir, 'files', spec.filename)
+      const filesDir = join(specDir, 'files', spec.filename)
       if (fs.existsSync(filesDir)) fs.rmSync(filesDir, { recursive: true }) // public directory was already fetched
     }
 
@@ -445,8 +445,8 @@ export class ConfigSpecification {
     if (spec.filename == '_new') {
       throw new Error('No or invalid filename for specification')
     }
-    let publicFilepath = ConfigSpecification.getPublicSpecificationPath(spec)
-    let contributedFilepath = ConfigSpecification.getContributedSpecificationPath(spec)
+    const publicFilepath = ConfigSpecification.getPublicSpecificationPath(spec)
+    const contributedFilepath = ConfigSpecification.getContributedSpecificationPath(spec)
     let filename = ConfigSpecification.getSpecificationPath(spec)
     if (spec) {
       if (spec.status == SpecificationStatus.new) {
@@ -460,9 +460,9 @@ export class ConfigSpecification {
           )
             throw new Error('Cannot rename a published file')
           // delete yaml file and rename files directory
-          let s = spec.filename
+          const s = spec.filename
           spec.filename = originalFilename
-          let originalFilepath = ConfigSpecification.getSpecificationPath(spec)
+          const originalFilepath = ConfigSpecification.getSpecificationPath(spec)
           spec.filename = s
           fs.unlinkSync(originalFilepath)
           this.renameFilesPath(spec, originalFilename, ConfigSpecification.getLocalDir())
@@ -472,7 +472,7 @@ export class ConfigSpecification {
         // cloning with attached files
         let filespath = ConfigSpecification.getPublicFilesPath(spec.filename)
         if (SpecificationStatus.contributed == spec.status) filespath = ConfigSpecification.getContributedFilesPath(spec.filename)
-        let localFilesPath = ConfigSpecification.getLocalFilesPath(spec.filename)
+        const localFilesPath = ConfigSpecification.getLocalFilesPath(spec.filename)
         if (!fs.existsSync(localFilesPath) && fs.existsSync(filespath)) {
           fs.cpSync(filespath, localFilesPath, { recursive: true })
         }
@@ -487,18 +487,18 @@ export class ConfigSpecification {
       } else spec.status = SpecificationStatus.cloned
     } else throw new Error('spec is undefined')
 
-    let dir = path.dirname(filename)
+    const dir = path.dirname(filename)
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 
     // Update files list add files, which are not in list yet.
-    let ns: any = structuredClone(spec)
+    const ns: any = structuredClone(spec)
     this.cleanSpecForWriting(ns)
     ns.version = SPECIFICATION_VERSION
     delete ns.files
-    let s = stringify(ns)
+    const s = stringify(ns)
     fs.writeFileSync(filename, s, { encoding: 'utf8' })
 
-    let idx = ConfigSpecification.specifications.findIndex((cspec) => {
+    const idx = ConfigSpecification.specifications.findIndex((cspec) => {
       return cspec.filename === spec.filename
     })
     if (idx >= 0) ConfigSpecification.specifications[idx] = spec
@@ -510,19 +510,19 @@ export class ConfigSpecification {
     onAfterSave: (filename: string) => void | undefined,
     originalFilename: string | null
   ): IfileSpecification {
-    let fileSpec: IfileSpecification = ConfigSpecification.toFileSpecification(spec)
+    const fileSpec: IfileSpecification = ConfigSpecification.toFileSpecification(spec)
     this.writeSpecificationFromFileSpec(fileSpec, originalFilename)
     if (onAfterSave) onAfterSave(fileSpec.filename)
     return fileSpec
   }
   deleteNewSpecificationFiles() {
-    let dir = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', '')
+    const dir = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', '')
     if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
   }
   deleteSpecification(specfileName: string) {
     let found = false
     for (let idx = 0; idx < ConfigSpecification.specifications.length; idx++) {
-      let sp = ConfigSpecification.specifications[idx]
+      const sp = ConfigSpecification.specifications[idx]
       if (sp.filename === specfileName)
         if (sp.status in [SpecificationStatus.cloned, SpecificationStatus.added, SpecificationStatus.new])
           try {
@@ -565,7 +565,7 @@ export class ConfigSpecification {
     if (filename == undefined) return undefined
 
     if (filename == '_new') {
-      let rc: IfileSpecification = {
+      const rc: IfileSpecification = {
         version: SPECIFICATION_VERSION,
         entities: [],
         files: [],
@@ -574,11 +574,11 @@ export class ConfigSpecification {
         filename: '_new',
         status: SpecificationStatus.new,
       }
-      let dir = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', '')
+      const dir = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', '')
       if (fs.existsSync(dir)) {
-        let files = fs.readdirSync(dir)
+        const files = fs.readdirSync(dir)
         files.forEach((file) => {
-          let url = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', file)
+          const url = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', file)
           rc.files.push({
             url: url,
             fileLocation: FileLocation.Local,
@@ -590,7 +590,7 @@ export class ConfigSpecification {
       return rc
     }
 
-    let rc = structuredClone(
+    const rc = structuredClone(
       ConfigSpecification.specifications.find((spec) => {
         return spec.filename === filename
       })
@@ -603,7 +603,7 @@ export class ConfigSpecification {
   }
 
   static createZipFromSpecification(specfilename: string, r: stream.Writable): void {
-    let spec = { filename: specfilename } as any as IbaseSpecification
+    const spec = { filename: specfilename } as any as IbaseSpecification
     let specFilePath = ConfigSpecification.getSpecificationPath(spec)
     let fn = ConfigSpecification.getLocalFilesPath(specfilename)
     if (!fs.existsSync(fn)) {
@@ -618,7 +618,7 @@ export class ConfigSpecification {
 
     if (!fs.existsSync(specFilePath)) throw new Error('no specification found at ' + specFilePath)
 
-    let z = new AdmZip()
+    const z = new AdmZip()
     z.addLocalFile(specFilePath)
     z.addLocalFolder(fn, 'files/' + specfilename)
 
@@ -628,10 +628,10 @@ export class ConfigSpecification {
   }
 
   private static validateSpecificationZip(localSpecDir: string, zip: AdmZip.IZipEntry[]): IimportMessages {
-    let errors: IimportMessages = { warnings: '', errors: '' }
+    const errors: IimportMessages = { warnings: '', errors: '' }
     let filesExists = false
     let specExists = false
-    for (var entry of zip) {
+    for (const entry of zip) {
       if (entry.entryName.indexOf('.yaml') > 0)
         if (entry.entryName.indexOf('/files.yaml') > 0) filesExists = true
         else specExists = true
@@ -646,10 +646,10 @@ export class ConfigSpecification {
   }
 
   static importSpecificationZip(zipfilename: string): IimportMessages {
-    let localSpecDir = join(ConfigSpecification.getLocalDir(), 'specifications')
+    const localSpecDir = join(ConfigSpecification.getLocalDir(), 'specifications')
     try {
-      let z = new AdmZip(zipfilename)
-      let errors = this.validateSpecificationZip(localSpecDir, z.getEntries())
+      const z = new AdmZip(zipfilename)
+      const errors = this.validateSpecificationZip(localSpecDir, z.getEntries())
       if (errors.errors.length == 0) {
         z.extractAllTo(localSpecDir)
         new ConfigSpecification().readYaml()
@@ -664,7 +664,7 @@ export class ConfigSpecification {
 }
 
 export function getSpecificationImageOrDocumentUrl(rootUrl: string | undefined, specName: string, url: string): string {
-  let fn = getBaseFilename(url)
+  const fn = getBaseFilename(url)
   let rc: string = ''
   if (rootUrl && rootUrl.length > 0) {
     let append = '/'

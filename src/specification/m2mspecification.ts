@@ -1,6 +1,6 @@
 import { IspecificationValidator, IvalidateIdentificationResult } from './ispecificationvalidator'
 import { IspecificationContributor } from './ispecificationContributor'
-let path = require('path')
+const path = require('path')
 import { join } from 'path'
 import * as fs from 'fs'
 import { Idata, IfileSpecification } from './ifilespecification'
@@ -100,13 +100,13 @@ export class M2mSpecification implements IspecificationValidator {
   contribute(note: string | undefined): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       try {
-        let language = ConfigSpecification.mqttdiscoverylanguage
+        const language = ConfigSpecification.mqttdiscoverylanguage
         let messages: Imessage[] = []
 
         if (language == undefined)
           messages.push({ type: MessageTypes.noMqttDiscoveryLanguage, category: MessageCategories.configuration })
         else messages = this.validate(language)
-        let errors: string = M2mSpecification.messages2Text(this.settings as IbaseSpecification, messages)
+        const errors: string = M2mSpecification.messages2Text(this.settings as IbaseSpecification, messages)
 
         if (errors.length > 0) {
           throw new Error('Validation failed with errors: ' + errors)
@@ -114,8 +114,8 @@ export class M2mSpecification implements IspecificationValidator {
 
         if (errors.length == 0 && messages.length > 0 && (!note || note.length == 0))
           throw new Error('Validation failed with warning, but no note text available')
-        let fileList = this.getSpecificationsFilesList(ConfigSpecification.getLocalDir())
-        let spec = this.settings as IbaseSpecification
+        const fileList = this.getSpecificationsFilesList(ConfigSpecification.getLocalDir())
+        const spec = this.settings as IbaseSpecification
         let title = ''
         let message = ''
         switch (spec.status) {
@@ -127,15 +127,15 @@ export class M2mSpecification implements IspecificationValidator {
             title = 'Update specification '
             //if (spec.publicSpecification)
             //  message = this.isEqual(spec.publicSpecification)
-            let pub = (spec as any).publicSpecification
+            const pub = (spec as any).publicSpecification
 
             message = this.generateClonedContributionMessage(note, pub)
             break
         }
         title = title + getSpecificationI18nName(spec, language!)
         if (ConfigSpecification.githubPersonalToken && ConfigSpecification.githubPersonalToken.length) {
-          let github = new M2mGitHub(ConfigSpecification.githubPersonalToken, ConfigSpecification.getPublicDir())
-          let restore = function (spec: IbaseSpecification, github: M2mGitHub, reject: (e: any) => void, e: any) {
+          const github = new M2mGitHub(ConfigSpecification.githubPersonalToken, ConfigSpecification.getPublicDir())
+          const restore = function (spec: IbaseSpecification, github: M2mGitHub, reject: (e: any) => void, e: any) {
             if (spec.status == SpecificationStatus.contributed)
               new ConfigSpecification().changeContributionStatus(spec.filename, SpecificationStatus.added)
             github
@@ -185,7 +185,7 @@ export class M2mSpecification implements IspecificationValidator {
   private generateAddedContributionMessage(note: string | undefined): string {
     // First contribution:
     // Name of Specification(en)
-    let spec = this.settings as ImodbusSpecification
+    const spec = this.settings as ImodbusSpecification
     let message = `First contribution of ${getSpecificationI18nName(spec, 'en')}(${spec.filename}) \nEntities:\n`
     message = `${message}Languages: `
     spec.i18n.forEach((l) => {
@@ -212,7 +212,7 @@ export class M2mSpecification implements IspecificationValidator {
     this.differentFilename = false
     if (publicSpecification) {
       rcmessage = rcmessage + 'Changes:\n'
-      let messages = this.isEqual(publicSpecification)
+      const messages = this.isEqual(publicSpecification)
       messages.forEach((message) => {
         rcmessage = rcmessage + M2mSpecification.getMessageString(this.settings as IbaseSpecification, message) + '\n'
       })
@@ -313,7 +313,7 @@ export class M2mSpecification implements IspecificationValidator {
     messageText: string,
     notBackwardCompatible?: boolean
   ): string {
-    let msg = structuredClone(messageText)
+    const msg = structuredClone(messageText)
     if (message.referencedEntity != undefined)
       return msg + ' ' + getSpecificationI18nEntityName(spec as IbaseSpecification, 'en', message.referencedEntity)
     if (message.additionalInformation != undefined) return msg + ' ' + message.additionalInformation
@@ -322,7 +322,7 @@ export class M2mSpecification implements IspecificationValidator {
   }
   private static handleCloseContributionError(msg: string, reject: (e: any) => void): void {
     log.log(LogLevelEnum.error, msg)
-    let e = new Error(msg)
+    const e = new Error(msg)
     ;(e as any).step = 'closeContribution'
     reject(e)
   }
@@ -339,13 +339,13 @@ export class M2mSpecification implements IspecificationValidator {
         this.handleCloseContributionError('No Pull Number in specification. Unable to close contribution ' + spec.filename, reject)
         return
       }
-      let gh = new M2mGitHub(ConfigSpecification.githubPersonalToken!, join(ConfigSpecification.getPublicDir()))
+      const gh = new M2mGitHub(ConfigSpecification.githubPersonalToken!, join(ConfigSpecification.getPublicDir()))
       gh.init()
         .then(() => {
           gh.getPullRequest(spec.pullNumber!)
             .then((pullStatus) => {
               try {
-                let cspec = new ConfigSpecification()
+                const cspec = new ConfigSpecification()
                 if (pullStatus.merged) {
                   cspec.changeContributionStatus(spec.filename, SpecificationStatus.published, undefined)
                 } else if (pullStatus.closed_at != null) {
@@ -369,16 +369,16 @@ export class M2mSpecification implements IspecificationValidator {
     })
   }
   getSpecificationsFilesList(localDir: string): string[] {
-    let files: string[] = []
-    let spec = this.settings as IbaseSpecification
+    const files: string[] = []
+    const spec = this.settings as IbaseSpecification
     spec.files.forEach((file) => {
-      let filePath = file.url.replace(/^\//g, '')
+      const filePath = file.url.replace(/^\//g, '')
       if (file.fileLocation == FileLocation.Local && fs.existsSync(join(localDir, filePath))) files.push(filePath)
       // The file can also be already published. Then it's not neccessary to push it again
       // In this case, it's in the public directory and not in local directory
     })
     if (spec.files.length > 0) {
-      let filesName = join(getSpecificationImageOrDocumentUrl('', spec.filename, 'files.yaml'))
+      const filesName = join(getSpecificationImageOrDocumentUrl('', spec.filename, 'files.yaml'))
       files.push(filesName.replace(/^\//g, ''))
     }
     files.push(join('specifications', spec.filename + '.yaml'))
@@ -386,7 +386,7 @@ export class M2mSpecification implements IspecificationValidator {
   }
 
   validate(language: string): Imessage[] {
-    let rc = this.validateSpecification(language, true)
+    const rc = this.validateSpecification(language, true)
     if ((this.settings as ImodbusSpecification).entities.length > 0) {
       let mSpec = this.settings as ImodbusSpecification
       if (mSpec.identified == undefined) mSpec = M2mSpecification.fileToModbusSpecification(this.settings as IfileSpecification)
@@ -402,11 +402,11 @@ export class M2mSpecification implements IspecificationValidator {
   }
 
   validateUniqueName(language: string): boolean {
-    let name = getSpecificationI18nName(this.settings as IbaseSpecification, language)
+    const name = getSpecificationI18nName(this.settings as IbaseSpecification, language)
     let rc = true
     new ConfigSpecification().filterAllSpecifications((spec) => {
       if (rc && (this.settings as IbaseSpecification).filename != spec.filename) {
-        let texts = spec.i18n.find((lang) => lang.lang == language)
+        const texts = spec.i18n.find((lang) => lang.lang == language)
         if (texts && texts.texts)
           if ((texts.texts as ISpecificationText[]).find((text) => text.textId == 'name' && text.text == name)) rc = false
       }
@@ -451,11 +451,11 @@ export class M2mSpecification implements IspecificationValidator {
       // No values available neither testdata nor
     }
 
-    let rc: ImodbusSpecification = Object.assign(inSpec)
+    const rc: ImodbusSpecification = Object.assign(inSpec)
     for (let entityIndex = 0; entityIndex < inSpec.entities.length; entityIndex++) {
-      let entity = rc.entities[entityIndex]
+      const entity = rc.entities[entityIndex]
       if (entity.modbusAddress != undefined && entity.registerType) {
-        let sm = M2mSpecification.copyModbusDataToEntity(rc, entity.id, valuesLocal)
+        const sm = M2mSpecification.copyModbusDataToEntity(rc, entity.id, valuesLocal)
         if (sm) {
           rc.entities[entityIndex] = sm
         }
@@ -467,15 +467,15 @@ export class M2mSpecification implements IspecificationValidator {
   }
 
   static copyModbusDataToEntity(spec: Ispecification, entityId: number, values: ImodbusValues): ImodbusEntity {
-    let entity = spec.entities.find((ent) => entityId == ent.id)
+    const entity = spec.entities.find((ent) => entityId == ent.id)
     if (entity) {
-      let rc: ImodbusEntity = structuredClone(entity) as ImodbusEntity
-      let converter = ConverterMap.getConverter(entity)
+      const rc: ImodbusEntity = structuredClone(entity) as ImodbusEntity
+      const converter = ConverterMap.getConverter(entity)
       if (converter) {
         if (entity.modbusAddress != undefined) {
           try {
-            var data: number[] = []
-            var error: any = undefined
+            let data: number[] = []
+            let error: any = undefined
             for (
               let address = entity.modbusAddress;
               address < entity.modbusAddress + converter.getModbusLength(entity);
@@ -506,7 +506,7 @@ export class M2mSpecification implements IspecificationValidator {
               }
             }
             if (data && data.length > 0) {
-              let mqtt = converter.modbus2mqtt(spec, entity.id, data)
+              const mqtt = converter.modbus2mqtt(spec, entity.id, data)
               let identified = IdentifiedStates.unknown
               if (entity.converterParameters)
                 if (entity.converter === 'number') {
@@ -514,7 +514,7 @@ export class M2mSpecification implements IspecificationValidator {
                     (entity as ImodbusEntity).identified = IdentifiedStates.unknown
                   else {
                     //Inumber
-                    let mm: IminMax = (entity.converterParameters as Inumber).identification!
+                    const mm: IminMax = (entity.converterParameters as Inumber).identification!
                     identified =
                       mm.min <= (mqtt as number) && (mqtt as number) <= mm.max
                         ? IdentifiedStates.identified
@@ -534,9 +534,9 @@ export class M2mSpecification implements IspecificationValidator {
                     }
                   } else {
                     // Itext
-                    let reg = (entity.converterParameters as Itext).identification
+                    const reg = (entity.converterParameters as Itext).identification
                     if (reg) {
-                      let re = new RegExp('^' + reg + '$')
+                      const re = new RegExp('^' + reg + '$')
                       identified = re.test(mqtt as string) ? IdentifiedStates.identified : IdentifiedStates.notIdentified
                     }
                   }
@@ -561,7 +561,7 @@ export class M2mSpecification implements IspecificationValidator {
 
       return rc
     } else {
-      let msg = 'EntityId ' + entityId + ' not found in specifcation '
+      const msg = 'EntityId ' + entityId + ' not found in specifcation '
       log.log(LogLevelEnum.error, msg)
       throw new Error(msg)
     }
@@ -579,8 +579,8 @@ export class M2mSpecification implements IspecificationValidator {
   }
 
   validateIdentification(language: string): IvalidateIdentificationResult[] {
-    let identifiedSpecs: IvalidateIdentificationResult[] = []
-    let values = emptyModbusValues()
+    const identifiedSpecs: IvalidateIdentificationResult[] = []
+    const values = emptyModbusValues()
     let fSettings: IfileSpecification
     if ((this.settings as IfileSpecification).testdata) fSettings = this.settings as IfileSpecification
     else fSettings = ConfigSpecification.toFileSpecification(this.settings as ImodbusSpecification)
@@ -592,8 +592,8 @@ export class M2mSpecification implements IspecificationValidator {
       M2mSpecification.copyFromTestData(fSettings.testdata.discreteInputs, values.discreteInputs)
     new ConfigSpecification().filterAllSpecifications((spec) => {
       if ([SpecificationStatus.cloned, SpecificationStatus.published, SpecificationStatus.contributed].includes(spec.status)) {
-        var mSpec: ImodbusSpecification | undefined = undefined
-        var fSpec: IfileSpecification = spec
+        let mSpec: ImodbusSpecification | undefined = undefined
+        let fSpec: IfileSpecification = spec
 
         switch (spec.status) {
           case SpecificationStatus.published:
@@ -614,11 +614,11 @@ export class M2mSpecification implements IspecificationValidator {
           default:
             mSpec = M2mSpecification.fileToModbusSpecification(fSpec, values)
         }
-        let specName = getSpecificationI18nName(spec, language)
+        const specName = getSpecificationI18nName(spec, language)
         if (fSettings.filename != spec.filename) {
-          let allMatch = this.allNullValuesMatch(spec, values)
+          const allMatch = this.allNullValuesMatch(spec, values)
           if (allMatch && mSpec && mSpec.identified == IdentifiedStates.identified) {
-            let ent = mSpec.entities.find((ent) => ent.identified == IdentifiedStates.notIdentified)
+            const ent = mSpec.entities.find((ent) => ent.identified == IdentifiedStates.notIdentified)
             if (specName) identifiedSpecs.push({ specname: specName, referencedEntity: ent?.id })
             else identifiedSpecs.push({ specname: 'unknown', referencedEntity: ent?.id })
           }
@@ -643,7 +643,7 @@ export class M2mSpecification implements IspecificationValidator {
     return this.allNullDataMatch(spec.testdata.coils, values.coils)
   }
   private getPropertyFromVariable(entityId: number, targetParameter: VariableTargetParameters): string | number | undefined {
-    let ent = (this.settings as ImodbusSpecification).entities.find(
+    const ent = (this.settings as ImodbusSpecification).entities.find(
       (e) =>
         e.variableConfiguration &&
         e.variableConfiguration.targetParameter == targetParameter &&
@@ -654,29 +654,29 @@ export class M2mSpecification implements IspecificationValidator {
     return undefined
   }
   private getEntityFromId(entityId: number): ImodbusEntity | undefined {
-    let ent = (this.settings as ImodbusSpecification).entities.find((e) => e.id == entityId)
+    const ent = (this.settings as ImodbusSpecification).entities.find((e) => e.id == entityId)
     if (!ent) return undefined
     return ent
   }
   static getFileUsage(url: string): SpecificationFileUsage {
-    let name = url.toLowerCase()
+    const name = url.toLowerCase()
     if (name.endsWith('.pdf')) return SpecificationFileUsage.documentation
     if (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || name.endsWith('.bmp'))
       return SpecificationFileUsage.img
     return SpecificationFileUsage.documentation
   }
   getUom(entityId: number): string | undefined {
-    let rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityUom)
+    const rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityUom)
     if (rc) return rc as string | undefined
-    let ent = this.getEntityFromId(entityId)
+    const ent = this.getEntityFromId(entityId)
     if (!ent || !ent.converterParameters || !(ent.converterParameters as Inumber)!.uom) return undefined
 
     return (ent.converterParameters as Inumber)!.uom
   }
   getMultiplier(entityId: number): number | undefined {
-    let rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityMultiplier)
+    const rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityMultiplier)
     if (rc) return rc as number | undefined
-    let ent = this.getEntityFromId(entityId)
+    const ent = this.getEntityFromId(entityId)
     if (!ent || !ent.converterParameters || undefined == (ent.converterParameters as Inumber)!.multiplier) return undefined
 
     return (ent.converterParameters as Inumber)!.multiplier
@@ -684,20 +684,20 @@ export class M2mSpecification implements IspecificationValidator {
   getDecimals(entityId: number): number | undefined {
     //    let rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityMultiplier)
     //    if (rc) return rc as number | undefined
-    let ent = this.getEntityFromId(entityId)
+    const ent = this.getEntityFromId(entityId)
     if (!ent || !ent.converterParameters || undefined == (ent.converterParameters as Inumber)!.decimals) return undefined
 
     return (ent.converterParameters as Inumber)!.decimals
   }
   getOffset(entityId: number): number | undefined {
-    let rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityOffset)
+    const rc = this.getPropertyFromVariable(entityId, VariableTargetParameters.entityOffset)
     if (rc) return rc as number | undefined
-    let ent = this.getEntityFromId(entityId)
+    const ent = this.getEntityFromId(entityId)
     if (!ent || !ent.converterParameters || (ent.converterParameters as Inumber)!.offset == undefined) return undefined
     return (ent.converterParameters as Inumber)!.offset
   }
   isVariable(checkParameter: VariableTargetParameters): boolean {
-    let ent = (this.settings as ImodbusSpecification).entities.find(
+    const ent = (this.settings as ImodbusSpecification).entities.find(
       (e) => e.variableConfiguration && e.variableConfiguration.targetParameter == checkParameter
     )
     return ent != undefined
@@ -709,15 +709,15 @@ export class M2mSpecification implements IspecificationValidator {
     return false
   }
   isEqual(other: Ispecification): Imessage[] {
-    let rc: Imessage[] = []
-    let spec = this.settings as ImodbusSpecification
+    const rc: Imessage[] = []
+    const spec = this.settings as ImodbusSpecification
     if (spec.filename != other.filename) rc.push({ type: MessageTypes.differentFilename, category: MessageCategories.compare })
     spec.entities.forEach((ent) => {
       if (!other.entities.find((oent) => oent.id == ent.id))
         rc.push({ type: MessageTypes.addedEntity, category: MessageCategories.compareEntity, referencedEntity: ent.id })
     })
     other.entities.forEach((oent) => {
-      let ent = spec.entities.find((ent) => oent.id == ent.id)
+      const ent = spec.entities.find((ent) => oent.id == ent.id)
       if (!ent)
         rc.push({
           type: MessageTypes.missingEntity,
@@ -867,8 +867,8 @@ export class M2mSpecification implements IspecificationValidator {
   }
 
   validateFiles(msgs: Imessage[]) {
-    let category = MessageCategories.validateFiles
-    let spec = this.settings as ImodbusSpecification
+    const category = MessageCategories.validateFiles
+    const spec = this.settings as ImodbusSpecification
     let hasDocumentation = false
     let hasImage = false
     spec.files.forEach((f) => {
@@ -879,8 +879,8 @@ export class M2mSpecification implements IspecificationValidator {
     if (!hasImage) msgs.push({ type: MessageTypes.noImage, category: category })
   }
   validateSpecification(language: string, forContribution: boolean = false): Imessage[] {
-    let msgs: Imessage[] = []
-    let spec = this.settings as ImodbusSpecification
+    const msgs: Imessage[] = []
+    const spec = this.settings as ImodbusSpecification
     this.validateFiles(msgs)
     if (spec.entities.length == 0) msgs.push({ type: MessageTypes.noEntity, category: MessageCategories.validateEntity })
     validateTranslation(spec, language, msgs)
@@ -888,19 +888,19 @@ export class M2mSpecification implements IspecificationValidator {
     return msgs
   }
   getBaseFilename(filename: string): string {
-    let idx = filename.lastIndexOf('/')
+    const idx = filename.lastIndexOf('/')
     if (idx >= 0) return filename.substring(idx + 1)
     return filename
   }
   private static pollingTimeout = 15 * 1000
   static startPolling(specfilename: string, error: (e: any) => void): Observable<IpullRequest> | undefined {
     debug('startPolling')
-    let spec = ConfigSpecification.getSpecificationByFilename(specfilename)
-    let contribution = M2mSpecification.ghContributions.get(specfilename)
+    const spec = ConfigSpecification.getSpecificationByFilename(specfilename)
+    const contribution = M2mSpecification.ghContributions.get(specfilename)
     if (contribution == undefined && spec && spec.pullNumber) {
       log.log(LogLevelEnum.info, 'startPolling for pull Number ' + spec.pullNumber)
-      let mspec = new M2mSpecification(spec as Ispecification)
-      let c: Icontribution = {
+      const mspec = new M2mSpecification(spec as Ispecification)
+      const c: Icontribution = {
         pullRequest: spec.pullNumber,
         monitor: new Subject<IpullRequest>(),
         pollCount: 0,
@@ -915,22 +915,22 @@ export class M2mSpecification implements IspecificationValidator {
     return undefined
   }
   static getNextCheck(specfilename: string): string {
-    let c = M2mSpecification.ghContributions.get(specfilename)
+    const c = M2mSpecification.ghContributions.get(specfilename)
     if (c && c.nextCheck) return c.nextCheck
     return ''
   }
   static triggerPoll(specfilename: string): void {
-    let c = M2mSpecification.ghContributions.get(specfilename)
+    const c = M2mSpecification.ghContributions.get(specfilename)
     if (c && c.m2mSpecification) {
       c.pollCount = 0
       c.m2mSpecification.ghPollIntervalIndexCount = 0
     }
   }
   static msToTime(ms: number) {
-    let seconds: number = ms / 1000
-    let minutes: number = ms / (1000 * 60)
-    let hours: number = ms / (1000 * 60 * 60)
-    let days: number = ms / (1000 * 60 * 60 * 24)
+    const seconds: number = ms / 1000
+    const minutes: number = ms / (1000 * 60)
+    const hours: number = ms / (1000 * 60 * 60)
+    const days: number = ms / (1000 * 60 * 60 * 24)
     if (seconds < 60) return seconds.toFixed(1) + ' Sec'
     else if (minutes < 60) return minutes.toFixed(1) + ' Min'
     else if (hours < 24) return hours.toFixed(1) + ' Hrs'
@@ -939,8 +939,8 @@ export class M2mSpecification implements IspecificationValidator {
 
   private static inCloseContribution: boolean = false
   private static poll(specfilename: string, error: (e: any) => void) {
-    let contribution = M2mSpecification.ghContributions.get(specfilename)
-    let spec = contribution?.m2mSpecification.settings as IfileSpecification
+    const contribution = M2mSpecification.ghContributions.get(specfilename)
+    const spec = contribution?.m2mSpecification.settings as IfileSpecification
     if (
       ConfigSpecification.githubPersonalToken == undefined ||
       spec.status != SpecificationStatus.contributed ||
@@ -957,8 +957,8 @@ export class M2mSpecification implements IspecificationValidator {
       )
         contribution.pollCount = 0
       else {
-        let interval = contribution.m2mSpecification.ghPollInterval[contribution.m2mSpecification.ghPollIntervalIndex] / 100
-        let nextCheckTotalMs = (interval - contribution.pollCount) * 100
+        const interval = contribution.m2mSpecification.ghPollInterval[contribution.m2mSpecification.ghPollIntervalIndex] / 100
+        const nextCheckTotalMs = (interval - contribution.pollCount) * 100
         contribution.nextCheck = M2mSpecification.msToTime(nextCheckTotalMs)
       }
       if (contribution.pollCount == 0) {

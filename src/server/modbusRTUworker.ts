@@ -52,12 +52,12 @@ export class ModbusRTUWorker extends ModbusWorker {
   private cache: Map<number, ImodbusValuesCache>
   constructor(modbusAPI: IModbusAPI, queue: ModbusRTUQueue) {
     super(modbusAPI, queue)
-    let c = ModbusRTUWorker.caches.get(modbusAPI.getCacheId())
+    const c = ModbusRTUWorker.caches.get(modbusAPI.getCacheId())
     if (c) this.cache = c
     else ModbusRTUWorker.caches.set(modbusAPI.getCacheId(), (this.cache = new Map<number, ImodbusValuesCache>()))
   }
   debugMessage(currentEntry: IQueueEntry, msg: string) {
-    let id =
+    const id =
       ' slave: ' +
       currentEntry.slaveId +
       ' Reg: ' +
@@ -76,7 +76,7 @@ export class ModbusRTUWorker extends ModbusWorker {
       return
     }
     // suppress similar duplicate messages
-    let repeatMessage =
+    const repeatMessage =
       ModbusRTUWorker.lastNoticeMessageTime != undefined &&
       ModbusRTUWorker.lastNoticeMessageTime + logNoticeMaxWaitTime < Date.now()
     if (repeatMessage || msg != ModbusRTUWorker.lastNoticeMessage) {
@@ -135,9 +135,9 @@ export class ModbusRTUWorker extends ModbusWorker {
 
   private splitAddresses(entry: IQueueEntry, e: any): void {
     // split request into single parts to avoid invalid address errors as often as possible
-    let length = entry.address.length != undefined ? entry.address.length : 1
+    const length = entry.address.length != undefined ? entry.address.length : 1
     if (length > 1) {
-      let address: ImodbusAddress = {
+      const address: ImodbusAddress = {
         address: entry.address.address,
         registerType: entry.address.registerType,
         length: 1,
@@ -189,7 +189,7 @@ export class ModbusRTUWorker extends ModbusWorker {
         return this.retry(current, error)
       }
     else {
-      let modbusCode = error.modbusCode
+      const modbusCode = error.modbusCode
       if (modbusCode == undefined) {
         current.errorState = ModbusErrorStates.other
         this.addError(current, ModbusErrorStates.other)
@@ -212,10 +212,10 @@ export class ModbusRTUWorker extends ModbusWorker {
     }
   }
   private createQueueRequestCountArray(): number[][] {
-    let minutes: number[] = []
+    const minutes: number[] = []
     for (let idx2 = 0; idx2 < 60; idx2++) minutes.push(0)
 
-    let rc: number[][] = []
+    const rc: number[][] = []
 
     for (let idx = 0; idx < Object.keys(ModbusTasks).length / 2; idx++) rc.push(structuredClone(minutes))
 
@@ -261,7 +261,7 @@ export class ModbusRTUWorker extends ModbusWorker {
     return this.getSelectedMap(current, cacheEntry)
   }
   private updateCache(current: IQueueEntry, result: number[]) {
-    let table = this.getCachedMap(current)
+    const table = this.getCachedMap(current)
     if (table != undefined)
       for (let idx = 0; idx < (current.address.length ? current.address.length : 1); idx++) {
         if (result[idx] == undefined) debug
@@ -274,18 +274,18 @@ export class ModbusRTUWorker extends ModbusWorker {
     return new Date()
   }
   private updateCacheError(current: IQueueEntry, error: Error) {
-    let table = this.getCachedMap(current)
+    const table = this.getCachedMap(current)
     if (table != undefined)
       for (let idx = 0; idx < (current.address.length ? current.address.length : 1); idx++) {
-        let cv = table.get(current.address.address + idx)
+        const cv = table.get(current.address.address + idx)
 
         if (cv && cv.data) {
           // overwrite with error only if really old
-          let expired: Date = this.getCurrentDate()
+          const expired: Date = this.getCurrentDate()
           expired.setTime(cv.date.getTime() + errorTimeout)
           if (expired < this.getCurrentDate()) {
             // expired is more than errorTimeout (5 hours) old
-            let k = 7
+            const k = 7
             table.set(current.address.address + idx, { error: error, date: this.getCurrentDate() })
           }
         } // No data available
@@ -295,10 +295,10 @@ export class ModbusRTUWorker extends ModbusWorker {
 
   private isInCacheMap(current: IQueueEntry): Map<number, IModbusResultOrError> | undefined {
     if (current.options && current.options.useCache) {
-      let mp = this.getCachedMap(current)
+      const mp = this.getCachedMap(current)
       if (mp != undefined) {
         for (let idx = 0; idx < (current.address.length ? current.address.length : 1); idx++) {
-          let rc = mp.get(current.address.address + idx)
+          const rc = mp.get(current.address.address + idx)
           if (rc == undefined) return undefined
         }
         return mp
@@ -309,14 +309,14 @@ export class ModbusRTUWorker extends ModbusWorker {
 
   private executeModbusFunctionCodeRead(current: IQueueEntry | undefined): Promise<void> {
     if (!current) return Promise.resolve()
-    let mp = this.isInCacheMap(current)
+    const mp = this.isInCacheMap(current)
     if (mp != undefined) {
       return new Promise<void>((resolve, reject) => {
         current.errorState = ModbusErrorStates.noerror
         // Read from Cache
         for (let idx = 0; idx < (current.address.length ? current.address.length : 1); idx++) {
-          let rc = mp!.get(current.address.address + idx)
-          let tmpEntry: IQueueEntry = {
+          const rc = mp!.get(current.address.address + idx)
+          const tmpEntry: IQueueEntry = {
             address: { address: current.address.address + idx, length: 1, registerType: current.address.registerType },
             slaveId: current.slaveId,
             onResolve: current.onResolve,
@@ -331,7 +331,7 @@ export class ModbusRTUWorker extends ModbusWorker {
       })
     } else
       return new Promise<void>((resolve, reject) => {
-        let fct = this.functionCodeReadMap.get(current.address.registerType)
+        const fct = this.functionCodeReadMap.get(current.address.registerType)
         fct!(current.slaveId, current.address.address, current.address.length == undefined ? 1 : current.address.length)
           .then((result) => {
             delete current.error
@@ -361,7 +361,7 @@ export class ModbusRTUWorker extends ModbusWorker {
       })
   }
   private cleanCacheTable(table: Map<number, IModbusResultCache>): void {
-    let notExpired: Date = this.getCurrentDate()
+    const notExpired: Date = this.getCurrentDate()
     notExpired.setTime(notExpired.getTime() - dataTimeout)
     table.forEach((v, key) => {
       if (v.date < notExpired) table.delete(key)
@@ -373,12 +373,12 @@ export class ModbusRTUWorker extends ModbusWorker {
       this.cleanCacheTable(v.analogInputs)
       this.cleanCacheTable(v.discreteInputs)
       this.cleanCacheTable(v.coils)
-      let notExpired: Date = this.getCurrentDate()
+      const notExpired: Date = this.getCurrentDate()
       notExpired.setTime(notExpired.getTime() - errorCleanTimeout)
       v.errors.forEach((e, idx) => {
         if (e.date < notExpired) v.errors.splice(idx, 1)
       })
-      let currentMinute = new Date().getMinutes()
+      const currentMinute = new Date().getMinutes()
       // reset current minute counter
       v.requestCount.forEach((type) => {
         type.forEach((count, minute) => {
@@ -398,15 +398,15 @@ export class ModbusRTUWorker extends ModbusWorker {
     return b.options.task - a.options.task
   }
   private processOneEntry(): Promise<void> | undefined {
-    let current = this.queue.dequeue()
+    const current = this.queue.dequeue()
     if (current) {
       debug('processOneEntry: ql:' + this.queue.getLength() + ' address: ' + current?.address.address)
-      let dt = new Date()
+      const dt = new Date()
       if (this.cache.get(current.slaveId) == undefined) this.cache.set(current.slaveId, this.createEmptyIModbusValues())
-      let cacheEntry = this.cache.get(current.slaveId)
+      const cacheEntry = this.cache.get(current.slaveId)
       cacheEntry!.requestCount[current.options.task][dt.getMinutes()]++
       if (current.address.write) {
-        let fct = this.functionCodeWriteMap.get(current.address.registerType)
+        const fct = this.functionCodeWriteMap.get(current.address.registerType)
         if (fct)
           return fct(current.slaveId, current.address.address, current.address.write)
             .then(() => this.processOneEntry())
@@ -425,7 +425,7 @@ export class ModbusRTUWorker extends ModbusWorker {
   override run() {
     if (this.queue.getLength() == 0) return // nothing to do
     this.queue.getEntries().sort(this.compareEntities)
-    let ql = this.queue.getLength()
+    const ql = this.queue.getLength()
     if (!(ql % 10)) debug('Number of queue entries: ' + ql)
     // process all queue entries sequentially:
     if (this.isRunning) return
@@ -435,7 +435,7 @@ export class ModbusRTUWorker extends ModbusWorker {
 
   onFinish() {}
   getErrors(slaveid: number): ImodbusStatusForSlave {
-    let cache = this.cache.get(slaveid)
+    const cache = this.cache.get(slaveid)
     cache?.errors
     if (cache) {
       return {

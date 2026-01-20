@@ -24,12 +24,12 @@ export function getFilenameForUpload(filename: string) {
 }
 export const fileStorage = multer.diskStorage({
   destination: (request: GetRequestWithUploadParameter, _file: Express.Multer.File, callback: DestinationCallback): void => {
-    let fileLocation = ConfigSpecification.getLocalDir()
+    const fileLocation = ConfigSpecification.getLocalDir()
 
     if (fileLocation == undefined) {
       log.log(LogLevelEnum.error, 'Config.fileLocation is not defined. NO file upload possible')
     } else if (request.query.specification !== null) {
-      let dir = getSpecificationImageOrDocumentUrl(fileLocation, getFilenameForUpload(request.query.specification!), '')
+      const dir = getSpecificationImageOrDocumentUrl(fileLocation, getFilenameForUpload(request.query.specification!), '')
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
       callback(null, dir)
     } else callback(new Error('No parameter specification found'), fileLocation)

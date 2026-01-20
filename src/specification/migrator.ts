@@ -9,7 +9,7 @@ import {
   SPECIFICATION_VERSION,
 } from '../specification.shared'
 import { LogLevelEnum, Logger } from './log'
-let log = new Logger('migrator')
+const log = new Logger('migrator')
 
 export interface IimageAndDocumentFilesType {
   version: string
@@ -28,14 +28,14 @@ enum ModbusFunctionCodes {
   IllegalFunctionCode = 0,
 }
 
-var FCOffset: number = 100000
+const FCOffset: number = 100000
 export class Migrator {
   constructor() {}
   migrate(filecontent: any): IfileSpecification {
     let rc: IfileSpecification
 
     let count = 0
-    let maxCount = 4
+    const maxCount = 4
     while (filecontent.version != undefined && count < maxCount) {
       count++
       switch (filecontent.version) {
@@ -119,24 +119,24 @@ export class Migrator {
         delete entity.converter.functionCodes
         entity.converter.name = this.getConvertername0_1(entity.converter.name)
         entity.converter.registerTypes = []
-        let rt = this.fc2registerType(entity.functionCode)
+        const rt = this.fc2registerType(entity.functionCode)
         if (rt) {
           entity.registerType = rt.registerType
           entity.readonly = rt.readonly
           delete entity.functionCode
         }
       })
-    let td: IModbusData = {
+    const td: IModbusData = {
       coils: [],
       analogInputs: [],
       holdingRegisters: [],
     }
     if (filecontent.testdata) {
       filecontent.testdata.forEach((data: any) => {
-        let fc = Math.floor(data.address / FCOffset)
-        let address = data.address % FCOffset
-        let value = data.value
-        let rt = this.fc2registerType(fc)
+        const fc = Math.floor(data.address / FCOffset)
+        const address = data.address % FCOffset
+        const value = data.value
+        const rt = this.fc2registerType(fc)
         if (rt)
           switch (rt.registerType) {
             case ModbusRegisterType.AnalogInputs:

@@ -1,6 +1,6 @@
 import ModbusRTU from 'modbus-serial'
 import Debug from 'debug'
-let baudrate: number = 4800
+const baudrate: number = 4800
 const debug = Debug('modbusanalysis')
 process.env['DEBUG'] = 'modbusanalysis'
 Debug.enable('modbusanalysis')

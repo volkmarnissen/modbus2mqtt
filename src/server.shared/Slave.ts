@@ -27,7 +27,7 @@ export class Slave {
   }
   getEntityCommandTopic(entity?: IidentEntity): IEntityCommandTopics | undefined {
     let commandTopic: string | undefined = undefined
-    let modbusCommandTopic: string | undefined = undefined
+    const modbusCommandTopic: string | undefined = undefined
     if (entity)
       if (!entity.readonly) {
         commandTopic = this.getBaseTopic() + '/' + entity.mqttname + '/set/'
@@ -53,21 +53,21 @@ export class Slave {
 
   getCommandTopic(): string | undefined {
     let commandTopic: string | undefined = undefined
-    let modbusCommandTopic: string | undefined = undefined
+    const modbusCommandTopic: string | undefined = undefined
     if (this.slave.specification?.entities.find((e) => !e.readonly)) {
       commandTopic = this.getBaseTopic() + '/set/'
       return commandTopic
     }
     return undefined
   }
-  getEntityFromCommandTopic(topic: String): Ientity | undefined {
-    let commandTopic: string | undefined = undefined
-    let modbusCommandTopic: string | undefined = undefined
-    let start = this.getBaseTopic()!.length
-    let idx = topic.indexOf('/', start + 1)
+  getEntityFromCommandTopic(topic: string): Ientity | undefined {
+    const commandTopic: string | undefined = undefined
+    const modbusCommandTopic: string | undefined = undefined
+    const start = this.getBaseTopic()!.length
+    const idx = topic.indexOf('/', start + 1)
 
-    let mqttname = topic.substring(start + 1, idx >= 0 ? idx : undefined)
-    let path = mqttname.split('/')
+    const mqttname = topic.substring(start + 1, idx >= 0 ? idx : undefined)
+    const path = mqttname.split('/')
     if (path.length > 0) {
       if (this.slave.specification && (this.slave.specification as ImodbusSpecification).entities) {
         return (this.slave.specification as ImodbusSpecification).entities.find((e) => e.mqttname == path[0])
@@ -79,8 +79,8 @@ export class Slave {
     return this.getBaseTopic() + '/availability/'
   }
   getStatePayload(entities: ImodbusEntity[], defaultValue: string | null = null): string {
-    let o: any = {}
-    for (let e of entities) {
+    const o: any = {}
+    for (const e of entities) {
       if (e.mqttname != undefined && e.mqttname.length > 0 && e.variableConfiguration == undefined) {
         o[e.mqttname] = e.mqttValue != undefined ? e.mqttValue : defaultValue
         if (e.converter == 'select') {
@@ -98,9 +98,9 @@ export class Slave {
     return this.slave.slaveid
   }
   getEntityName(entityId: number): string | undefined {
-    let spec = this.getSpecification()
+    const spec = this.getSpecification()
     if (!spec || !spec.entities) return undefined
-    let e = spec.entities.find((e) => e.id == entityId)
+    const e = spec.entities.find((e) => e.id == entityId)
     return e ? e.name : undefined
   }
   getName(): string | undefined {

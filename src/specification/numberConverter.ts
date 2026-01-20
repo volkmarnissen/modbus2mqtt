@@ -9,19 +9,19 @@ export class NumberConverter extends Converter {
     super(component)
   }
   modbus2mqtt(spec: Ispecification, entityid: number, value: number[]): number | string {
-    let entity = spec.entities.find((e) => e.id == entityid)
-    let mspec = new M2mSpecification(spec.entities as ImodbusEntity[])
+    const entity = spec.entities.find((e) => e.id == entityid)
+    const mspec = new M2mSpecification(spec.entities as ImodbusEntity[])
     if (entity) {
       if (value.length == 0) throw new Error('NumberConverter.modbus2mqtt: No value in array')
 
-      let numberFormat =
+      const numberFormat =
         entity.converterParameters != undefined && (entity.converterParameters as Inumber).numberFormat != undefined
           ? (entity.converterParameters as Inumber).numberFormat
           : EnumNumberFormat.default
 
       let v = value[0]
-      let buffer16 = Buffer.allocUnsafe(4)
-      let buffer32 = Buffer.allocUnsafe(4)
+      const buffer16 = Buffer.allocUnsafe(4)
+      const buffer32 = Buffer.allocUnsafe(4)
       switch (numberFormat) {
         case EnumNumberFormat.float32:
           buffer32.writeUInt16BE(value[0])
@@ -47,7 +47,7 @@ export class NumberConverter extends Converter {
       let offset = mspec.getOffset(entityid)
       if (!multiplier) multiplier = 1
       if (!offset) offset = 0
-      let dec = mspec.getDecimals(entityid)
+      const dec = mspec.getDecimals(entityid)
       v = v * multiplier + offset
       return v
 
@@ -56,22 +56,22 @@ export class NumberConverter extends Converter {
   }
 
   override mqtt2modbus(spec: Ispecification, entityid: number, value: number | string): number[] {
-    let mspec = new M2mSpecification(spec.entities as ImodbusEntity[])
+    const mspec = new M2mSpecification(spec.entities as ImodbusEntity[])
     let multiplier = mspec.getMultiplier(entityid)
     let offset = mspec.getOffset(entityid)
 
     if (!multiplier) multiplier = 1
     if (!offset) offset = 0
-    let entity = spec.entities.find((e) => e.id == entityid)
+    const entity = spec.entities.find((e) => e.id == entityid)
     if (entity) {
-      let numberFormat =
+      const numberFormat =
         entity.converterParameters != undefined && (entity.converterParameters as Inumber).numberFormat != undefined
           ? (entity.converterParameters as Inumber).numberFormat
           : EnumNumberFormat.default
-      let buf: Buffer = Buffer.allocUnsafe(4)
+      const buf: Buffer = Buffer.allocUnsafe(4)
 
       value = ((value as number) - offset) / multiplier
-      let v = value
+      const v = value
       switch (numberFormat) {
         case EnumNumberFormat.float32:
           buf.writeFloatBE(v)

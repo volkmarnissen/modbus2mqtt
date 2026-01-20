@@ -16,14 +16,14 @@ export class TextConverter extends Converter {
     return this.getStringlength(entity) / 2
   }
   override modbus2mqtt(spec: Ispecification, entityid: number, value: number[]): number | string {
-    let entity = spec.entities.find((e) => e.id == entityid)
+    const entity = spec.entities.find((e) => e.id == entityid)
     if (entity && entity.converter === 'value' && entity.converterParameters && (entity.converterParameters as Ivalue).value)
       return (entity.converterParameters as Ivalue).value
-    let cvP = entity?.converterParameters as Itext
-    let buffer = Buffer.allocUnsafe(cvP.stringlength * 2)
+    const cvP = entity?.converterParameters as Itext
+    const buffer = Buffer.allocUnsafe(cvP.stringlength * 2)
     for (let idx = 0; idx < (cvP.stringlength + 1) / 2; idx++) buffer.writeUInt16BE(value[idx], idx * 2)
 
-    let idx = buffer.findIndex((v) => v == 0)
+    const idx = buffer.findIndex((v) => v == 0)
     if (idx >= 0) return buffer.subarray(0, idx).toString()
     return buffer.toString()
   }
@@ -31,9 +31,9 @@ export class TextConverter extends Converter {
     return [ModbusRegisterType.HoldingRegister, ModbusRegisterType.AnalogInputs]
   }
   override mqtt2modbus(spec: Ispecification, entityid: number, _value: string): number[] {
-    let entity = spec.entities.find((e) => e.id == entityid)
+    const entity = spec.entities.find((e) => e.id == entityid)
     if (!entity) throw new Error('entity not found in entities')
-    let rc: number[] = []
+    const rc: number[] = []
     for (let i = 0; i < _value.length; i += 2) {
       if (i + 1 < _value.length) rc.push((_value.charCodeAt(i) << 8) | _value.charCodeAt(i + 1))
       else rc.push(_value.charCodeAt(i) << 8)

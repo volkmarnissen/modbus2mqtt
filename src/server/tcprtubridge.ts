@@ -7,7 +7,7 @@ import { Config } from './config'
 import Debug from 'debug'
 
 const log = new Logger('tcprtubridge')
-let debug = Debug('tcprtubridge')
+const debug = Debug('tcprtubridge')
 
 function queueRegister<T>(
   queue: ModbusRTUQueue,
@@ -19,13 +19,13 @@ function queueRegister<T>(
   length: number
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    let a: ImodbusAddress = { address: addr, length: length, registerType: registerType, write: write }
+    const a: ImodbusAddress = { address: addr, length: length, registerType: registerType, write: write }
     queue.enqueue(
       unitID,
       a,
       (_qe: IQueueEntry, result?: number[]) => {
         try {
-          let v = onResolve(result)
+          const v = onResolve(result)
           resolve(v)
         } catch (e: any) {
           reject(e)
@@ -192,7 +192,7 @@ export class ModbusTcpRtuBridge {
     },
   }
   async startServer(port: number = ModbusTcpRtuBridge.getDefaultPort()): Promise<ServerTCP> {
-    let rc = new Promise<ServerTCP>((resolve, reject) => {
+    const rc = new Promise<ServerTCP>((resolve, reject) => {
       this.serverTCP = new ServerTCP(this.vector, {
         host: '0.0.0.0',
         port: port,
