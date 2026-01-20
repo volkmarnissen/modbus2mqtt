@@ -11,7 +11,7 @@ import {
   getFileNameFromName,
   getSpecificationI18nName,
   newSpecification,
-} from '../../src/specification.shared'
+} from '../../src/shared/specification'
 import { IModbusResultOrError } from '../../src/specification'
 import { ImodbusValues } from '../../src/specification'
 import { SpecificationTestHelper } from '../server/testhelper'

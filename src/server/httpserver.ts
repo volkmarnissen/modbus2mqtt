@@ -1,14 +1,11 @@
-// Alias for typed Express requests with route parameters
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TypedParamsRequest<P = object> = ExpressRequest<P, any, any, any>
 import Debug from 'debug'
 import * as http from 'http'
 import os from 'os'
 import { Request as ExpressRequest } from 'express'
 import * as express from 'express'
-import { ConverterMap, filesUrlPrefix, IfileSpecification, M2mGitHub } from '../specification'
-import { Config, MqttValidationResult } from './config'
-import { Modbus } from './modbus'
+import { ConverterMap, filesUrlPrefix, M2mGitHub } from '../specification/index.js'
+import { Config, MqttValidationResult } from './config.js'
+import { Modbus } from './modbus.js'
 import {
   ImodbusSpecification,
   HttpErrorsEnum,
@@ -16,30 +13,28 @@ import {
   SpecificationStatus,
   IimportMessages,
   SpecificationFileUsage,
-  IimageAndDocumentUrl,
-} from '../specification.shared'
+} from '../shared/specification/index.js'
 import path, { join } from 'path'
 import multer from 'multer'
-import { ParsedQs } from 'qs'
 
 // Alias for typed Express requests with query parameters
-type TypedQueryRequest<Q = ParsedQs> = ExpressRequest<object, object, object, Q>
+// (no alias needed; use express.Request directly)
 
-import { fileStorage, zipStorage } from './httpFileUpload'
-import { Bus } from './bus'
+import { fileStorage, zipStorage } from './httpFileUpload.js'
+import { Bus } from './bus.js'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
-import { LogLevelEnum, Logger } from '../specification'
+import { LogLevelEnum, Logger } from '../specification/index.js'
 
 //import { TranslationServiceClient } from '@google-cloud/translate'
-import { M2mSpecification as M2mSpecification } from '../specification'
-import { IUserAuthenticationStatus, IBus, Islave, apiUri, PollModes, ModbusTasks, IModbusConnection } from '../server.shared'
-import { ConfigSpecification } from '../specification'
-import { HttpServerBase } from './httpServerBase'
+import { M2mSpecification as M2mSpecification } from '../specification/index.js'
+import { IUserAuthenticationStatus, IBus, Islave, apiUri, PollModes, ModbusTasks } from '../shared/server/index.js'
+import { ConfigSpecification } from '../specification/index.js'
+import { HttpServerBase } from './httpServerBase.js'
 import { Writable } from 'stream'
-import { ConfigBus } from './configbus'
-import { MqttConnector } from './mqttconnector'
-import { MqttSubscriptions } from './mqttsubscriptions'
+import { ConfigBus } from './configbus.js'
+import { MqttConnector } from './mqttconnector.js'
+import { MqttSubscriptions } from './mqttsubscriptions.js'
 const debug = Debug('httpserver')
 const log = new Logger('httpserver')
 // import cors from 'cors';
@@ -71,8 +66,7 @@ export class HttpServer extends HttpServerBase {
   }
 
   override returnResult(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    req: ExpressRequest<any, any, any, any>,
+    req: ExpressRequest,
     res: http.ServerResponse,
     code: HttpErrorsEnum,
     message: string,
@@ -86,9 +80,11 @@ export class HttpServer extends HttpServerBase {
       }
     super.returnResult(req, res, code, message, object)
   }
-  checkBusidSlaveidParameter(req: TypedQueryRequest<{ busid?: string; slaveid?: string }>): string {
-    if (req.query.busid === '') return req.originalUrl + ': busid was not passed'
-    if (req.query.slaveid === '') return req.originalUrl + ': slaveid was not passed'
+  checkBusidSlaveidParameter(req: express.Request): string {
+    const busidStr = req.query['busid'] !== undefined ? String(req.query['busid']) : ''
+    const slaveidStr = req.query['slaveid'] !== undefined ? String(req.query['slaveid']) : ''
+    if (busidStr === '') return req.originalUrl + ': busid was not passed'
+    if (slaveidStr === '') return req.originalUrl + ': slaveid was not passed'
     return ''
   }
 
@@ -99,10 +95,10 @@ export class HttpServer extends HttpServerBase {
     }
     this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(rc))
   }
-  getLanguageFromQuery(req: TypedQueryRequest<{ language?: string }>): string {
-    if (req.query.language == undefined) {
+  getLanguageFromQuery(req: express.Request): string {
+    if (req.query['language'] == undefined) {
       throw new Error('language was not passed')
-    } else return req.query.language
+    } else return String(req.query['language'])
   }
   handleSlaveTopics(req: ExpressRequest, res: http.ServerResponse, next: () => void): void {
     const msub = MqttSubscriptions.getInstance()
@@ -182,10 +178,12 @@ export class HttpServer extends HttpServerBase {
       this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(a))
       return
     })
-    this.get(apiUri.userLogin, (req: TypedQueryRequest<{ name?: string; password?: string }>, res: express.Response) => {
+    this.get(apiUri.userLogin, (req: express.Request, res: express.Response) => {
       debug('(/user/login')
-      if (req.query.name && req.query.password) {
-        Config.login(req.query.name, req.query.password)
+      const name = req.query['name'] !== undefined ? String(req.query['name']) : undefined
+      const password = req.query['password'] !== undefined ? String(req.query['password']) : undefined
+      if (name && password) {
+        Config.login(name, password)
           .then((result) => {
             if (result) {
               res.statusCode = 200
@@ -221,39 +219,33 @@ export class HttpServer extends HttpServerBase {
         this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify({ result: 'Invalid Parameter' }))
       }
     })
-    this.get(
-      apiUri.specsDetection,
-      (
-        req: TypedQueryRequest<{ busid?: string; slaveid?: string; showAllPublicSpecs?: string; language?: string }>,
-        res: http.ServerResponse
-      ) => {
-        debug(req.url)
-        const msg = this.checkBusidSlaveidParameter(req)
-        if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-        } else {
-          const slaveId = Number.parseInt(req.query.slaveid!)
-          const busid = Number.parseInt(req.query.busid!)
-          try {
-            const language = this.getLanguageFromQuery(req)
-            const bus = Bus.getBus(busid)
-            if (bus) {
-              bus
-                .getAvailableSpecs(slaveId, req.query.showAllPublicSpecs != undefined, language)
-                .then((result) => {
-                  debug('getAvailableSpecs  succeeded ' + slaveId)
-                  this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(result))
-                })
-                .catch((e) => {
-                  this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'specsDetection: ' + e.message)
-                })
-            }
-          } catch (e: unknown) {
-            this.returnResult(req, res, HttpErrorsEnum.ErrInvalidParameter, 'specsDetection ' + (e as Error).message)
+    this.get(apiUri.specsDetection, (req: express.Request, res: http.ServerResponse) => {
+      debug(req.url)
+      const msg = this.checkBusidSlaveidParameter(req)
+      if (msg !== '') {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
+      } else {
+        const slaveId = Number.parseInt(String(req.query['slaveid']))
+        const busid = Number.parseInt(String(req.query['busid']))
+        try {
+          const language = this.getLanguageFromQuery(req)
+          const bus = Bus.getBus(busid)
+          if (bus) {
+            bus
+              .getAvailableSpecs(slaveId, req.query['showAllPublicSpecs'] != undefined, language)
+              .then((result) => {
+                debug('getAvailableSpecs  succeeded ' + slaveId)
+                this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(result))
+              })
+              .catch((e) => {
+                this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'specsDetection: ' + e.message)
+              })
           }
+        } catch (e: unknown) {
+          this.returnResult(req, res, HttpErrorsEnum.ErrInvalidParameter, 'specsDetection ' + (e as Error).message)
         }
       }
-    )
+    })
 
     this.get(apiUri.sslFiles, (req: ExpressRequest, res: http.ServerResponse) => {
       if (Config.sslDir && Config.sslDir.length) {
@@ -264,19 +256,21 @@ export class HttpServer extends HttpServerBase {
       }
     })
 
-    this.get(apiUri.specfication, (req: TypedQueryRequest<{ spec?: string }>, res: http.ServerResponse) => {
-      const spec = req.query.spec
-      if (spec && spec.length > 0) {
-        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(ConfigSpecification.getSpecificationByFilename(spec)))
+    this.get(apiUri.specfication, (req: express.Request, res: http.ServerResponse) => {
+      const spec = req.query['spec']
+      const specName = spec !== undefined ? String(spec) : ''
+      if (specName.length > 0) {
+        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(ConfigSpecification.getSpecificationByFilename(specName)))
       } else {
         this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'not found')
       }
     })
 
-    this.get(apiUri.nextCheck, (req: TypedQueryRequest<{ spec?: string }>, res: http.ServerResponse) => {
+    this.get(apiUri.nextCheck, (req: express.Request, res: http.ServerResponse) => {
       debug(req.url)
-      if (req.query.spec !== undefined) {
-        const nc = M2mSpecification.getNextCheck(req.query.spec)
+      const spec = req.query['spec']
+      if (spec !== undefined) {
+        const nc = M2mSpecification.getNextCheck(String(spec))
         this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(nc))
       }
     })
@@ -310,11 +304,12 @@ export class HttpServer extends HttpServerBase {
       })
       this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(ibs))
     })
-    this.get(apiUri.bus, (req: TypedQueryRequest<{ busid?: string }>, res: http.ServerResponse) => {
+    this.get(apiUri.bus, (req: express.Request, res: http.ServerResponse) => {
       debug(req.originalUrl)
       res.statusCode = 200
-      if (req.query.busid && req.query.busid.length) {
-        const bus = Bus.getBus(Number.parseInt(req.query.busid))
+      const busidStr = req.query['busid'] !== undefined ? String(req.query['busid']) : ''
+      if (busidStr.length) {
+        const bus = Bus.getBus(Number.parseInt(busidStr))
         if (bus && bus.properties) {
           this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(bus.properties))
           return
@@ -323,13 +318,13 @@ export class HttpServer extends HttpServerBase {
       this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'invalid Parameter')
     })
 
-    this.get(apiUri.slaves, (req: TypedQueryRequest<{ busid?: string }>, res: http.ServerResponse) => {
+    this.get(apiUri.slaves, (req: express.Request, res: http.ServerResponse) => {
       const invParam = () => {
         this.returnResult(req, res, HttpErrorsEnum.ErrInvalidParameter, 'Invalid parameter')
         return
       }
-      if (req.query.busid !== undefined) {
-        const busid = Number.parseInt(req.query.busid)
+      if (req.query['busid'] !== undefined) {
+        const busid = Number.parseInt(String(req.query['busid']))
         const bus = Bus.getBus(busid)
         if (bus) {
           const slaves = bus.getSlaves()
@@ -338,10 +333,10 @@ export class HttpServer extends HttpServerBase {
         } else invParam()
       } else invParam()
     })
-    this.get(apiUri.slave, (req: TypedQueryRequest<{ busid?: string; slaveid?: string }>, res: http.ServerResponse) => {
-      if (req.query.busid !== undefined && req.query.slaveid !== undefined) {
-        const busid = Number.parseInt(req.query.busid)
-        const slaveid = Number.parseInt(req.query.slaveid)
+    this.get(apiUri.slave, (req: express.Request, res: http.ServerResponse) => {
+      if (req.query['busid'] !== undefined && req.query['slaveid'] !== undefined) {
+        const busid = Number.parseInt(String(req.query['busid']))
+        const slaveid = Number.parseInt(String(req.query['slaveid']))
         const slave = Bus.getBus(busid)?.getSlaveBySlaveId(slaveid)
         this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(slave))
       } else {
@@ -360,51 +355,47 @@ export class HttpServer extends HttpServerBase {
         this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, JSON.stringify(e))
       }
     })
-    this.get(
-      apiUri.modbusSpecification,
-      (
-        req: TypedQueryRequest<{ busid?: string; slaveid?: string; spec?: string; deviceDetection?: boolean }>,
-        res: http.ServerResponse
-      ) => {
-        debug(req.url)
-        debug('get specification with modbus data for slave ' + req.query.slaveid)
-        const msg = this.checkBusidSlaveidParameter(req)
-        if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-          return
-        }
-        const bus = Bus.getBus(Number.parseInt(req.query.busid!))
-        if (bus === undefined) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + req.query.busid)
-          return
-        }
-        let modbusTask = ModbusTasks.specification
-        if (req.query.deviceDetection) modbusTask = ModbusTasks.deviceDetection
-        const slave = bus.getSlaveBySlaveId(Number.parseInt(req.query.slaveid!))
-        if (slave == undefined) {
-          this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, JSON.stringify('invalid slaveid '))
-          return
-        }
-        Modbus.getModbusSpecification(modbusTask, bus.getModbusAPI(), slave, req.query.spec, (e: unknown) => {
-          log.log(LogLevelEnum.error, 'http: get /specification ' + (e as Error).message)
-          this.returnResult(
-            req,
-            res,
-            HttpErrorsEnum.SrvErrInternalServerError,
-            JSON.stringify('read specification ' + (e as Error).message)
-          )
-        }).subscribe((result) => {
-          this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(result))
-        })
+    this.get(apiUri.modbusSpecification, (req: express.Request, res: http.ServerResponse) => {
+      debug(req.url)
+      debug('get specification with modbus data for slave ' + req.query['slaveid'])
+      const msg = this.checkBusidSlaveidParameter(req)
+      if (msg !== '') {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
+        return
       }
-    )
-    this.get(apiUri.download, (req: TypedParamsRequest<{ what?: string }>, res: http.ServerResponse) => {
+      const busid = Number.parseInt(String(req.query['busid']))
+      const bus = Bus.getBus(busid)
+      if (bus === undefined) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + String(req.query['busid']))
+        return
+      }
+      let modbusTask = ModbusTasks.specification
+      if (req.query['deviceDetection'] !== undefined) modbusTask = ModbusTasks.deviceDetection
+      const slave = bus.getSlaveBySlaveId(Number.parseInt(String(req.query['slaveid'])))
+      if (slave == undefined) {
+        this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, JSON.stringify('invalid slaveid '))
+        return
+      }
+      const specName = req.query['spec'] !== undefined ? String(req.query['spec']) : undefined
+      Modbus.getModbusSpecification(modbusTask, bus.getModbusAPI(), slave, specName as unknown as string, (e: unknown) => {
+        log.log(LogLevelEnum.error, 'http: get /specification ' + (e as Error).message)
+        this.returnResult(
+          req,
+          res,
+          HttpErrorsEnum.SrvErrInternalServerError,
+          JSON.stringify('read specification ' + (e as Error).message)
+        )
+      }).subscribe((result) => {
+        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(result))
+      })
+    })
+    this.get(apiUri.download, (req: express.Request, res: http.ServerResponse) => {
       debug(req.url)
       let downloadMethod: (filename: string, r: Writable) => Promise<void>
       let filename = 'local.zip'
-      if (req.params && req.params['what'] && req.params.what == 'local') downloadMethod = Config.createZipFromLocal
+      if (req.params && req.params['what'] && req.params['what'] == 'local') downloadMethod = Config.createZipFromLocal
       else {
-        filename = req.params.what + '.zip'
+        filename = req.params['what'] + '.zip'
         downloadMethod = (file: string, r: Writable) => {
           return new Promise<void>((resolve, reject) => {
             try {
@@ -419,8 +410,8 @@ export class HttpServer extends HttpServerBase {
       res.setHeader('Content-Type', 'application/zip')
       res.setHeader('Content-disposition', 'attachment; filename=' + filename)
       // Tell the browser that this is a zip file.
-      if (req.params && req.params.what)
-        downloadMethod(req.params.what, res)
+      if (req.params && req.params['what'])
+        downloadMethod(req.params['what'], res)
           .then(() => {
             super.returnResult(req, res, HttpErrorsEnum.OK, undefined)
           })
@@ -429,55 +420,52 @@ export class HttpServer extends HttpServerBase {
               req,
               res,
               HttpErrorsEnum.SrvErrInternalServerError,
-              JSON.stringify('download Zip ' + req.params.what + e.message)
+              JSON.stringify('download Zip ' + req.params['what'] + e.message)
             )
           })
     })
-    this.post(
-      apiUri.specficationContribute,
-      (req: ExpressRequest<object, object, { note: string }, { spec?: string }>, res: http.ServerResponse) => {
-        if (!req.query.spec) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrInvalidParameter, 'specification name not passed')
-          return
-        }
-        const spec = ConfigSpecification.getSpecificationByFilename(req.query.spec)
-        const client = new M2mSpecification(spec as Ispecification)
-        if (spec && spec.status && ![SpecificationStatus.contributed, SpecificationStatus.published].includes(spec.status)) {
-          client
-            .contribute(req.body.note)
-            .then((response) => {
-              // poll status updates of pull request
-              M2mSpecification.startPolling(spec!.filename, (e) => {
-                {
-                  const msg = e instanceof Error ? e.message : String(e)
-                  log.log(LogLevelEnum.error, msg)
-                }
-              })?.subscribe((pullRequest) => {
-                if (pullRequest.merged) log.log(LogLevelEnum.info, 'Merged ' + pullRequest.pullNumber)
-                else if (pullRequest.closed) log.log(LogLevelEnum.info, 'Closed ' + pullRequest.pullNumber)
-                else debug('Polled pullrequest ' + pullRequest.pullNumber)
-
-                if (pullRequest.merged || pullRequest.closed)
-                  this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(response))
-              })
-            })
-            .catch((err) => {
-              res.statusCode = HttpErrorsEnum.ErrNotAcceptable
-              if (err.message) res.end(JSON.stringify(err.message))
-              else res.end(JSON.stringify(err))
-              log.log(LogLevelEnum.error, JSON.stringify(err))
-            })
-        } else if (spec && spec.status && spec.status == SpecificationStatus.contributed) {
-          M2mSpecification.startPolling(spec.filename, (e) => {
-            {
-              const msg = e instanceof Error ? e.message : String(e)
-              log.log(LogLevelEnum.error, msg)
-            }
-          })
-          this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, 'Specification is already contributed')
-        }
+    this.post(apiUri.specficationContribute, (req: express.Request, res: http.ServerResponse) => {
+      if (!req.query['spec']) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrInvalidParameter, 'specification name not passed')
+        return
       }
-    )
+      const spec = ConfigSpecification.getSpecificationByFilename(String(req.query['spec']))
+      const client = new M2mSpecification(spec as Ispecification)
+      if (spec && spec.status && ![SpecificationStatus.contributed, SpecificationStatus.published].includes(spec.status)) {
+        client
+          .contribute(req.body.note)
+          .then((response) => {
+            // poll status updates of pull request
+            M2mSpecification.startPolling(spec!.filename, (e) => {
+              {
+                const msg = e instanceof Error ? e.message : String(e)
+                log.log(LogLevelEnum.error, msg)
+              }
+            })?.subscribe((pullRequest) => {
+              if (pullRequest.merged) log.log(LogLevelEnum.info, 'Merged ' + pullRequest.pullNumber)
+              else if (pullRequest.closed) log.log(LogLevelEnum.info, 'Closed ' + pullRequest.pullNumber)
+              else debug('Polled pullrequest ' + pullRequest.pullNumber)
+
+              if (pullRequest.merged || pullRequest.closed)
+                this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(response))
+            })
+          })
+          .catch((err) => {
+            res.statusCode = HttpErrorsEnum.ErrNotAcceptable
+            if (err.message) res.end(JSON.stringify(err.message))
+            else res.end(JSON.stringify(err))
+            log.log(LogLevelEnum.error, JSON.stringify(err))
+          })
+      } else if (spec && spec.status && spec.status == SpecificationStatus.contributed) {
+        M2mSpecification.startPolling(spec.filename, (e) => {
+          {
+            const msg = e instanceof Error ? e.message : String(e)
+            log.log(LogLevelEnum.error, msg)
+          }
+        })
+        this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, 'Specification is already contributed')
+      }
+    })
 
     this.post(apiUri.translate, (req: ExpressRequest, res: http.ServerResponse) => {
       // let client = new TranslationServiceClient()
@@ -531,69 +519,60 @@ export class HttpServer extends HttpServerBase {
       ConfigSpecification.setMqttdiscoverylanguage(config.mqttdiscoverylanguage, config.githubPersonalToken)
       this.returnResult(req, res, HttpErrorsEnum.OkNoContent, JSON.stringify(config))
     })
-    this.post(
-      apiUri.bus,
-      (req: ExpressRequest<object, object, IModbusConnection, { busid?: string }>, res: http.ServerResponse) => {
-        debug('POST: ' + req.url)
+    this.post(apiUri.bus, (req: express.Request, res: http.ServerResponse) => {
+      debug('POST: ' + req.url)
 
-        if (req.query.busid != undefined) {
-          const bus = Bus.getBus(parseInt(req.query.busid))
-          if (bus)
-            bus
-              .updateBus(req.body)
-              .then((bus) => {
-                this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify({ busid: bus.properties.busId }))
-              })
-              .catch((e) => {
-                this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, 'Bus: ' + e.message)
-              })
-        } else
-          Bus.addBus(req.body)
+      if (req.query['busid'] != undefined) {
+        const bus = Bus.getBus(parseInt(String(req.query['busid'])))
+        if (bus)
+          bus
+            .updateBus(req.body)
             .then((bus) => {
               this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify({ busid: bus.properties.busId }))
             })
             .catch((e) => {
-              this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, e.message)
+              this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, 'Bus: ' + e.message)
             })
-      }
-    )
-
-    this.post(
-      apiUri.modbusEntity,
-      (
-        req: ExpressRequest<object, object, IfileSpecification, { busid?: string; slaveid?: string; entityid?: string }>,
-        res: http.ServerResponse
-      ) => {
-        debug(req.url)
-        const msg = this.checkBusidSlaveidParameter(req)
-        if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-          return
-        } else {
-          const bus = Bus.getBus(Number.parseInt(req.query.busid!))!
-          const entityid = req.query.entityid ? parseInt(req.query.entityid) : undefined
-          const sub = new Subject<ImodbusSpecification>()
-          const subscription = sub.subscribe((result) => {
-            subscription.unsubscribe()
-            const ent = result.entities.find((e) => e.id == entityid)
-            if (ent) {
-              this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(ent))
-              return
-            } else {
-              this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, 'No entity found in specfication')
-              return
-            }
+      } else
+        Bus.addBus(req.body)
+          .then((bus) => {
+            this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify({ busid: bus.properties.busId }))
           })
-          Modbus.getModbusSpecificationFromData(
-            ModbusTasks.entity,
-            bus.getModbusAPI(),
-            Number.parseInt(req.query.slaveid!),
-            req.body,
-            sub
-          )
-        }
+          .catch((e) => {
+            this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, e.message)
+          })
+    })
+
+    this.post(apiUri.modbusEntity, (req: express.Request, res: http.ServerResponse) => {
+      debug(req.url)
+      const msg = this.checkBusidSlaveidParameter(req as unknown as express.Request)
+      if (msg !== '') {
+        this.returnResult(req as unknown as express.Request, res, HttpErrorsEnum.ErrBadRequest, msg)
+        return
+      } else {
+        const bus = Bus.getBus(Number.parseInt(String(req.query['busid']!)))!
+        const entityid = req.query['entityid'] ? Number.parseInt(String(req.query['entityid'])) : undefined
+        const sub = new Subject<ImodbusSpecification>()
+        const subscription = sub.subscribe((result) => {
+          subscription.unsubscribe()
+          const ent = result.entities.find((e) => e.id == entityid)
+          if (ent) {
+            this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(ent))
+            return
+          } else {
+            this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, 'No entity found in specfication')
+            return
+          }
+        })
+        Modbus.getModbusSpecificationFromData(
+          ModbusTasks.entity,
+          bus.getModbusAPI(),
+          Number.parseInt(String(req.query['slaveid']!)),
+          req.body,
+          sub
+        )
       }
-    )
+    })
     this.post(
       apiUri.writeEntity,
       (
@@ -606,27 +585,39 @@ export class HttpServer extends HttpServerBase {
         res: http.ServerResponse
       ) => {
         debug(req.url)
-        const msg = this.checkBusidSlaveidParameter(req)
+        const msg = this.checkBusidSlaveidParameter(req as unknown as express.Request)
         if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
+          this.returnResult(req as unknown as express.Request, res, HttpErrorsEnum.ErrBadRequest, msg)
           return
         } else {
-          const bus = Bus.getBus(Number.parseInt(req.query.busid!))!
-          const mqttValue = req.query.mqttValue
-          const entityid = req.query.entityid ? parseInt(req.query.entityid) : undefined
-          if (entityid && mqttValue && req.query.slaveid != undefined)
-            Modbus.writeEntityMqtt(bus.getModbusAPI(), Number.parseInt(req.query.slaveid!), req.body, entityid, mqttValue)
+          const bus = Bus.getBus(Number.parseInt(String(req.query['busid']!)))!
+          const mqttValue = req.query['mqttValue'] !== undefined ? String(req.query['mqttValue']) : undefined
+          const entityid = req.query['entityid'] ? Number.parseInt(String(req.query['entityid'])) : undefined
+          if (entityid && mqttValue && req.query['slaveid'] != undefined)
+            Modbus.writeEntityMqtt(
+              bus.getModbusAPI(),
+              Number.parseInt(String(req.query['slaveid']!)),
+              req.body,
+              entityid,
+              mqttValue
+            )
               .then(() => {
-                this.returnResult(req, res, HttpErrorsEnum.OkCreated, '')
+                this.returnResult(req as unknown as express.Request, res, HttpErrorsEnum.OkCreated, '')
               })
               .catch((e) => {
-                this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, e)
+                this.returnResult(req as unknown as express.Request, res, HttpErrorsEnum.SrvErrInternalServerError, e)
               })
-          else this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, 'No entity found in specfication')
+          else
+            this.returnResult(
+              req as unknown as express.Request,
+              res,
+              HttpErrorsEnum.SrvErrInternalServerError,
+              'No entity found in specfication'
+            )
         }
       }
     )
-    this.get(apiUri.serialDevices, (req: TypedQueryRequest<{ busid?: string; slaveid?: string }>, res: http.ServerResponse) => {
+    this.get(apiUri.serialDevices, (req: express.Request, res: http.ServerResponse) => {
       debug(req.url)
 
       ConfigBus.listDevices(
@@ -641,181 +632,168 @@ export class HttpServer extends HttpServerBase {
       )
     })
 
-    this.post(
-      apiUri.specfication,
-      (
-        req: ExpressRequest<object, object, ImodbusSpecification, { busid?: string; slaveid?: string; originalFilename?: string }>,
-        res: http.ServerResponse
-      ) => {
-        debug('POST /specification: ' + req.query.busid + '/' + req.query.slaveid)
-        const rd = new ConfigSpecification()
-        const msg = this.checkBusidSlaveidParameter(req)
-        if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, "{message: '" + msg + "'}")
-          return
-        }
-        const bus: Bus | undefined = Bus.getBus(Number.parseInt(req.query.busid!))
-        const slave: Islave | undefined = bus ? bus.getSlaveBySlaveId(Number.parseInt(req.query.slaveid!)) : undefined
-
-        const originalFilename: string | null = req.query.originalFilename ? req.query.originalFilename : null
-        const rc = rd.writeSpecification(
-          req.body,
-          (filename: string) => {
-            if (bus != undefined && slave != undefined) {
-              slave.specificationid = filename
-              ConfigBus.writeslave(bus.getId(), slave)
-            }
-          },
-          originalFilename
-        )
-
-        // bus
-        //   ?.getAvailableSpecs(Number.parseInt(req.query.slaveid), false)
-        //   .then(() => {
-        //     debug('Cache updated')
-        //   })
-        //   .catch((e) => {
-        //     debug('getAvailableModbusData failed:' + e.message)
-        //   })
-
-        this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
+    this.post(apiUri.specfication, (req: express.Request, res: http.ServerResponse) => {
+      debug('POST /specification: ' + String(req.query['busid']) + '/' + String(req.query['slaveid']))
+      const rd = new ConfigSpecification()
+      const msg = this.checkBusidSlaveidParameter(req)
+      if (msg !== '') {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, "{message: '" + msg + "'}")
+        return
       }
-    )
-    this.post(
-      apiUri.specificationValidate,
-      (req: ExpressRequest<object, object, Ispecification, { language?: string }>, res: http.ServerResponse) => {
-        if (!req.query.language || req.query.language.length == 0) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('pass language '))
-          return
-        }
-        const spec = new M2mSpecification(req.body)
-        const messages = spec.validate(req.query.language)
-        this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(messages))
-      }
-    )
+      const bus: Bus | undefined = Bus.getBus(Number.parseInt(String(req.query['busid']!)))
+      const slave: Islave | undefined = bus ? bus.getSlaveBySlaveId(Number.parseInt(String(req.query['slaveid']!))) : undefined
 
-    this.get(
-      apiUri.specificationValidate,
-      (req: TypedQueryRequest<{ language?: string; spec?: string }>, res: http.ServerResponse) => {
-        if (!req.query.language || req.query.language.length == 0) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('pass language '))
-          return
-        }
-        if (!req.query.spec || req.query.spec.length == 0) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('pass specification '))
-          return
-        }
-        const fspec = ConfigSpecification.getSpecificationByFilename(req.query.spec)
-        if (!fspec) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('specification not found ' + req.query.spec))
-          return
-        }
-        const spec = new M2mSpecification(fspec)
-        const messages = spec.validate(req.query.language)
-        this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(messages))
-      }
-    )
-    this.post(
-      apiUri.slave,
-      (req: ExpressRequest<object, object, Islave, { busid?: string; slaveid?: string }>, res: http.ServerResponse) => {
-        debug('POST /slave: ' + JSON.stringify(req.body))
-        const msg = this.checkBusidSlaveidParameter(req)
-        const bus = Bus.getBus(Number.parseInt(req.query.busid!))
-        if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + req.query.busid)
-          return
-        }
-        if (req.body.slaveid == undefined) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus Id: ' + req.query.busid + ' Slave Id is not defined')
-          return
-        }
-
-        res.setHeader('charset', 'utf-8')
-        res.setHeader('Access-Control-Allow-Methods', 'POST, PUT, OPTIONS, DELETE, GET')
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, x-access-token')
-        res.setHeader('Access-Control-Allow-Credentials', 'true')
-        res.setHeader('Content-Type', 'application/json')
-        if (bus === undefined) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + req.query.busid)
-          return
-        }
-        const rc: Islave = bus.writeSlave(req.body)
-        this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
-      }
-    )
-    this.post(
-      apiUri.addFilesUrl,
-      (
-        req: ExpressRequest<object, object, IimageAndDocumentUrl, { specification?: string; usage?: string }>,
-        res: http.ServerResponse
-      ) => {
-        try {
-          if (req.query.specification) {
-            if (req.body) {
-              // req.body.documents
-              const config = new ConfigSpecification()
-              config.appendSpecificationUrls(req.query.specification!, [req.body]).then((files) => {
-                if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-                else this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
-              })
-            } else {
-              this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
-            }
-          } else {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification no passed')
+      const originalFilename: string | null =
+        req.query['originalFilename'] !== undefined ? String(req.query['originalFilename']) : null
+      const rc = rd.writeSpecification(
+        req.body,
+        (filename: string) => {
+          if (bus != undefined && slave != undefined) {
+            slave.specificationid = filename
+            ConfigBus.writeslave(bus.getId(), slave)
           }
-        } catch (e: unknown) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Adding URL failed: ' + (e as Error).message, e)
-        }
+        },
+        originalFilename
+      )
+
+      // bus
+      //   ?.getAvailableSpecs(Number.parseInt(req.query.slaveid), false)
+      //   .then(() => {
+      //     debug('Cache updated')
+      //   })
+      //   .catch((e) => {
+      //     debug('getAvailableModbusData failed:' + e.message)
+      //   })
+
+      this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
+    })
+    this.post(apiUri.specificationValidate, (req: express.Request, res: http.ServerResponse) => {
+      if (!req.query['language'] || String(req.query['language']).length == 0) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('pass language '))
+        return
       }
-    )
+      const spec = new M2mSpecification(req.body)
+      const messages = spec.validate(String(req.query['language']))
+      this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(messages))
+    })
+
+    this.get(apiUri.specificationValidate, (req: express.Request, res: http.ServerResponse) => {
+      if (!req.query['language'] || String(req.query['language']).length == 0) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('pass language '))
+        return
+      }
+      if (!req.query['spec'] || String(req.query['spec']).length == 0) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, JSON.stringify('pass specification '))
+        return
+      }
+      const fspec = ConfigSpecification.getSpecificationByFilename(String(req.query['spec']))
+      if (!fspec) {
+        this.returnResult(
+          req,
+          res,
+          HttpErrorsEnum.ErrBadRequest,
+          JSON.stringify('specification not found ' + String(req.query['spec']))
+        )
+        return
+      }
+      const spec = new M2mSpecification(fspec)
+      const messages = spec.validate(String(req.query['language']))
+      this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(messages))
+    })
+    this.post(apiUri.slave, (req: express.Request, res: http.ServerResponse) => {
+      debug('POST /slave: ' + JSON.stringify(req.body))
+      const msg = this.checkBusidSlaveidParameter(req)
+      const bus = Bus.getBus(Number.parseInt(String(req.query['busid']!)))
+      if (msg !== '') {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + String(req.query['busid']))
+        return
+      }
+      if (req.body.slaveid == undefined) {
+        this.returnResult(
+          req,
+          res,
+          HttpErrorsEnum.ErrBadRequest,
+          'Bus Id: ' + String(req.query['busid']) + ' Slave Id is not defined'
+        )
+        return
+      }
+
+      res.setHeader('charset', 'utf-8')
+      res.setHeader('Access-Control-Allow-Methods', 'POST, PUT, OPTIONS, DELETE, GET')
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, x-access-token')
+      res.setHeader('Access-Control-Allow-Credentials', 'true')
+      res.setHeader('Content-Type', 'application/json')
+      if (bus === undefined) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + req.query['busid'])
+        return
+      }
+      const rc: Islave = bus.writeSlave(req.body)
+      this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
+    })
+    this.post(apiUri.addFilesUrl, (req: express.Request, res: http.ServerResponse) => {
+      try {
+        if (req.query['specification']) {
+          if (req.body) {
+            // req.body.documents
+            const config = new ConfigSpecification()
+            config.appendSpecificationUrls(String(req.query['specification']!), [req.body]).then((files) => {
+              if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
+              else this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
+            })
+          } else {
+            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
+          }
+        } else {
+          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification no passed')
+        }
+      } catch (e: unknown) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Adding URL failed: ' + (e as Error).message, e)
+      }
+    })
 
     const upload = multer({ storage: fileStorage })
-    this.app.post(
-      apiUri.upload,
-      upload.array('documents'),
-      (
-        req: TypedQueryRequest<{ specification?: string; usage?: string; busid?: string; slaveid?: string }>,
-        res: http.ServerResponse
-      ) => {
-        try {
-          if (!req.query.usage) {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-            return
-          }
+    this.app.post(apiUri.upload, upload.array('documents'), (req: express.Request, res: http.ServerResponse) => {
+      try {
+        if (!req.query['usage']) {
+          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
+          return
+        }
 
-          const msg = this.checkBusidSlaveidParameter(req as GetRequestWithParameter)
-          if (msg !== '') {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-            return
-          } else {
-            debug('Files uploaded')
-            if (req.files) {
-              // req.body.documents
-              const config = new ConfigSpecification()
-              const f: string[] = []
-              ;(req.files as Express.Multer.File[])!.forEach((f0) => {
+        const msg = this.checkBusidSlaveidParameter(req as GetRequestWithParameter)
+        if (msg !== '') {
+          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
+          return
+        } else {
+          debug('Files uploaded')
+          if (req.files) {
+            // req.body.documents
+            const config = new ConfigSpecification()
+            const f: string[] = []
+              ; (req.files as Express.Multer.File[])!.forEach((f0) => {
                 f.push(f0.originalname)
               })
-              if (req.query.usage === undefined) {
-                this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-              }
-              config
-                .appendSpecificationFiles(req.query.specification!, f, req.query.usage! as SpecificationFileUsage)
-                .then((files) => {
-                  if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-                  else this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
-                })
-            } else {
-              this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
+            if (req.query['usage'] === undefined) {
+              this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
             }
+            config
+              .appendSpecificationFiles(
+                String(req.query['specification']!),
+                f,
+                String(req.query['usage']!) as unknown as SpecificationFileUsage
+              )
+              .then((files) => {
+                if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
+                else this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
+              })
+          } else {
+            this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
           }
-        } catch (e: unknown) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Upload failed: ' + (e as Error).message, e)
         }
+      } catch (e: unknown) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Upload failed: ' + (e as Error).message, e)
       }
-    )
+    })
     this.app.post(
       apiUri.uploadSpec,
       multer({ storage: zipStorage }).array('zips'),
@@ -823,7 +801,7 @@ export class HttpServer extends HttpServerBase {
         if (req.files) {
           // req.body.documents
 
-          ;(req.files as Express.Multer.File[])!.forEach((f) => {
+          ; (req.files as Express.Multer.File[])!.forEach((f) => {
             try {
               const zipfilename = join(f.destination, f.filename)
               const errors = ConfigSpecification.importSpecificationZip(zipfilename)
@@ -843,21 +821,18 @@ export class HttpServer extends HttpServerBase {
       }
     )
 
-    this.delete(
-      apiUri.upload,
-      (req: TypedQueryRequest<{ specification?: string; url?: string; usage?: string }>, res: http.ServerResponse) => {
-        if (req.query.specification && req.query.url && req.query.usage) {
-          const files = ConfigSpecification.deleteSpecificationFile(
-            req.query.specification,
-            req.query.url,
-            req.query.usage as SpecificationFileUsage
-          )
-          this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(files))
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Invalid Usage')
-        }
+    this.delete(apiUri.upload, (req: express.Request, res: http.ServerResponse) => {
+      if (req.query['specification'] && req.query['url'] && req.query['usage']) {
+        const files = ConfigSpecification.deleteSpecificationFile(
+          String(req.query['specification']),
+          String(req.query['url']),
+          String(req.query['usage']) as unknown as SpecificationFileUsage
+        )
+        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(files))
+      } else {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Invalid Usage')
       }
-    )
+    })
     this.delete(apiUri.newSpecificationfiles, (req: ExpressRequest, res: http.ServerResponse) => {
       try {
         new ConfigSpecification().deleteNewSpecificationFiles()
@@ -869,14 +844,14 @@ export class HttpServer extends HttpServerBase {
     // app.post('/specification',  ( req:express.TypedRequestBody<IfileSpecification>) =>{
     //         debug( req.body.name);
     //    });
-    this.delete(apiUri.specfication, (req: TypedQueryRequest<{ spec?: string }>, res: http.ServerResponse) => {
-      debug('DELETE /specification: ' + req.query.spec)
+    this.delete(apiUri.specfication, (req: express.Request, res: http.ServerResponse) => {
+      debug('DELETE /specification: ' + String(req.query['spec']))
       const rd = new ConfigSpecification()
-      if (req.query.spec) {
-        const rc = rd.deleteSpecification(req.query.spec)
+      if (req.query['spec']) {
+        const rc = rd.deleteSpecification(String(req.query['spec']))
         Bus.getBusses().forEach((bus) => {
           bus.getSlaves().forEach((slave) => {
-            if (slave.specificationid == req.query.spec) {
+            if (slave.specificationid == String(req.query['spec'])) {
               delete slave.specificationid
               if (slave.pollMode == undefined) slave.pollMode = PollModes.intervall
               bus.writeSlave(slave)
@@ -888,26 +863,28 @@ export class HttpServer extends HttpServerBase {
         this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No specification passed')
       }
     })
-    this.delete(apiUri.bus, (req: TypedQueryRequest<{ busid?: string }>, res: http.ServerResponse) => {
-      debug('DELETE /busses: ' + req.query.busid)
-      if (!req.query.busid) {
+    this.delete(apiUri.bus, (req: express.Request, res: http.ServerResponse) => {
+      debug('DELETE /busses: ' + String(req.query['busid']))
+      if (!req.query['busid']) {
         this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No busid passed')
         return
       }
-      Bus.deleteBus(Number.parseInt(req.query.busid))
+      Bus.deleteBus(Number.parseInt(String(req.query['busid'])))
       this.returnResult(req, res, HttpErrorsEnum.OK, '')
     })
 
-    this.delete(apiUri.slave, (req: TypedQueryRequest<{ slaveid?: string; busid?: string }>, res: http.ServerResponse) => {
-      debug('Delete /slave: ' + req.query.slaveid)
+    this.delete(apiUri.slave, (req: express.Request, res: http.ServerResponse) => {
+      debug('Delete /slave: ' + String(req.query['slaveid']))
       const msg = this.checkBusidSlaveidParameter(req)
       if (msg !== '') {
         this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
         return
       }
-      if (req.query.slaveid!.length > 0 && req.query.busid!.length > 0) {
-        const bus = Bus.getBus(Number.parseInt(req.query.busid!))
-        if (bus) bus.deleteSlave(Number.parseInt(req.query.slaveid!))
+      const slaveidStr = req.query['slaveid'] !== undefined ? String(req.query['slaveid']) : ''
+      const busidStr = req.query['busid'] !== undefined ? String(req.query['busid']) : ''
+      if (slaveidStr.length > 0 && busidStr.length > 0) {
+        const bus = Bus.getBus(Number.parseInt(busidStr))
+        if (bus) bus.deleteSlave(Number.parseInt(slaveidStr))
         this.returnResult(req, res, HttpErrorsEnum.OK, '')
       }
     })

@@ -1,4 +1,4 @@
-import { Ispecification } from '../specification.shared'
+import { Ispecification } from '../shared/specification/index.js'
 export interface Idata {
   address: number
   value?: number

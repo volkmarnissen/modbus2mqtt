@@ -1,16 +1,25 @@
-import { IBus, IModbusConnection, Islave, Slave } from '../server.shared'
-import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
-import { getSpecificationI18nEntityName, IidentEntity, Ispecification } from '../specification.shared'
+import { IBus, IModbusConnection, Islave, Slave } from '../shared/server/index.js'
+import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
+import { getSpecificationI18nEntityName, IidentEntity, Ispecification } from '../shared/specification/index.js'
 import { parse, stringify } from 'yaml'
 import * as fs from 'fs'
 import * as path from 'path'
 
 import Debug from 'debug'
 import { join } from 'path'
-import { Config, ConfigListenerEvent } from './config'
-import { SerialPort } from 'serialport/dist/serialport'
+import { Config, ConfigListenerEvent } from './config.js'
+import { SerialPort } from 'serialport'
 const log = new Logger('config')
 const debug = Debug('configbus')
+
+interface HassioHardwareInfo {
+  data: {
+    devices: Array<{
+      subsystem?: string
+      dev_path: string
+    }>
+  }
+}
 
 export class ConfigBus {
   private static busses: IBus[]
@@ -206,7 +215,7 @@ export class ConfigBus {
 
     const s = stringify(o)
     fs.writeFileSync(newFilePath, s, { encoding: 'utf8' })
-    if (oldFilePath !== newFilePath && fs.existsSync(oldFilePath)) fs.unlink(oldFilePath, () => {})
+    if (oldFilePath !== newFilePath && fs.existsSync(oldFilePath)) fs.unlink(oldFilePath, () => { })
     if (slave.specificationid) {
       ConfigBus.addSpecification(slave)
       const o = new Slave(busid, slave, Config.getConfiguration().mqttbasetopic)
@@ -265,8 +274,8 @@ export class ConfigBus {
       throw new Error(msg)
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static listDevicesUdev(next: (devices: string[]) => void, reject: (error: any) => void): void {
+
+  private static listDevicesUdev(next: (devices: string[]) => void, reject: (error: Error) => void): void {
     SerialPort.list()
       .then((portInfo) => {
         const devices: string[] = []
@@ -275,15 +284,14 @@ export class ConfigBus {
         })
         next(devices)
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .catch((error: any) => {
-        reject(error)
+
+      .catch((error: unknown) => {
+        reject(error instanceof Error ? error : new Error(String(error)))
       })
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static grepDevices(bodyObject: any): string[] {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const devices: any[] = bodyObject.data.devices
+
+  private static grepDevices(bodyObject: HassioHardwareInfo): string[] {
+    const devices = bodyObject.data.devices
     const rc: string[] = []
     devices.forEach((device) => {
       if (device.subsystem === 'tty')
@@ -297,7 +305,7 @@ export class ConfigBus {
     return rc
   }
   private static listDevicesHassio(next: (devices: string[]) => void, reject: () => void): void {
-    Config.executeHassioGetRequest<string[]>(
+    Config.executeHassioGetRequest<HassioHardwareInfo>(
       '/hardware/info',
       (dev) => {
         next(ConfigBus.grepDevices(dev))

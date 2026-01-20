@@ -33,7 +33,7 @@ import {
   VariableTargetParameters,
   getFileNameFromName,
   getParameterType,
-} from '../../../../specification.shared'
+} from '../../../shared/specification'
 import { SessionStorage } from '../../services/SessionStorage'
 import { M2mErrorStateMatcher } from '../../services/M2mErrorStateMatcher'
 import { ISpecificationMethods, ImodbusEntityWithName, isDeviceVariable } from '../../services/specificationInterface'

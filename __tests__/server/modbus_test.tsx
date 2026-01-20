@@ -11,11 +11,11 @@ import {
   ModbusRegisterType,
   FileLocation,
   SpecificationFileUsage,
-} from '../../src/specification.shared'
+} from '../../src/shared/specification'
 import { Modbus, ModbusForTest } from '../../src/server/modbus'
 import { getReadRegisterResult } from '../../src/server/submitRequestMock'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase'
-import { Islave, ModbusTasks } from '../../src/server.shared'
+import { Islave, ModbusTasks } from '../../src/shared/server'
 import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification'
 import { expect, xit, it, describe, beforeEach, jest, beforeAll } from '@jest/globals'
 import Debug from 'debug'

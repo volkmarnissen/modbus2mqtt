@@ -1,5 +1,5 @@
 import { it, expect } from '@jest/globals'
-import { cleanConverterParameters, removeModbusData } from '../../src/specification.shared'
+import { cleanConverterParameters, removeModbusData } from '../../src/shared/specification'
 
 const entity: any = {
   name: 'test',

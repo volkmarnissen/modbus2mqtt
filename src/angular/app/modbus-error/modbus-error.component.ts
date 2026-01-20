@@ -10,16 +10,10 @@ import { MatInput } from '@angular/material/input'
 import { MatSelect } from '@angular/material/select'
 import { MatTabGroup, MatTab } from '@angular/material/tabs'
 import { MatTooltip } from '@angular/material/tooltip'
-import {
-  Iconfiguration,
-  ImodbusErrorsForSlave,
-  ImodbusStatusForSlave,
-  ModbusErrorStates,
-  ModbusTasks,
-} from '../../../server.shared'
+import { Iconfiguration, ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
 import { ApiService } from '../services/api-service'
 import { MatExpansionModule, MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion'
-import { ModbusRegisterType } from '../../../specification.shared'
+import { ModbusRegisterType } from '../../shared/specification'
 const oneMinuteInMs = 60 * 1000
 @Component({
   selector: 'app-modbus-error-component',

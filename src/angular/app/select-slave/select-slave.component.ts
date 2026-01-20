@@ -23,7 +23,7 @@ import {
   Ientity,
   Ispecification,
   IidentEntity,
-} from '../../../specification.shared'
+} from '../../shared/specification'
 import { Clipboard } from '@angular/cdk/clipboard'
 import { Observable, Subject, Subscription, map, of } from 'rxjs'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -45,7 +45,7 @@ import {
   ImodbusErrorsForSlave,
   apiUri,
   ImodbusStatusForSlave,
-} from '../../../server.shared'
+} from '../../shared/server'
 import { MatInput } from '@angular/material/input'
 import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion'
 import { MatOption } from '@angular/material/core'

@@ -1,12 +1,12 @@
-import { IModbusData, Idata, IfileSpecification } from './ifilespecification'
+import { IModbusData, Idata, IfileSpecification } from './ifilespecification.js'
 import {
   FileLocation,
   IimageAndDocumentUrl,
   ModbusRegisterType,
   SPECIFICATION_FILES_VERSION,
   SPECIFICATION_VERSION,
-} from '../specification.shared'
-import { LogLevelEnum, Logger } from './log'
+} from '../shared/specification/index.js'
+import { LogLevelEnum, Logger } from './log.js'
 const log = new Logger('migrator')
 
 export interface IimageAndDocumentFilesType {

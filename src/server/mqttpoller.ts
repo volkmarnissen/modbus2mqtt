@@ -1,11 +1,11 @@
-import { Slave, PollModes, ModbusTasks } from '../server.shared'
+import { Slave, PollModes, ModbusTasks } from '../shared/server/index.js'
 import Debug from 'debug'
-import { LogLevelEnum, Logger } from '../specification'
-import { Bus } from './bus'
-import { Config } from './config'
-import { Modbus } from './modbus'
-import { ItopicAndPayloads } from './mqttdiscover'
-import { MqttConnector } from './mqttconnector'
+import { LogLevelEnum, Logger } from '../specification/index.js'
+import { Bus } from './bus.js'
+import { Config } from './config.js'
+import { Modbus } from './modbus.js'
+import { ItopicAndPayloads } from './mqttdiscover.js'
+import { MqttConnector } from './mqttconnector.js'
 
 const debug = Debug('mqttpoller')
 const defaultPollCount = 50 // 5 seconds

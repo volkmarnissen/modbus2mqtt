@@ -1,10 +1,10 @@
-import { Converter } from './converter'
-import { NumberConverter } from './numberConverter'
-import { TextConverter } from './textConverter'
-import { SelectConverter } from './selectConverter'
-import { ValueConverter } from './valueconverter'
-import { Ientity, Converters } from '../specification.shared'
-import { BinaryConverter } from './binaryConverter'
+import { Converter } from './converter.js'
+import { NumberConverter } from './numberConverter.js'
+import { TextConverter } from './textConverter.js'
+import { SelectConverter } from './selectConverter.js'
+import { ValueConverter } from './valueconverter.js'
+import { Ientity, Converters } from '../shared/specification/index.js'
+import { BinaryConverter } from './binaryConverter.js'
 
 export class ConverterMap extends Map<Converters, Converter> {
   private static converterMap = new ConverterMap()

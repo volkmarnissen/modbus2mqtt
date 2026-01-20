@@ -1,4 +1,4 @@
-import { Converter } from './converter'
+import { Converter } from './converter.js'
 import {
   Ientity,
   Ispecification,
@@ -8,9 +8,9 @@ import {
   Iselect,
   ModbusRegisterType,
   Converters,
-} from '../specification.shared'
-import { LogLevelEnum, Logger } from './log'
-import { ConfigSpecification } from './configspec'
+} from '../shared/specification/index.js'
+import { LogLevelEnum, Logger } from './log.js'
+import { ConfigSpecification } from './configspec.js'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const debug = require('debug')('selectConverter')
 

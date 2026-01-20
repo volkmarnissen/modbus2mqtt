@@ -1,38 +1,21 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base",
-    "schedule:quarterly"
-  ],
+  "extends": ["config:base", "schedule:quarterly"],
   "timezone": "Europe/Berlin",
-  "schedule": [
-    "before 10am on the 1st day of the quarter"
-  ],
+  "schedule": ["before 10am on the 1st day of the quarter"],
   "packageRules": [
     {
       "groupName": "Angular ecosystem (minor/patch)",
-      "matchPackageNames": [
-        "@angular/*", 
-        "@angular-devkit/*",
-        "@ngx-translate/*"
-      ],
+      "matchPackageNames": ["@angular/*", "@angular-devkit/*", "@ngx-translate/*"],
       "matchUpdateTypes": ["minor", "patch"],
-      "schedule": [
-        "before 10am on the 1st day of the quarter"
-      ],
+      "schedule": ["before 10am on the 1st day of the quarter"],
       "reviewers": ["volkmarnissen"]
     },
     {
       "groupName": "Angular MAJOR upgrade",
-      "matchPackageNames": [
-        "@angular/*", 
-        "@angular-devkit/*",
-        "@ngx-translate/*"
-      ],
+      "matchPackageNames": ["@angular/*", "@angular-devkit/*", "@ngx-translate/*"],
       "matchUpdateTypes": ["major"],
-      "schedule": [
-        "before 10am on the 1st day of the quarter"
-      ],
+      "schedule": ["before 10am on the 1st day of the quarter"],
       "reviewers": ["volkmarnissen"],
       "labels": ["major-update", "breaking-change"],
       "prTitle": "🚨 Angular MAJOR update: v{{currentVersion}} → v{{newVersion}}",
@@ -52,9 +35,7 @@
       "groupName": "Node.js version update",
       "matchDatasources": ["node-version"],
       "matchFiles": [".nvmrc"],
-      "schedule": [
-        "before 10am on the 1st day of the quarter"
-      ],
+      "schedule": ["before 10am on the 1st day of the quarter"],
       "reviewers": ["volkmarnissen"],
       "labels": ["nodejs-update"],
       "prTitle": "📦 Update Node.js to v{{newVersion}}",
@@ -62,16 +43,8 @@
     },
     {
       "groupName": "Core dependencies (quarterly)",
-      "matchPackageNames": [
-        "typescript",
-        "@types/*",
-        "jest",
-        "@jest/*",
-        "cypress"
-      ],
-      "schedule": [
-        "before 10am on the 1st day of the quarter"
-      ]
+      "matchPackageNames": ["typescript", "@types/*", "jest", "@jest/*", "cypress"],
+      "schedule": ["before 10am on the 1st day of the quarter"]
     },
     {
       "groupName": "Security updates (immediate)",

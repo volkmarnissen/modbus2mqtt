@@ -11,9 +11,7 @@
         "mqttname": "e1"
       }
     ],
-    "i18n": [
-      { "lang": "en", "texts": [{ "textId": "name", "text": "Specname" }] }
-    ]
+    "i18n": [{ "lang": "en", "texts": [{ "textId": "name", "text": "Specname" }] }]
   },
   {
     "filename": "additional",
@@ -27,9 +25,7 @@
         "mqttname": "e1"
       }
     ],
-    "i18n": [
-      { "lang": "en", "texts": [{ "textId": "name", "text": "AdditionalTxt" }] }
-    ]
+    "i18n": [{ "lang": "en", "texts": [{ "textId": "name", "text": "AdditionalTxt" }] }]
   },
   {
     "filename": "second",
@@ -43,8 +39,6 @@
         "mqttname": "se1"
       }
     ],
-    "i18n": [
-      { "lang": "en", "texts": [{ "textId": "name", "text": "Second" }] }
-    ]
+    "i18n": [{ "lang": "en", "texts": [{ "textId": "name", "text": "Second" }] }]
   }
 ]

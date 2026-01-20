@@ -1,26 +1,25 @@
-import { Config, ConfigListenerEvent } from './config'
-import { ConverterMap } from '../specification'
+import { Config, ConfigListenerEvent } from './config.js'
+import { ConverterMap } from '../specification/index.js'
 import {
   Inumber,
   Iselect,
   getSpecificationI18nEntityOptionName,
   getSpecificationI18nName,
-  IselectOption,
   ImodbusSpecification,
   EnumStateClasses,
   Itext,
   Ispecification,
-} from '../specification.shared'
-import { Ientity, ImodbusEntity, VariableTargetParameters, getSpecificationI18nEntityName } from '../specification.shared'
+} from '../shared/specification/index.js'
+import { Ientity, ImodbusEntity, VariableTargetParameters, getSpecificationI18nEntityName } from '../shared/specification/index.js'
 import { IClientPublishOptions, MqttClient } from 'mqtt'
-import { ConfigBus } from './configbus'
+import { ConfigBus } from './configbus.js'
 import Debug from 'debug'
-import { LogLevelEnum, Logger } from '../specification'
-import { Islave, Slave } from '../server.shared'
+import { LogLevelEnum, Logger } from '../specification/index.js'
+import { Islave, Slave } from '../shared/server/index.js'
 import { QoS } from 'mqtt-packet'
 
-import { MqttConnector } from './mqttconnector'
-import { MqttSubscriptions } from './mqttsubscriptions'
+import { MqttConnector } from './mqttconnector.js'
+import { MqttSubscriptions } from './mqttsubscriptions.js'
 const debug = Debug('mqttdiscover')
 const log = new Logger('mqttdiscover')
 export interface ItopicAndPayloads {
@@ -32,6 +31,39 @@ const retain: IClientPublishOptions = { retain: true, qos: 1 }
 
 export interface ImqttDevice extends Islave {
   busid: number
+}
+
+interface MqttDiscoveryDevice {
+  name?: string
+  manufacturer?: string
+  model?: string
+  identifiers?: string[]
+  serial_number?: string
+  sw_version?: string
+}
+
+interface MqttDiscoveryPayload {
+  device: MqttDiscoveryDevice
+  force_update?: boolean
+  entity_category?: string
+  icon?: string
+  name?: string
+  object_id?: string
+  unique_id?: string
+  value_template?: string
+  state_topic?: string
+  availability?: unknown
+  availability_topic?: string
+  command_topic?: string
+  options?: string[]
+  device_class?: string
+  unit_of_measurement?: string
+  step?: number
+  min?: number
+  max?: number
+  suggested_display_precision?: number
+  pattern?: string
+  state_class?: string
 }
 
 export class MqttDiscover {
@@ -107,9 +139,7 @@ export class MqttDiscover {
             const ent: ImodbusEntity = e as ImodbusEntity
 
             if (converter) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const obj: any = new Object()
-              obj.device = new Object()
+              const obj: MqttDiscoveryPayload = { device: {} }
               const slaveName = slave.getName()
               if (!obj.device.name)
                 if (slaveName) obj.device.name = slaveName
@@ -127,13 +157,13 @@ export class MqttDiscover {
                     case VariableTargetParameters.deviceSerialNumber:
                       {
                         const sn = (ent1 as ImodbusEntity).mqttValue
-                        if (sn) obj.device.serial_number = sn
+                        if (sn !== undefined && sn !== null) obj.device.serial_number = String(sn)
                       }
                       break
                     case VariableTargetParameters.deviceSWversion:
                       {
                         const sv = (ent1 as ImodbusEntity).mqttValue
-                        if (sv) obj.device.sw_version = sv
+                        if (sv !== undefined && sv !== null) obj.device.sw_version = String(sv)
                       }
                       break
                     // case VariableTargetParameters.deviceIdentifiers:
@@ -142,7 +172,8 @@ export class MqttDiscover {
                     //   break
                     case VariableTargetParameters.entityUom:
                       if (e.id == ent1.variableConfiguration.entityId && converter!.getParameterType(e) === 'Inumber') {
-                        obj.unit_of_measurement = (ent1 as ImodbusEntity).mqttValue
+                        const u = (ent1 as ImodbusEntity).mqttValue
+                        if (u !== undefined && u !== null) obj.unit_of_measurement = String(u)
                       }
                       break
 
@@ -174,13 +205,15 @@ export class MqttDiscover {
                       const ns = e.converterParameters as Iselect
                       if (e.converter === 'select' && ns && ns.optionModbusValues && ns.optionModbusValues.length) {
                         obj.options = []
-                        for (const modbusValue of ns.optionModbusValues)
-                          obj.options.push(getSpecificationI18nEntityOptionName(spec, language, e.id, modbusValue))
+                        for (const modbusValue of ns.optionModbusValues) {
+                          const text = getSpecificationI18nEntityOptionName(spec, language, e.id, modbusValue)
+                          if (text) obj.options.push(text)
+                        }
 
                         if (obj.options == undefined || obj.options.length == 0)
                           log.log(LogLevelEnum.warn, 'generateDiscoveryPayloads: No options specified for ' + obj.name)
                         else
-                          obj.options.forEach((o: IselectOption) => {
+                          obj.options.forEach((o) => {
                             if (!o) log.log(LogLevelEnum.warn, 'generateDiscoveryPayloads: option with no text for ' + e.id)
                           })
                       }

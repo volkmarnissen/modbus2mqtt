@@ -1,9 +1,9 @@
 import { expect, it, test, afterAll, beforeAll } from '@jest/globals'
 import { Config, MqttValidationResult } from '../../src/server/config'
-import { getFileNameFromName } from '../../src/specification.shared'
+import { getFileNameFromName } from '../../src/shared/specification'
 import * as fs from 'fs'
 import { setConfigsDirsForTest } from './configsbase'
-import { AuthenticationErrors } from '../../src/server.shared'
+import { AuthenticationErrors } from '../../src/shared/server'
 import Debug from 'debug'
 import { ConfigTestHelper } from './testhelper'
 setConfigsDirsForTest()

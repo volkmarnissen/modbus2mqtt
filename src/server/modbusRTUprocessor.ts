@@ -1,9 +1,9 @@
-import { ImodbusValues, IModbusResultOrError, LogLevelEnum } from '../specification'
-import { ModbusRegisterType } from '../specification.shared'
-import { IQueueOptions, ModbusRTUQueue } from './modbusRTUqueue'
-import { Logger } from '../specification'
+import { ImodbusValues, IModbusResultOrError, LogLevelEnum } from '../specification/index.js'
+import { ModbusRegisterType } from '../shared/specification/index.js'
+import { IQueueOptions, ModbusRTUQueue } from './modbusRTUqueue.js'
+import { Logger } from '../specification/index.js'
 import Debug from 'debug'
-import { ImodbusAddress, ModbusTasks } from '../server.shared'
+import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
 
 const debug = Debug('modbusrtuprocessor')
 const debugResult = Debug('modbusrtuprocessor:result')

@@ -1,10 +1,10 @@
-import { IbaseSpecification, Imessage, SPECIFICATION_VERSION } from '../specification.shared'
-import { LogLevelEnum, Logger } from './log'
+import { IbaseSpecification, Imessage, SPECIFICATION_VERSION } from '../shared/specification/index.js'
+import { LogLevelEnum, Logger } from './log.js'
 import { Command } from 'commander'
-import { ConfigSpecification } from './configspec'
+import { ConfigSpecification } from './configspec.js'
 import * as fs from 'fs'
-import { M2mGithubValidate } from './m2mGithubValidate'
-import { M2mSpecification } from './m2mspecification'
+import { M2mGithubValidate } from './m2mGithubValidate.js'
+import { M2mSpecification } from './m2mspecification.js'
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {

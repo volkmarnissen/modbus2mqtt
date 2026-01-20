@@ -1,7 +1,7 @@
 import { Mutex } from 'async-mutex'
 import Debug from 'debug'
 import { Config } from '../../src/server/config'
-import { ImqttClient } from '../../src/server.shared'
+import { ImqttClient } from '../../src/shared/server'
 import { ConfigBus } from '../../src/server/configbus'
 import { Bus } from '../../src/server/bus'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'

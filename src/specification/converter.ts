@@ -1,4 +1,4 @@
-import { Ientity, ModbusRegisterType, Ispecification, Converters } from '../specification.shared'
+import { Ientity, ModbusRegisterType, Ispecification, Converters } from '../shared/specification/index.js'
 
 export interface ReadRegisterResult {
   data: Array<number>

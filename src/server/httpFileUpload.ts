@@ -1,9 +1,9 @@
 import { Request } from 'express'
 import * as multer from 'multer'
-import { getSpecificationImageOrDocumentUrl } from './config'
+import { getSpecificationImageOrDocumentUrl } from './config.js'
 import * as fs from 'fs'
-import { SpecificationFileUsage } from '../specification.shared'
-import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
+import { SpecificationFileUsage } from '../shared/specification/index.js'
+import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
 const log = new Logger('httpFileUpload')
 
 type DestinationCallback = (error: Error | null, destination: string) => void

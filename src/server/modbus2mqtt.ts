@@ -1,18 +1,18 @@
-import { Config } from './config'
-import { HttpServer } from './httpserver'
-import { Bus } from './bus'
+import { Config } from './config.js'
+import { HttpServer } from './httpserver.js'
+import { Bus } from './bus.js'
 import { Command } from 'commander'
-import { LogLevelEnum, Logger, M2mGitHub, M2mSpecification } from '../specification'
+import { LogLevelEnum, Logger, M2mGitHub, M2mSpecification } from '../specification/index.js'
 import * as os from 'os'
 
 import Debug from 'debug'
 import { MqttDiscover } from './mqttdiscover.js'
-import { ConfigSpecification } from '../specification'
+import { ConfigSpecification } from '../specification/index.js'
 import { join } from 'path'
-import { SpecificationStatus } from '../specification.shared'
+import { SpecificationStatus } from '../shared/specification/index.js'
 import * as fs from 'fs'
-import { ConfigBus } from './configbus'
-import { CmdlineMigrate } from './CmdlineMigrate'
+import { ConfigBus } from './configbus.js'
+import { CmdlineMigrate } from './CmdlineMigrate.js'
 let httpServer: HttpServer | undefined = undefined
 
 process.on('unhandledRejection', (reason, p) => {
@@ -104,8 +104,12 @@ export class Modbus2Mqtt {
         )
         debug(Config.getConfiguration().mqttconnect.mqttserverurl)
         log.log(LogLevelEnum.info, 'Modbus2mqtt version: ' + Config.getConfiguration().appVersion)
-        // hard coded workaround
-        const angulardir = join(require.resolve('./mqttdiscover'), '../../angular/browser')
+        // Prefer configured frontend directory; fallback to Angular build output
+        let angulardir = Config.getConfiguration().frontendDir
+        if (!angulardir) {
+          // Fallback: derive from built server file location to dist/angular/browser
+          angulardir = join(require.resolve('./mqttdiscover'), '../../angular/browser')
+        }
         // Did not work in github workflow for testing
 
         if (!angulardir || !fs.existsSync(angulardir)) {

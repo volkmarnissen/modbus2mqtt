@@ -10,7 +10,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # To get the previous checkin
+          fetch-depth: 2 # To get the previous checkin
 
       - name: Set BASE_REF to previous commit
         id: set_base

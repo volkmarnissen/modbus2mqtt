@@ -1,4 +1,4 @@
-import { IBus, IRTUConnection, ITCPConnection } from './types'
+import { IBus, IRTUConnection, ITCPConnection } from './types.js'
 
 export function getBusName(bus: IBus): string {
   const serialport = (bus.connectionData as IRTUConnection).serialport

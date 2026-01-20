@@ -1,6 +1,6 @@
-import { ModbusRegisterType } from '../specification.shared'
-import { IModbusResultOrError, ImodbusValues, emptyModbusValues } from '../specification'
-import { ImodbusAddress } from '../server.shared'
+import { ModbusRegisterType } from '../shared/specification/index.js'
+import { IModbusResultOrError, ImodbusValues, emptyModbusValues } from '../specification/index.js'
+import { ImodbusAddress } from '../shared/server/index.js'
 
 export function getReadRegisterResult(n: number): IModbusResultOrError {
   const one: IModbusResultOrError = {

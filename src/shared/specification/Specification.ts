@@ -1,4 +1,4 @@
-import { ImodbusSpecification, Ispecification, VariableTargetParameters } from './types'
+import { ImodbusSpecification, Ispecification, VariableTargetParameters } from './types.js'
 export enum MessageTypes {
   nameTextMissing = 0,
   entityTextMissing = 1,

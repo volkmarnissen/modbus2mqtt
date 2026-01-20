@@ -10,12 +10,12 @@ import {
   HttpErrorsEnum,
   FileLocation,
   Converters,
-} from '../../src/specification.shared'
+} from '../../src/shared/specification'
 import { Config } from '../../src/server/config'
 import { FakeMqtt, FakeModes, initBussesForTest } from './configsbase'
 import supertest from 'supertest'
 import * as fs from 'fs'
-import { ImodbusSpecification, SpecificationFileUsage, getSpecificationI18nName } from '../../src/specification.shared'
+import { ImodbusSpecification, SpecificationFileUsage, getSpecificationI18nName } from '../../src/shared/specification'
 import { Bus } from '../../src/server/bus'
 import { VERSION } from 'ts-node'
 import {
@@ -25,7 +25,7 @@ import {
   IModbusConnection,
   IidentificationSpecification,
   IUserAuthenticationStatus,
-} from '../../src/server.shared'
+} from '../../src/shared/server'
 import { IfileSpecification, LogLevelEnum, Logger } from '../../src/specification'
 import { ConfigSpecification } from '../../src/specification'
 import { Mutex } from 'async-mutex'

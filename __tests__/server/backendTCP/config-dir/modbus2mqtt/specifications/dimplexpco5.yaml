@@ -527,31 +527,31 @@ i18n:
       - textId: e11o.16
         text: Low Pressure Sole
       - textId: e11o.19
-        text: "!Primary circuit"
+        text: '!Primary circuit'
       - textId: e11o.20
-        text: "!Defrost"
+        text: '!Defrost'
       - textId: e11o.21
-        text: "!Low Pressure Sole"
+        text: '!Low Pressure Sole'
       - textId: e11o.22
-        text: "!Hotwater"
+        text: '!Hotwater'
       - textId: e11o.23
         text: Load Compressor
       - textId: e11o.24
         text: Coding
       - textId: e11o.25
-        text: "!Low Pressure"
+        text: '!Low Pressure'
       - textId: e11o.26
-        text: "!Frost Protection"
+        text: '!Frost Protection'
       - textId: e11o.28
-        text: "!High Pressure"
+        text: '!High Pressure'
       - textId: e11o.29
-        text: "!Temperature Difference"
+        text: '!Temperature Difference'
       - textId: e11o.30
-        text: "!Heat gas thermostat"
+        text: '!Heat gas thermostat'
       - textId: e11o.31
-        text: "!Flow"
+        text: '!Flow'
       - textId: e11o.32
-        text: "! Heat up"
+        text: '! Heat up'
       - textId: e12
         text: Sensor Error
       - textId: e12o.0
@@ -677,7 +677,7 @@ i18n:
       - textId: e16
         text: Rücklauftemperatur Soll
 filename: dimplexpco5
-version: "0.3"
+version: '0.3'
 testdata:
   holdingRegisters:
     - address: 174

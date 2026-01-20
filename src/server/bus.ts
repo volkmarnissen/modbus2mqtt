@@ -1,18 +1,30 @@
 import Debug from 'debug'
-import { getSpecificationI18nName, ImodbusEntity, ImodbusSpecification, SpecificationStatus } from '../specification.shared'
-import { ImodbusAddress, ModbusTasks } from '../server.shared'
-import { IdentifiedStates } from '../specification.shared'
-import { ConverterMap, ImodbusValues, M2mSpecification } from '../specification'
-import { ConfigBus } from './configbus'
+import {
+  getSpecificationI18nName,
+  ImodbusEntity,
+  ImodbusSpecification,
+  SpecificationStatus,
+} from '../shared/specification/index.js'
+import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
+import { IdentifiedStates } from '../shared/specification/index.js'
+import { ConverterMap, ImodbusValues, M2mSpecification } from '../specification/index.js'
+import { ConfigBus } from './configbus.js'
 import * as fs from 'fs'
-import { IfileSpecification } from '../specification'
-import { LogLevelEnum, Logger } from '../specification'
-import { Islave, IModbusConnection, IBus, IRTUConnection, ITCPConnection, IidentificationSpecification } from '../server.shared'
-import { ConfigSpecification } from '../specification'
-import { ModbusTcpRtuBridge } from './tcprtubridge'
-import { MqttPoller } from './mqttpoller'
-import { MqttConnector } from './mqttconnector'
-import { IconsumerModbusAPI, IModbusConfiguration, ModbusAPI } from './modbusAPI'
+import { IfileSpecification } from '../specification/index.js'
+import { LogLevelEnum, Logger } from '../specification/index.js'
+import {
+  Islave,
+  IModbusConnection,
+  IBus,
+  IRTUConnection,
+  ITCPConnection,
+  IidentificationSpecification,
+} from '../shared/server/index.js'
+import { ConfigSpecification } from '../specification/index.js'
+import { ModbusTcpRtuBridge } from './tcprtubridge.js'
+import { MqttPoller } from './mqttpoller.js'
+import { MqttConnector } from './mqttconnector.js'
+import { IconsumerModbusAPI, IModbusConfiguration, ModbusAPI } from './modbusAPI.js'
 const debug = Debug('bus')
 const log = new Logger('bus')
 export interface IModbusResultWithDuration {

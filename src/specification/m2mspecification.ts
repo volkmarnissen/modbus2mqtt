@@ -1,9 +1,9 @@
-import { IspecificationValidator, IvalidateIdentificationResult } from './ispecificationvalidator'
+import { IspecificationValidator, IvalidateIdentificationResult } from './ispecificationvalidator.js'
 import { join } from 'path'
 import * as fs from 'fs'
 import Debug from 'debug'
-import { Idata, IfileSpecification } from './ifilespecification'
-import { M2mGitHub } from './m2mgithub'
+import { Idata, IfileSpecification } from './ifilespecification.js'
+import { M2mGitHub } from './m2mgithub.js'
 import {
   Imessage,
   MessageTypes,
@@ -12,7 +12,7 @@ import {
   getParameterType,
   validateTranslation,
   ModbusRegisterType,
-} from '../specification.shared'
+} from '../shared/specification/index.js'
 import {
   Ispecification,
   IbaseSpecification,
@@ -29,12 +29,12 @@ import {
   IminMax,
   Iselect,
   Itext,
-} from '../specification.shared'
-import { ConfigSpecification, getSpecificationImageOrDocumentUrl } from './configspec'
-import { ConverterMap } from './convertermap'
-import { LogLevelEnum, Logger } from './log'
+} from '../shared/specification/index.js'
+import { ConfigSpecification, getSpecificationImageOrDocumentUrl } from './configspec.js'
+import { ConverterMap } from './convertermap.js'
+import { LogLevelEnum, Logger } from './log.js'
 import { Observable, Subject } from 'rxjs'
-import { IpullRequest } from './m2mGithubValidate'
+import { IpullRequest } from './m2mGithubValidate.js'
 
 const log = new Logger('m2mSpecification')
 const debug = Debug('m2mspecification')

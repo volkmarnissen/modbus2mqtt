@@ -42,16 +42,16 @@ import {
   ImodbusData,
   Ispecification,
   getBaseFilename,
-} from '../../../../specification.shared'
+} from '../../../shared/specification'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { SessionStorage } from '../../services/SessionStorage'
-import { Imessage, getUom } from '../../../../specification.shared'
+import { Imessage, getUom } from '../../../shared/specification'
 import { GalleryConfig } from 'ng-gallery'
 import { ISpecificationMethods, ImodbusEntityWithName } from '../../services/specificationInterface'
 import { I18nService } from '../../services/i18n.service'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { SpecificationServices } from '../../services/specificationServices'
-import { Iconfiguration } from '../../../../server.shared'
+import { Iconfiguration } from '../../../shared/server'
 import { EntityComponent } from '../entity/entity.component'
 import { TranslationComponent } from '../translation/translation.component'
 import { MatInput } from '@angular/material/input'

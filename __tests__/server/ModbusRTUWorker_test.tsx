@@ -2,8 +2,8 @@ import { describe, expect, it } from '@jest/globals'
 import { ModbusRTUWorker } from '../../src/server/modbusRTUworker'
 import { IModbusAPI } from '../../src/server/modbusWorker'
 import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue'
-import { ModbusRegisterType } from '../../src/specification.shared'
-import { ModbusTasks } from '../../src/server.shared'
+import { ModbusRegisterType } from '../../src/shared/specification'
+import { ModbusTasks } from '../../src/shared/server'
 import { Itest, ModbusRTUWorkerForTest, FakeBus } from './testhelper'
 
 function enqueue(queue: ModbusRTUQueue, num: number, test: Itest) {

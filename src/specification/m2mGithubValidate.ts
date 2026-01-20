@@ -1,4 +1,4 @@
-import { githubPublicNames } from './m2mgithub'
+import { githubPublicNames } from './m2mgithub.js'
 import { Octokit } from '@octokit/rest'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path')

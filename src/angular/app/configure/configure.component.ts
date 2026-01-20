@@ -11,7 +11,7 @@ import {
   FormGroup,
 } from '@angular/forms'
 import { ApiService } from '../services/api-service'
-import { Iconfiguration, IUserAuthenticationStatus } from '../../../server.shared'
+import { Iconfiguration, IUserAuthenticationStatus } from '../../shared/server'
 import { Observable } from 'rxjs'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MatOption } from '@angular/material/core'

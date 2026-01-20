@@ -3,7 +3,7 @@ import { IModbusResultWithDuration } from '../../src/server/bus'
 import { ModbusRTUQueue } from '../../src/server/modbusRTUqueue'
 import { ModbusRTUWorker } from '../../src/server/modbusRTUworker'
 import { IModbusAPI } from '../../src/server/modbusWorker'
-import { ModbusTasks } from '../../src/server.shared'
+import { ModbusTasks } from '../../src/shared/server'
 import * as fs from 'fs'
 import { Config } from '../../src/server/config'
 

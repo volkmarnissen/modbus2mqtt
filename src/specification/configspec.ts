@@ -2,7 +2,7 @@ import { parse, stringify } from 'yaml'
 import * as fs from 'fs'
 import * as path from 'path'
 import { join } from 'path'
-import { LogLevelEnum, Logger } from './log'
+import { LogLevelEnum, Logger } from './log.js'
 import {
   EnumNumberFormat,
   FileLocation,
@@ -17,15 +17,15 @@ import {
   SpecificationFileUsage,
   SpecificationStatus,
   getSpecificationI18nName,
-} from '../specification.shared'
-import { getBaseFilename } from '../specification.shared'
-import { IfileSpecification } from './ifilespecification'
-import { M2mSpecification } from './m2mspecification'
-import { IimageAndDocumentFilesType, Migrator } from './migrator'
+} from '../shared/specification/index.js'
+import { getBaseFilename } from '../shared/specification/index.js'
+import { IfileSpecification } from './ifilespecification.js'
+import { M2mSpecification } from './m2mspecification.js'
+import { IimageAndDocumentFilesType, Migrator } from './migrator.js'
 import stream from 'stream'
 import Debug from 'debug'
 
-import { M2mGitHub } from './m2mgithub'
+import { M2mGitHub } from './m2mgithub.js'
 import AdmZip from 'adm-zip'
 import { Mutex } from 'async-mutex'
 

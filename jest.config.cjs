@@ -7,11 +7,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  testMatch: [
-    '**/*.test.ts?(x)',
-    '**/*.spec.ts?(x)',
-    '**/*_test.ts?(x)'
-  ],
+  testMatch: ['**/*.test.ts?(x)', '**/*.spec.ts?(x)', '**/*_test.ts?(x)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleDirectories: ['src', 'node_modules'],
   maxWorkers: 1,

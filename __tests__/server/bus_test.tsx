@@ -3,7 +3,7 @@ import { expect, it, beforeAll, jest, beforeEach, afterEach } from '@jest/global
 import { Config } from '../../src/server/config'
 import { Bus } from '../../src/server/bus'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase'
-import { IdentifiedStates } from '../../src/specification.shared'
+import { IdentifiedStates } from '../../src/shared/specification'
 import { ConfigSpecification, emptyModbusValues, ImodbusValues, LogLevelEnum } from '../../src/specification'
 import { ModbusAPI } from '../../src/server/modbusAPI'
 import { FileBackupHelper } from './testhelper'

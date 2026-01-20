@@ -1,8 +1,8 @@
 import { expect, it } from '@jest/globals'
-import { ModbusRegisterType } from '../../src/specification.shared'
+import { ModbusRegisterType } from '../../src/shared/specification'
 import { ModbusRTUProcessor } from '../../src/server/modbusRTUprocessor'
 import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue'
-import { ImodbusAddress, ModbusTasks } from '../../src/server.shared'
+import { ImodbusAddress, ModbusTasks } from '../../src/shared/server'
 function addAddresses(addresses: Set<ImodbusAddress>, registerType: ModbusRegisterType, startAddress: number, endAddress: number) {
   for (let idx = startAddress; idx < endAddress; idx++)
     addresses.add({

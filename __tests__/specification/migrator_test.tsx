@@ -1,7 +1,7 @@
 import { expect, it } from '@jest/globals'
 import { ConfigSpecification } from '../../src/specification'
 import { configDir, dataDir } from './configsbase'
-import { SPECIFICATION_VERSION } from '../../src/specification.shared'
+import { SPECIFICATION_VERSION } from '../../src/shared/specification'
 
 ConfigSpecification['configDir'] = configDir
 ConfigSpecification['dataDir'] = dataDir

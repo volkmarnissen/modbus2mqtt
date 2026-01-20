@@ -1,11 +1,11 @@
 import { Octokit } from '@octokit/rest'
-import { LogLevelEnum, Logger } from './log'
+import { LogLevelEnum, Logger } from './log.js'
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { Subject, first } from 'rxjs'
 import * as fs from 'fs'
-import { ConfigSpecification } from './configspec'
+import { ConfigSpecification } from './configspec.js'
 
 import Debug from 'debug'
 const debug = Debug('m2mgithub')
