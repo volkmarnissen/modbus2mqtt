@@ -1,7 +1,7 @@
-import { it, expect, jest, xit, beforeEach, afterEach } from '@jest/globals'
+import { it, expect, xit, beforeEach, afterEach } from '@jest/globals'
 import { ConfigSpecification } from '../../src/specification'
 import * as fs from 'fs'
-import path, { join } from 'path'
+import { join } from 'path'
 import { configDir, singleMutex, dataDir } from './configsbase'
 import {
   IbaseSpecification,
@@ -14,7 +14,6 @@ import {
 } from '../../src/specification.shared'
 import { IModbusResultOrError } from '../../src/specification'
 import { ImodbusValues } from '../../src/specification'
-import { trace } from 'console'
 import { SpecificationTestHelper } from '../server/testhelper'
 
 ConfigSpecification['configDir'] = configDir
@@ -35,7 +34,7 @@ afterEach(() => {
   testHelper.restoreAll()
 })
 
-let testdata: ImodbusValues = {
+const testdata: ImodbusValues = {
   coils: new Map<number, IModbusResultOrError>(),
   discreteInputs: new Map<number, IModbusResultOrError>(),
   holdingRegisters: new Map<number, IModbusResultOrError>(),
@@ -43,14 +42,14 @@ let testdata: ImodbusValues = {
 }
 
 it('check device type status', () => {
-  let localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
-  let publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
+  const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
+  const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
   fs.mkdirSync(publicSpecdir, { recursive: true })
-  let pwtl1 = join(publicSpecdir, 'waterleveltransmitter.yaml')
+  const pwtl1 = join(publicSpecdir, 'waterleveltransmitter.yaml')
   fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pwtl1)
-  let pdy = join(publicSpecdir, 'deyeinverter.yaml')
+  const pdy = join(publicSpecdir, 'deyeinverter.yaml')
   fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pdy)
-  let filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
+  const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
 
   fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
 
@@ -84,7 +83,7 @@ it('write/Migrate', () => {
 })
 
 function cleanDimplexLocal() {
-  let filePath = join(ConfigSpecification.getLocalDir() + '/specifications', 'dimplexpco5.yaml')
+  const filePath = join(ConfigSpecification.getLocalDir() + '/specifications', 'dimplexpco5.yaml')
   if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
   fs.rmSync(join(ConfigSpecification.getLocalDir() + '/specifications/files/dimplexpco5'), { recursive: true, force: true })
 }
@@ -96,7 +95,7 @@ it('write cloned file', () => {
   let wl = ConfigSpecification.getSpecificationByFilename('dimplexpco5')!
 
   configSpec.writeSpecificationFromFileSpec(wl, wl.filename)
-  let specsDir = join(ConfigSpecification.getLocalDir() + '/specifications')
+  const specsDir = join(ConfigSpecification.getLocalDir() + '/specifications')
   expect(fs.existsSync(join(specsDir, 'dimplexpco5.yaml'))).toBeTruthy()
   expect(fs.existsSync(join(specsDir, 'files/dimplexpco5', 'files.yaml'))).toBeTruthy()
   expect(fs.existsSync(join(specsDir, 'files/dimplexpco5', 'IMG_1552.jpg'))).toBeTruthy()
@@ -108,34 +107,34 @@ it('write cloned file', () => {
 
 it('getFileNameFromName remove non ascii characters', () => {
   const name = '/\\*& asdf+-_.'
-  let fn = getFileNameFromName(name)
+  const fn = getFileNameFromName(name)
   expect(fn).toBe('asdf+-_.')
 })
 it('getSpecificationI18nName ', () => {
   const name = '/\\*& asdf+-_.'
   const configSpec = new ConfigSpecification()
   configSpec.readYaml()
-  let fn = getFileNameFromName(name)
-  let spec = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')
+  const fn = getFileNameFromName(name)
+  const spec = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')
   expect(getSpecificationI18nName(spec!, 'fr')).toBe('Water Level Transmitter')
   expect(getSpecificationI18nName(spec!, 'en')).toBe('Water Level Transmitter')
   expect(fn).toBe('asdf+-_.')
 })
 
 it('add new specification, add files, set filename', (done) => {
-  let cfgSpec = new ConfigSpecification()
+  const cfgSpec = new ConfigSpecification()
   cfgSpec.readYaml()
 
-  let fdir = join(ConfigSpecification.getLocalDir(), '/specifications/files')
-  let fdirNew = join(fdir, '_new')
-  let fdirAddSpecTest = join(fdir, 'addspectest')
+  const fdir = join(ConfigSpecification.getLocalDir(), '/specifications/files')
+  const fdirNew = join(fdir, '_new')
+  const fdirAddSpecTest = join(fdir, 'addspectest')
   fs.rmSync(fdirNew, { recursive: true, force: true })
   fs.rmSync(fdirAddSpecTest, { recursive: true, force: true })
   fs.rmSync(join(ConfigSpecification.getLocalDir(), '/specifications/files', 'addspectest.yaml'), { recursive: true, force: true })
   fs.mkdirSync(fdirNew, { recursive: true })
   fs.writeFileSync(join(fdirNew, 'test.pdf'), 'test')
-  let mspec = newSpecification
-  let spec = ConfigSpecification.toFileSpecification(mspec)
+  const mspec = newSpecification
+  const spec = ConfigSpecification.toFileSpecification(mspec)
   cfgSpec.appendSpecificationFiles(spec.filename, ['test.pdf'], SpecificationFileUsage.documentation)
   fs.writeFileSync(join(fdirNew, 'test.jpg'), 'test')
   cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img)
@@ -177,12 +176,12 @@ it('add new specification, add files, set filename', (done) => {
 })
 it('contribution', () => {
   singleMutex.runExclusive(() => {
-    let cfg = new ConfigSpecification()
-    let localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
-    let contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
+    const cfg = new ConfigSpecification()
+    const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
+    const contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
     fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
-    let filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
-    let publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
+    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
+    const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
     fs.mkdirSync(publicSpecdir, { recursive: true })
 
     cleanWaterLevelTransmitter1(publicSpecdir)
@@ -237,16 +236,16 @@ function cleanWaterLevelTransmitter1(contributedSpecdir: string) {
 }
 it('contribution cloned', () => {
   singleMutex.runExclusive(() => {
-    let cfg = new ConfigSpecification()
-    let localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
-    let publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
-    let contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
+    const cfg = new ConfigSpecification()
+    const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
+    const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
+    const contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
     fs.mkdirSync(localSpecdir, { recursive: true })
     fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
     fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(publicSpecdir, 'waterleveltransmitter1.yaml'))
     cleanWaterLevelTransmitter1(contributedSpecdir)
-    let filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
-    let publicfilesDir = join(publicSpecdir, 'files/waterleveltransmitter1')
+    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
+    const publicfilesDir = join(publicSpecdir, 'files/waterleveltransmitter1')
 
     if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true })
     if (!fs.existsSync(publicfilesDir)) fs.mkdirSync(publicfilesDir, { recursive: true })
@@ -299,11 +298,11 @@ it('contribution cloned', () => {
 
 xit('importSpecificationZip existing Specification', () => {
   return new Promise<void>((resolve, reject) => {
-    let zipFile = 'spec.zip'
-    let cs = new ConfigSpecification()
-    let s = fs.createWriteStream(zipFile)
+    const zipFile = 'spec.zip'
+    const cs = new ConfigSpecification()
+    const s = fs.createWriteStream(zipFile)
     ConfigSpecification.createZipFromSpecification('waterleveltransmitter', s)
-    let errors = ConfigSpecification.importSpecificationZip(zipFile)
+    const errors = ConfigSpecification.importSpecificationZip(zipFile)
     expect(errors.errors).not.toBe('')
     resolve()
   })
@@ -319,18 +318,18 @@ function removeLocal(specPath: string, specFilesPath: string) {
 }
 it('importSpecificationZip ', () => {
   return new Promise<void>((resolve, reject) => {
-    let filename = 'eastronsdm720-m'
-    let zipFile = join(ConfigSpecification.configDir, filename + '.zip')
-    let specPath = ConfigSpecification['getSpecificationPath']({ filename: filename } as IbaseSpecification)
-    let specFilesPath = ConfigSpecification['getLocalFilesPath'](filename)
+    const filename = 'eastronsdm720-m'
+    const zipFile = join(ConfigSpecification.configDir, filename + '.zip')
+    const specPath = ConfigSpecification['getSpecificationPath']({ filename: filename } as IbaseSpecification)
+    const specFilesPath = ConfigSpecification['getLocalFilesPath'](filename)
 
     removeLocal(specPath, specFilesPath)
 
-    let cs = new ConfigSpecification()
+    const cs = new ConfigSpecification()
     // Create the specification locally to be able to create the zip file in the next step
-    let errors = ConfigSpecification.importSpecificationZip(zipFile)
+    const errors = ConfigSpecification.importSpecificationZip(zipFile)
 
-    let s = fs.createWriteStream(zipFile)
+    const s = fs.createWriteStream(zipFile)
     s.on('end', () => {
       console.log('Write finished')
     })

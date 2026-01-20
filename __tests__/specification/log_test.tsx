@@ -1,4 +1,4 @@
-import { expect, jest, describe, test } from '@jest/globals'
+import { expect, describe, test } from '@jest/globals'
 import { Logger, LogLevelEnum } from '../../src/specification/log'
 
 describe('Logger wrapper (npmlog backend)', () => {

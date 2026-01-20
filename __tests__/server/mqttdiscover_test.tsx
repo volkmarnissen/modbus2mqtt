@@ -43,7 +43,7 @@ const selectTestId = 3
 const numberTestId = 4
 const selectTestWritableId = 5
 let msub1: MqttSubscriptions
-let selectTest: ImodbusEntity = {
+const selectTest: ImodbusEntity = {
   id: selectTestWritableId,
   mqttname: 'selecttestWr',
   modbusAddress: 7,
@@ -56,7 +56,7 @@ let selectTest: ImodbusEntity = {
   converterParameters: { optionModbusValues: [1, 2, 3] },
 }
 
-let selectTestWritable: ImodbusEntity = {
+const selectTestWritable: ImodbusEntity = {
   id: selectTestId,
   mqttname: 'selecttest',
   modbusAddress: 1,
@@ -75,23 +75,23 @@ beforeAll((done) => {
   setConfigsDirsForTest()
   Config['config'] = {} as any
 
-  let conn = new MqttConnector()
+  const conn = new MqttConnector()
   msub1 = new MqttSubscriptions(conn)
   // trigger subscription to ConfigBus Events
-  let md = new MqttDiscover(conn, msub1)
+  const md = new MqttDiscover(conn, msub1)
   initBussesForTest()
-  let fake = new FakeMqtt(msub1, FakeModes.Poll)
+  const fake = new FakeMqtt(msub1, FakeModes.Poll)
   conn['client'] = fake as any as MqttClient
   conn['connectMqtt'] = function (undefined) {
     conn['onConnect'](conn['client']!)
   }
 
-  let readConfig: Config = new Config()
+  const readConfig: Config = new Config()
   readConfig.readYamlAsync().then(() => {
     Config.setFakeModbus(true)
     new ConfigSpecification().readYaml()
     ConfigBus.readBusses()
-    let bus = Bus.getBus(0)
+    const bus = Bus.getBus(0)
     spec = {} as ImodbusSpecification
     slave = {
       specificationid: 'deye',
@@ -99,7 +99,7 @@ beforeAll((done) => {
       pollInterval: 100,
     }
 
-    let serialNumber: ImodbusEntity = {
+    const serialNumber: ImodbusEntity = {
       id: 0,
       mqttname: 'serialnumber',
       variableConfiguration: {
@@ -114,7 +114,7 @@ beforeAll((done) => {
       readonly: false,
       modbusAddress: 2,
     }
-    let currentSolarPower: ImodbusEntity = {
+    const currentSolarPower: ImodbusEntity = {
       id: 1,
       mqttname: 'currentpower',
       converter: 'number',
@@ -153,7 +153,7 @@ beforeAll((done) => {
     done()
   })
 })
-let numberTest: ImodbusEntity = {
+const numberTest: ImodbusEntity = {
   id: numberTestId,
   mqttname: 'mqtt',
   modbusAddress: 2,
@@ -166,7 +166,7 @@ let numberTest: ImodbusEntity = {
   converterParameters: { multiplier: 1, offset: 0, uom: 'kW' },
 }
 
-var tps: ItopicAndPayloads[] = []
+const tps: ItopicAndPayloads[] = []
 // function spyMqttOnMessage(ev: string, _cb: Function): MqttClient {
 //   if (ev === 'message') {
 //     for (let tp of tps) {
@@ -177,35 +177,35 @@ var tps: ItopicAndPayloads[] = []
 // }
 
 test('Discover', (done) => {
-  let conn = new MqttConnector()
-  let disc = new MqttDiscover(conn, msub1)
+  const conn = new MqttConnector()
+  const disc = new MqttDiscover(conn, msub1)
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
 
   Config['config'].mqttusehassio = false
   new Config().getMqttConnectOptions().then((options) => {
-    let s = structuredClone(spec)
+    const s = structuredClone(spec)
     s.entities.push(selectTestWritable)
 
-    let payloads: ItopicAndPayloads[] = disc['generateDiscoveryPayloads'](
+    const payloads: ItopicAndPayloads[] = disc['generateDiscoveryPayloads'](
       new Slave(0, slave, Config.getConfiguration().mqttbasetopic),
       s
     )
     expect(payloads.length).toBe(3)
-    let payloadCurrentPower = JSON.parse(payloads[0].payload as string)
-    let payloadSelectTestPower = JSON.parse(payloads[1].payload as string)
+    const payloadCurrentPower = JSON.parse(payloads[0].payload as string)
+    const payloadSelectTestPower = JSON.parse(payloads[1].payload as string)
     expect(payloadCurrentPower.name).toBe('Current Power')
     expect(payloadCurrentPower.unit_of_measurement).toBe('kW')
     expect(payloadSelectTestPower.device.name).toBe('Deye Inverter')
     expect(payloadSelectTestPower.name).toBe('Select Test')
     expect(payloadSelectTestPower.options).not.toBeDefined()
     expect(payloads[1].topic.indexOf('/sensor/')).toBeGreaterThan(0)
-    let payloadSelectTestWritable = JSON.parse(payloads[2].payload as string)
+    const payloadSelectTestWritable = JSON.parse(payloads[2].payload as string)
     expect(payloads[2].topic.indexOf('/select/')).toBeGreaterThan(0)
     expect(payloadSelectTestWritable.device_class).toBe('enum')
     expect(payloadSelectTestWritable.options).toBeDefined()
     expect(payloadSelectTestWritable.options.length).toBeGreaterThan(0)
     expect(payloadSelectTestWritable.command_topic).toBeDefined()
-    let pl = JSON.parse(payloads[0].payload as string)
+    const pl = JSON.parse(payloads[0].payload as string)
     //expect(pl.unit_of_measurement).toBe("kW");
     expect(pl.device.manufacturer).toBe(spec.manufacturer)
     expect(pl.device.model).toBe(spec.model)
@@ -223,9 +223,9 @@ test('Discover', (done) => {
 
 // });
 xtest('validateConnection success', (done) => {
-  let options = Config.getConfiguration().mqttconnect
+  const options = Config.getConfiguration().mqttconnect
 
-  let md = new MqttConnector()
+  const md = new MqttConnector()
   md.validateConnection(undefined, (valid, message) => {
     expect(valid).toBeTruthy()
     done()
@@ -233,10 +233,10 @@ xtest('validateConnection success', (done) => {
 })
 
 xtest('validateConnection invalid port', (done) => {
-  let options = Config.getConfiguration().mqttconnect
+  const options = Config.getConfiguration().mqttconnect
   options.mqttserverurl = 'mqtt://localhost:999'
   options.connectTimeout = 200
-  let md = new MqttConnector()
+  const md = new MqttConnector()
   md.validateConnection(undefined, (valid, message) => {
     expect(valid).toBeFalsy()
     done()
@@ -245,7 +245,7 @@ xtest('validateConnection invalid port', (done) => {
 
 test('selectConverter adds modbusValue to statePayload', () => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
-  let specEntity: ImodbusEntity = {
+  const specEntity: ImodbusEntity = {
     id: 1,
     modbusValue: [3],
     mqttValue: 'Some Text',
@@ -259,31 +259,31 @@ test('selectConverter adds modbusValue to statePayload', () => {
       options: [{ key: 3, name: 'Some Text' }],
     },
   }
-  let spec: ImodbusSpecification = { entities: [specEntity] } as any as ImodbusSpecification
-  let sl = new Slave(0, { slaveid: 0 }, Config.getConfiguration().mqttbasetopic)
+  const spec: ImodbusSpecification = { entities: [specEntity] } as any as ImodbusSpecification
+  const sl = new Slave(0, { slaveid: 0 }, Config.getConfiguration().mqttbasetopic)
   sl.getStatePayload(spec.entities)
-  let payload = JSON.parse(sl.getStatePayload(spec.entities))
+  const payload = JSON.parse(sl.getStatePayload(spec.entities))
   expect(payload.modbusValues).toBeDefined()
   expect(payload.modbusValues.selectTest).toBe(3)
 })
 test('onCommandTopic', () => {
   Config.setFakeModbus(true)
   Config['config'].mqttusehassio = false
-  let rc = msub1['onMqttCommandMessage']('m2m/set/0s1/e1/modbusValues', Buffer.from('[3]', 'utf8'))
+  const rc = msub1['onMqttCommandMessage']('m2m/set/0s1/e1/modbusValues', Buffer.from('[3]', 'utf8'))
   expect(rc).toBe('Modbus [3]')
 })
 
 test('onMessage TriggerPollTopic from this app', (done) => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
-  let conn = new MqttConnector()
-  let sub = new MqttSubscriptions(conn)
-  let mdl = new MqttDiscover(conn, sub)
-  let fake = new MdFakeMqtt(sub, FakeModes.Poll)
+  const conn = new MqttConnector()
+  const sub = new MqttSubscriptions(conn)
+  const mdl = new MqttDiscover(conn, sub)
+  const fake = new MdFakeMqtt(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
   }
   copySubscribedSlaves(sub['subscribedSlaves'], msub1['subscribedSlaves'])
-  let sl = new Slave(0, { slaveid: 3 }, Config.getConfiguration().mqttbasetopic)
+  const sl = new Slave(0, { slaveid: 3 }, Config.getConfiguration().mqttbasetopic)
   fake.fakeMode = FakeModes.Poll
   sub['onMqttMessage'](sl.getTriggerPollTopic(), Buffer.from(' '))
     .then(() => {
@@ -319,25 +319,25 @@ function copySubscribedSlaves(toA: Slave[], fromA: Slave[]) {
 }
 test('onMessage SendEntityCommandTopic from this app', (done) => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
-  let conn = new MqttConnector()
-  let sub = new MqttSubscriptions(conn)
+  const conn = new MqttConnector()
+  const sub = new MqttSubscriptions(conn)
   copySubscribedSlaves(sub['subscribedSlaves'], msub1['subscribedSlaves'])
-  let mdl = new MqttDiscover(conn, sub)
-  let fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
+  const mdl = new MqttDiscover(conn, sub)
+  const fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
   }
-  let bus = Bus.getBus(0)
-  let slave = structuredClone(bus!.getSlaveBySlaveId(1))
+  const bus = Bus.getBus(0)
+  const slave = structuredClone(bus!.getSlaveBySlaveId(1))
   ConfigBus.addSpecification(slave!)
   ;(slave!.specification?.entities[2] as any).converter = 'select'
-  let spec = slave!.specification!
-  let sl = new Slave(0, slave!, Config.getConfiguration().mqttbasetopic)
+  const spec = slave!.specification!
+  const sl = new Slave(0, slave!, Config.getConfiguration().mqttbasetopic)
   slave!.specification!.entities[2].readonly = false
-  let oldwriteEntityMqtt = Modbus.writeEntityMqtt
-  let writeEntityMqttMock = jest.fn().mockImplementation(() => Promise.resolve())
+  const oldwriteEntityMqtt = Modbus.writeEntityMqtt
+  const writeEntityMqttMock = jest.fn().mockImplementation(() => Promise.resolve())
   Modbus.writeEntityMqtt = writeEntityMqttMock as any
-  let en: any = spec!.entities[2]
+  const en: any = spec!.entities[2]
   sub['onMqttMessage'](sl.getEntityCommandTopic(en)!.commandTopic!, Buffer.from('20.2'))
     .then(() => {
       expect(fake.isAsExpected).toBeTruthy()
@@ -354,26 +354,26 @@ test('onMessage SendEntityCommandTopic from this app', (done) => {
 })
 test('onMessage SendCommandTopic from this app', (done) => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
-  let conn = new MqttConnector()
-  let sub = new MqttSubscriptions(conn)
-  let mdl = new MqttDiscover(conn, sub)
-  let fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
+  const conn = new MqttConnector()
+  const sub = new MqttSubscriptions(conn)
+  const mdl = new MqttDiscover(conn, sub)
+  const fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
   }
-  let oldwriteEntityMqtt = Modbus.writeEntityMqtt
-  let writeEntityMqttMock = jest.fn().mockImplementation(() => Promise.resolve())
+  const oldwriteEntityMqtt = Modbus.writeEntityMqtt
+  const writeEntityMqttMock = jest.fn().mockImplementation(() => Promise.resolve())
   Modbus.writeEntityMqtt = writeEntityMqttMock as any
 
   conn['connectMqtt'] = function (undefined) {
     conn['onConnect'](conn['client']!)
   }
-  let bus = Bus.getBus(0)
-  let slave = structuredClone(bus!.getSlaveBySlaveId(1))
+  const bus = Bus.getBus(0)
+  const slave = structuredClone(bus!.getSlaveBySlaveId(1))
   ConfigBus.addSpecification(slave!)
   copySubscribedSlaves(sub['subscribedSlaves'], msub1['subscribedSlaves'])
 
-  let sl = new Slave(0, slave!, Config.getConfiguration().mqttbasetopic)
+  const sl = new Slave(0, slave!, Config.getConfiguration().mqttbasetopic)
   slave!.specification!.entities[2].readonly = false
   sub['onMqttMessage'](sl.getCommandTopic()!, Buffer.from('{ "hotwatertargettemperature": 20.2 }'))
     .then(() => {
@@ -391,24 +391,24 @@ test('onMessage SendCommandTopic from this app', (done) => {
 })
 test('onMessage SendCommand with modbusValues', (done) => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
-  let conn = new MqttConnector()
-  let sub = new MqttSubscriptions(conn)
+  const conn = new MqttConnector()
+  const sub = new MqttSubscriptions(conn)
   copySubscribedSlaves(sub['subscribedSlaves'], msub1['subscribedSlaves'])
-  let mdl = new MqttDiscover(conn, sub)
-  let fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
+  const mdl = new MqttDiscover(conn, sub)
+  const fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
   }
-  let oldwriteEntityMqtt = Modbus.writeEntityMqtt
-  let writeEntityModbusMock = jest.fn().mockImplementation(() => Promise.resolve())
+  const oldwriteEntityMqtt = Modbus.writeEntityMqtt
+  const writeEntityModbusMock = jest.fn().mockImplementation(() => Promise.resolve())
   Modbus.writeEntityModbus = writeEntityModbusMock as any
 
   conn['connectMqtt'] = function (undefined) {
     conn['onConnect'](conn['client']!)
   }
-  let bus = Bus.getBus(0)
-  let slave = structuredClone(bus!.getSlaveBySlaveId(1))
-  let sl = new Slave(0, slave!, Config.getConfiguration().mqttbasetopic)
+  const bus = Bus.getBus(0)
+  const slave = structuredClone(bus!.getSlaveBySlaveId(1))
+  const sl = new Slave(0, slave!, Config.getConfiguration().mqttbasetopic)
   sub['onMqttMessage'](sl.getCommandTopic()!, Buffer.from('{ "modbusValues": { "operatingmode": 2 }}'))
     .then(() => {
       expect(writeEntityModbusMock).toHaveBeenCalled()

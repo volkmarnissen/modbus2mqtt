@@ -231,8 +231,11 @@ export class M2mSpecification implements IspecificationValidator {
         return `The specification has no Name`
       case MessageTypes.entityTextMissing:
         return `entity has no name`
-      case MessageTypes.translationMissing:
-        return `A translation is missing` + ': ' + message.additionalInformation
+      case MessageTypes.translationMissing: {
+        const info = message.additionalInformation
+        const text = Array.isArray(info) ? info.join(', ') : (info ?? '')
+        return `A translation is missing: ` + text
+      }
       case MessageTypes.noEntity:
         return `No entity defined for this specification`
       // duplicate removed: MessageTypes.noDocumentation handled above
@@ -241,10 +244,9 @@ export class M2mSpecification implements IspecificationValidator {
       case MessageTypes.nonUniqueName:
         return `Specification name is not unique`
       case MessageTypes.identifiedByOthers: {
-        let specNames: string = ''
-        message.additionalInformation.forEach((name: string) => {
-          specNames = specNames + name + ' '
-        })
+        const info = message.additionalInformation
+        const names = Array.isArray(info) ? info : []
+        const specNames = names.join(' ')
         return `Test data of this specification matches to the following other public specifications ${specNames}`
       }
       // duplicate removed: MessageTypes.nonUniqueName handled above
@@ -717,7 +719,7 @@ export class M2mSpecification implements IspecificationValidator {
         rc.push({
           type: MessageTypes.missingEntity,
           category: MessageCategories.compare,
-          additionalInformation: getSpecificationI18nEntityName(other, 'en', oent.id),
+          additionalInformation: getSpecificationI18nEntityName(other, 'en', oent.id) ?? undefined,
         })
       else {
         if (!this.isEqualValue(oent.converter, ent.converter))

@@ -50,7 +50,7 @@ export interface Imessage {
   type: MessageTypes
   category: MessageCategories
   referencedEntity?: number
-  additionalInformation?: unknown
+  additionalInformation?: string | string[]
 }
 export const editableConverters: string[] = ['binary_sensor', 'number', 'text', 'select', 'button']
 

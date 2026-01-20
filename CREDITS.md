@@ -405,7 +405,7 @@ http-server
 https://github.com/http-party/http-server
 
 ### License
-Copyright (c) 2011-2025 Charlie Robbins, Marak Squires, Jade Michael Thornton and the Contributors.
+Copyright (c) 2011-2026 Charlie Robbins, Marak Squires, Jade Michael Thornton and the Contributors.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

@@ -42,8 +42,8 @@ function enqueueWrite(queue: ModbusRTUQueue, num: number, test: Itest) {
   )
 }
 it('Sequential read successful processing', (done) => {
-  let queue = new ModbusRTUQueue()
-  let test: Itest = {}
+  const queue = new ModbusRTUQueue()
+  const test: Itest = {}
   enqueue(queue, 199, test) //CRC
   enqueue(queue, 200, test) //Timeout
 
@@ -59,8 +59,8 @@ it('Sequential read successful processing', (done) => {
 
 describe('ModbusRTUWorker read', () => {
   it('Sequential read error processing', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 199 },
@@ -92,9 +92,9 @@ describe('ModbusRTUWorker read', () => {
     test.worker.run()
   })
   it('Sequential read error Illegal Function code', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
-    let fb = new FakeBus()
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
+    const fb = new FakeBus()
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 198 },
@@ -113,8 +113,8 @@ describe('ModbusRTUWorker read', () => {
   })
 
   it('Sequential read error processing with reconnect', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 199 },
@@ -135,8 +135,8 @@ describe('ModbusRTUWorker read', () => {
   })
 
   it('Sequential read error processing with split', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 202, length: 3 },
@@ -157,8 +157,8 @@ describe('ModbusRTUWorker read', () => {
   })
 
   it('Sequential read error processing: Timeout', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 200 },
@@ -211,9 +211,9 @@ class RTUWorkerCached extends ModbusRTUWorker {
 }
 describe('ModbusRTUWorker Cache', () => {
   it('updateCacheError', () => {
-    let queue = new ModbusRTUQueue()
-    let worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
-    let e199 = genCacheEntry(
+    const queue = new ModbusRTUQueue()
+    const worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
+    const e199 = genCacheEntry(
       199,
       (qe, result) => {},
       () => {}
@@ -234,21 +234,21 @@ describe('ModbusRTUWorker Cache', () => {
     expect(worker['cache'].get(1)!.holdingRegisters.get(199)!.error).toBeDefined()
   })
   it('cleanupCache', () => {
-    let queue = new ModbusRTUQueue()
-    let worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
-    let e199 = genCacheEntry(
+    const queue = new ModbusRTUQueue()
+    const worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
+    const e199 = genCacheEntry(
       199,
       (qe, result) => {},
       () => {}
     )
     // expired entry
-    let e200 = genCacheEntry(
+    const e200 = genCacheEntry(
       200,
       (qe, result) => {},
       () => {}
     )
     worker['updateCache'](e199, [-199])
-    let cd = worker.currentDate
+    const cd = worker.currentDate
     worker.currentDate = new Date(2025, 1, 1, 5 - 13, 0, 0, 0)
     worker['updateCache'](e200, [-200])
     worker.currentDate = cd
@@ -257,10 +257,10 @@ describe('ModbusRTUWorker Cache', () => {
     expect(worker['cache'].get(1)!.holdingRegisters.get(200)).toBeUndefined()
   })
   it('Read from cache', (done) => {
-    let queue = new ModbusRTUQueue()
+    const queue = new ModbusRTUQueue()
     let onResultCallCount = 0
     let onErrorCallCount = 0
-    let e199 = genCacheEntry(
+    const e199 = genCacheEntry(
       199,
       (qe, result) => {
         onResultCallCount++
@@ -270,7 +270,7 @@ describe('ModbusRTUWorker Cache', () => {
         onErrorCallCount++
       }
     )
-    let e200 = genCacheEntry(
+    const e200 = genCacheEntry(
       200,
       (qe, result) => {
         onResultCallCount++
@@ -280,7 +280,7 @@ describe('ModbusRTUWorker Cache', () => {
         onErrorCallCount++
       }
     )
-    let e201 = genCacheEntry(
+    const e201 = genCacheEntry(
       201,
       (qe, result) => {
         onResultCallCount++
@@ -290,7 +290,7 @@ describe('ModbusRTUWorker Cache', () => {
         onErrorCallCount++
       }
     )
-    let worker = new RTUWorkerCached(new FakeBus(), queue, () => {
+    const worker = new RTUWorkerCached(new FakeBus(), queue, () => {
       expect(onResultCallCount).toBe(2)
       expect(onErrorCallCount).toBe(1)
       done()
@@ -306,8 +306,8 @@ describe('ModbusRTUWorker Cache', () => {
 })
 describe('ModbusRTUWorker write', () => {
   it('Sequential read and write successful processing', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     enqueue(queue, 199, test)
     enqueueWrite(queue, 200, test)
 

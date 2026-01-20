@@ -1,7 +1,7 @@
 import ModbusRTU from 'modbus-serial'
 import { it } from '@jest/globals'
 
-var client = new ModbusRTU()
+const client = new ModbusRTU()
 it.skip('For hardware test only modbus write', () => {
   // open connection to a serial port
   client.connectRTU('/dev/ttyUSB0', { baudRate: 9600 }, read)

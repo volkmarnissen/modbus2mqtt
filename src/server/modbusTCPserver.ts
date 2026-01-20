@@ -85,7 +85,7 @@ const vector: IServiceVector = {
       if (v) rc.push(v.value)
       else {
         debug('getMultipleInputRegisters not found addr:' + addr + ' slave: ' + unitID)
-        cb(new Error('Modbus error 2'), [])
+        cb({ modbusErrorCode: 2, msg: 'Illegal address' } as unknown as Error, [])
         return
       }
     }
@@ -99,7 +99,7 @@ const vector: IServiceVector = {
       if (v) rc.push(v.value)
       else {
         log.log(LogLevelEnum.info, 'Invalid holding reg s:' + unitID + ' a: ' + addr + idx)
-        cb(new Error('Modbus error 2'), [])
+        cb({ modbusErrorCode: 2, msg: 'Illegal address' } as unknown as Error, [])
         return
       }
     }
@@ -169,10 +169,27 @@ export class ModbusServer {
     return rc
   }
   stopServer(cb?: () => void) {
-    if (this.serverTCP)
+    if (this.serverTCP) {
+      let doneCalled = false
+      const done = () => {
+        if (!doneCalled) {
+          doneCalled = true
+          if (cb) cb()
+        }
+      }
+
+      const safetyTimeoutMs = 300
+      const safetyTimer = setTimeout(() => {
+        done()
+      }, safetyTimeoutMs)
+
       this.serverTCP.close(() => {
-        if (cb) cb()
+        clearTimeout(safetyTimer)
+        done()
       })
+    } else {
+      if (cb) cb()
+    }
   }
 }
 export function clearRegisterValues() {

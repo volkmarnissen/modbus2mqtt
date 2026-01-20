@@ -1,7 +1,7 @@
 import { it, expect } from '@jest/globals'
 import { cleanConverterParameters, removeModbusData } from '../../src/specification.shared'
 
-var entity: any = {
+const entity: any = {
   name: 'test',
   converter: 'number',
   modbusValue: [3, 4, 5],

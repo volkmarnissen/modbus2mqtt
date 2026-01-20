@@ -7,8 +7,8 @@ import ModbusRTU from 'modbus-serial'
 import { Mutex } from 'async-mutex'
 
 it('getCoil', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.getCoil!(1, 2, (err, value) => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
@@ -18,8 +18,8 @@ it('getCoil', () => {
   })
 })
 it('getDiscreteInput', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.getDiscreteInput!(1, 2, (err, value) => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
@@ -29,8 +29,8 @@ it('getDiscreteInput', () => {
   })
 })
 it('setCoil', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.setCoil!(1, true, 2, (err) => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
@@ -41,8 +41,8 @@ it('setCoil', () => {
   })
 })
 it('setRegister', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.setRegister!(1, 27, 2, (err) => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
@@ -53,8 +53,8 @@ it('setRegister', () => {
   })
 })
 it('getHoldingRegister', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.getHoldingRegister!(1, 2, (err, value) => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
@@ -65,8 +65,8 @@ it('getHoldingRegister', () => {
   })
 })
 it('getInputRegister', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.getInputRegister!(1, 2, (err, value) => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
@@ -77,8 +77,8 @@ it('getInputRegister', () => {
   })
 })
 it('getMultipleHoldingRegisters', () => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   ;(bridge['vector']!.getMultipleHoldingRegisters as (addr: number, length: number, unitID: number) => Promise<boolean>)(1, 3, 2)
   expect(queue.getLength()).toBe(1)
   expect(queue.getEntries()[0].address.address).toBe(1)
@@ -88,8 +88,8 @@ it('getMultipleHoldingRegisters', () => {
   expect(queue.getEntries()[0].address.write).not.toBeDefined()
 })
 it('getMultipleInputRegisters', (done) => {
-  let queue = new ModbusRTUQueue()
-  let bridge = new ModbusTcpRtuBridge(queue)
+  const queue = new ModbusRTUQueue()
+  const bridge = new ModbusTcpRtuBridge(queue)
   bridge['vector']!.getMultipleInputRegisters!(1, 3, 2, () => {
     done()
   })
@@ -107,11 +107,11 @@ describe('live tests', () => {
   const client = new ModbusRTU()
   let bridge: ModbusTcpRtuBridge
   let testWorker: ModbusRTUWorkerForTest
-  let liveMutext = new Mutex()
+  const liveMutext = new Mutex()
   beforeAll(() => {
     return new Promise<void>((resolve) => {
-      let queue = new ModbusRTUQueue()
-      let fakeBus = new FakeBus()
+      const queue = new ModbusRTUQueue()
+      const fakeBus = new FakeBus()
       testWorker = new ModbusRTUWorkerForTest(fakeBus, queue, () => {}, 'start/stop')
       bridge = new ModbusTcpRtuBridge(queue)
       // open connection to a tcp line

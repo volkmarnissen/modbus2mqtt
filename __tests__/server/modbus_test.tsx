@@ -21,7 +21,7 @@ import { expect, xit, it, describe, beforeEach, jest, beforeAll } from '@jest/gl
 import Debug from 'debug'
 import { ConfigBus } from '../../src/server/configbus'
 setConfigsDirsForTest()
-let debug = Debug('modbus_test')
+const debug = Debug('modbus_test')
 
 beforeAll(() => {
   jest.mock('../../src/server/modbus')
@@ -86,9 +86,9 @@ beforeEach(() => {
 })
 
 let spec: Ispecification
-var mr = new Modbus()
-var dev: Islave | undefined = undefined
-var ent: ImodbusEntity = {
+const mr = new Modbus()
+let dev: Islave | undefined = undefined
+const ent: ImodbusEntity = {
   id: 1,
   mqttname: 'mqtt',
   modbusAddress: 3,
@@ -100,8 +100,8 @@ var ent: ImodbusEntity = {
   converterParameters: { multiplier: 0.01 },
   converter: 'number',
 }
-var ents: Ientity[] = [ent]
-var entText: ImodbusEntity = {
+const ents: Ientity[] = [ent]
+const entText: ImodbusEntity = {
   id: 2,
   mqttname: 'mqtt',
   modbusAddress: 5,
@@ -113,8 +113,8 @@ var entText: ImodbusEntity = {
   converterParameters: { stringlength: 10 },
   converter: 'text',
 }
-var readConfig = new Config()
-var prepared: boolean = false
+let readConfig = new Config()
+let prepared: boolean = false
 function prepareIdentification() {
   if (!prepared) {
     prepared = true
@@ -128,11 +128,11 @@ function prepareIdentification() {
 
 describe('Modbus read', () => {
   it('Modbus read', (done) => {
-    let readConfig: Config = new Config()
+    const readConfig: Config = new Config()
     readConfig.readYaml()
     ConfigBus.readBusses()
     new ConfigSpecification().readYaml()
-    let dev = ConfigBus.getSlave(0, 1)!
+    const dev = ConfigBus.getSlave(0, 1)!
     expect(dev).toBeDefined
     Modbus.getModbusSpecification(
       ModbusTasks.specification,
@@ -144,7 +144,7 @@ describe('Modbus read', () => {
         done()
       }
     ).subscribe((spec1) => {
-      let spec = ConfigSpecification.getSpecificationByFilename(dev!.specificationid!)!
+      const spec = ConfigSpecification.getSpecificationByFilename(dev!.specificationid!)!
       expect(spec).toBeDefined()
       expect((spec1?.entities[0] as ImodbusEntity).mqttValue).toBe((spec1?.entities[0] as ImodbusEntity).mqttValue)
       expect(((spec1?.entities[0] as ImodbusEntity).mqttValue as number) - 21).toBeLessThan(0.001)
@@ -230,7 +230,7 @@ describe('Modbus read', () => {
     if (entText.converterParameters) (entText.converterParameters as Itext).identification = 'ABCD'
     dev!.slaveid = 2
     spec.entities = [entText]
-    let mb = new Modbus()
+    const mb = new Modbus()
     mb.readEntityFromModbus(Bus.getBus(1)!.getModbusAPI(), 2, spec, 2).then((arg0: ImodbusEntity) => {
       expect(arg0!.identified).toBe(IdentifiedStates.identified)
       done()
@@ -242,7 +242,7 @@ describe('Modbus read', () => {
   // });
 })
 xit('Modbus modbusDataToSpec spec.identified = identified', () => {
-  let spec: IfileSpecification = {
+  const spec: IfileSpecification = {
     version: '0.1',
     entities: [
       {
@@ -317,14 +317,14 @@ xit('Modbus modbusDataToSpec spec.identified = identified', () => {
   //"modbusValue": [210], "mqttValue": 21,
   //        "modbusValue": [1], "mqttValue": "cm", "identified": 1,
   //"modbusValue": [1], "mqttValue": "0.1", "identified": 1,
-  let results = emptyModbusValues()
+  const results = emptyModbusValues()
   results.holdingRegisters.set(4, getReadRegisterResult(210))
   results.holdingRegisters.set(2, getReadRegisterResult(1))
   results.holdingRegisters.set(3, getReadRegisterResult(1))
   Config.getConfiguration()
   Config['config'].fakeModbus = false
-  let m = new ModbusForTest()
-  let result = m.modbusDataToSpecForTest(spec)
+  const m = new ModbusForTest()
+  const result = m.modbusDataToSpecForTest(spec)
   debug(JSON.stringify(result))
   expect(result).toBeDefined()
   expect(result!.identified).toBe(IdentifiedStates.identified)
@@ -339,10 +339,10 @@ function writeRegisters(slaveid: number, _startaddress: number, registerType: Mo
 }
 it('Modbus writeEntityMqtt', (done) => {
   // TODO Fix test ModbusCache.prototype.writeRegisters = writeRegisters
-  let readConfig: Config = new Config()
+  const readConfig: Config = new Config()
   readConfig.readYaml()
   new ConfigSpecification().readYaml()
-  let dev = ConfigBus.getSlave(0, 1)!
+  const dev = ConfigBus.getSlave(0, 1)!
   expect(dev).toBeDefined
 
   Modbus.writeEntityMqtt(Bus.getBus(0)!.getModbusAPI(), 1, spec, 3, 'test')

@@ -48,36 +48,48 @@ function testRead(
   fc: (slaveid: number, address: number, length: any) => Promise<IModbusResultOrError>
 ): Promise<void> {
   return new Promise<void>((resolve) => {
-    let tcpServer = new ModbusServer()
-    let bus = Bus.getBus(1)
+    const tcpServer = new ModbusServer()
+    const bus = Bus.getBus(1)
     if (bus) {
-      tcpServer.startServer((bus.properties.connectionData as any)['port']).then(() => {
-        debug('Connected to TCP server')
-        let modbusAPI = new ModbusAPI(bus!)
-        modbusAPI.initialConnect().then(() => {
-          fc.bind(modbusAPI)(XYslaveid, address, 2)
-            .then((value) => {
-              expect(value!.data![0]).toBe(value1)
-              expect(value!.data![1]).toBe(value2)
-              fc.bind(modbusAPI)(XYslaveid, address2, 2)
-                .then((_value) => {
-                  expect(true).toBeFalsy()
-                })
-                .catch((e) => {
-                  expect(e.modbusCode).toBe(2)
-                  modbusAPI['closeRTU']('test', () => {
-                    tcpServer.stopServer(resolve)
+      tcpServer
+        .startServer((bus.properties.connectionData as any)['port'])
+        .then(() => {
+          debug('Connected to TCP server')
+          const modbusAPI = new ModbusAPI(bus!)
+          modbusAPI.initialConnect().then(() => {
+            fc.bind(modbusAPI)(XYslaveid, address, 2)
+              .then((value) => {
+                expect(value!.data![0]).toBe(value1)
+                expect(value!.data![1]).toBe(value2)
+                fc.bind(modbusAPI)(XYslaveid, address2, 2)
+                  .then((_value) => {
+                    // Unerwarteter Erfolg: erst sauber schließen, dann Test fehlschlagen
+                    modbusAPI['closeRTU']('test', () => {
+                      tcpServer.stopServer(resolve)
+                    })
+                    expect(true).toBeFalsy()
                   })
-                })
-            })
-            .catch((e) => {
-              console.error(e)
-              ;(bus!.getModbusAPI as any as ModbusAPI)['closeRTU']('test', () => {
-                tcpServer.stopServer(resolve)
+                  .catch((e) => {
+                    modbusAPI['closeRTU']('test', () => {
+                      tcpServer.stopServer(resolve)
+                    })
+                    expect(e.modbusCode).toBe(2)
+                  })
               })
-            })
+              .catch((e) => {
+                console.error(e)
+                modbusAPI['closeRTU']('test', () => {
+                  tcpServer.stopServer(resolve)
+                })
+              })
+          })
         })
-      })
+        .catch((e) => {
+          // Start fehlgeschlagen (z.B. EADDRINUSE) – Test markieren und beenden
+          debug(e.message)
+          expect(true).toBeFalsy()
+          resolve()
+        })
     }
   })
 }
@@ -88,41 +100,53 @@ function testWrite(
   fc: (slaveid: number, address: number, length: any) => Promise<void>
 ): Promise<void> {
   return new Promise<void>((resolve) => {
-    let tcpServer = new ModbusServer()
-    let bus = Bus.getBus(1)
+    const tcpServer = new ModbusServer()
+    const bus = Bus.getBus(1)
     if (bus) {
-      tcpServer.startServer((bus.properties.connectionData as any)['port']).then(() => {
-        let bus = Bus.getBus(1)
-        let modbusAPI = new ModbusAPI(bus!)
-        modbusAPI.initialConnect().then(() => {
-          fc.bind(modbusAPI)(XYslaveid, address, { data: [value], buffer: [0] })
-            .then(() => {
-              fc.bind(bus)(XYslaveid, address2, {
-                data: [value],
-                buffer: [0],
-              })
-                .then(() => {
-                  expect(true).toBeFalsy()
+      tcpServer
+        .startServer((bus.properties.connectionData as any)['port'])
+        .then(() => {
+          const bus = Bus.getBus(1)
+          const modbusAPI = new ModbusAPI(bus!)
+          modbusAPI.initialConnect().then(() => {
+            fc.bind(modbusAPI)(XYslaveid, address, { data: [value], buffer: [0] })
+              .then(() => {
+                fc.bind(modbusAPI)(XYslaveid, address2, {
+                  data: [value],
+                  buffer: [0],
                 })
-                .catch((e) => {
-                  expect(e.modbusCode).toBe(2)
-                  modbusAPI['closeRTU']('test', () => {
-                    tcpServer.stopServer(resolve)
+                  .then(() => {
+                    // Unerwarteter Erfolg: erst sauber schließen, dann Test fehlschlagen
+                    expect(true).toBeFalsy()
+                    modbusAPI['closeRTU']('test', () => {
+                      tcpServer.stopServer(resolve)
+                    })
                   })
-                })
-            })
-            .catch((e) => {
-              modbusAPI['closeRTU']('test', () => {
-                tcpServer.stopServer(resolve)
+                  .catch((e) => {
+                    expect(e.modbusCode).toBe(2)
+                    modbusAPI['closeRTU']('test', () => {
+                      tcpServer.stopServer(resolve)
+                    })
+                  })
               })
-            })
+              .catch((e) => {
+                modbusAPI['closeRTU']('test', () => {
+                  tcpServer.stopServer(resolve)
+                })
+              })
+          })
         })
-      })
+        .catch((e) => {
+          // Start fehlgeschlagen (z.B. EADDRINUSE) – Test markieren und beenden
+          debug(e.message)
+          expect(true).toBeFalsy()
+          resolve()
+        })
     }
   })
 }
-var readConfig = new Config()
-var prepared: boolean = false
+let readConfig = new Config()
+let prepared: boolean = false
 function prepareIdentification() {
   if (!prepared) {
     prepared = true
@@ -133,7 +157,7 @@ function prepareIdentification() {
 }
 function readModbusRegisterFake(): Promise<ImodbusValues> {
   return new Promise<ImodbusValues>((resolve, reject) => {
-    let ev = emptyModbusValues()
+    const ev = emptyModbusValues()
     ev.holdingRegisters.set(3, { data: [40] })
     ev.holdingRegisters.set(4, { data: [40] })
     ev.holdingRegisters.set(5, { data: [2] })
@@ -143,8 +167,8 @@ function readModbusRegisterFake(): Promise<ImodbusValues> {
 it('Bus getSpecsForDevice', (done) => {
   prepareIdentification()
   if (Config.getConfiguration().fakeModbus) debug(LogLevelEnum.info, 'Fakemodbus')
-  let bus = Bus.getBus(0)
-  let modbusAPI = bus?.getModbusAPI() as any as ModbusAPI
+  const bus = Bus.getBus(0)
+  const modbusAPI = bus?.getModbusAPI() as any as ModbusAPI
   expect(bus).toBeDefined()
   modbusAPI!.readModbusRegister = readModbusRegisterFake
   bus!
@@ -191,43 +215,48 @@ it('Modbus getAvailableSpecs with specific slaveId no results 0-3', (done) => {
 })
 describe('ServerTCP based', () => {
   it('read Discrete Inputs success, Illegal Address', (done) => {
-    singleMutex.runExclusive(() => {
+    singleMutex.acquire().then((release) => {
       testRead(1, 4, 1, 1, ModbusAPI.prototype.readDiscreteInputs).then(() => {
         done()
+        release()
       })
     })
   })
   it('read HoldingRegisters success, Illegal Address', (done) => {
-    singleMutex.runExclusive(() => {
+    singleMutex.acquire().then((release) => {
       testRead(0x0101, 0x0109, 1, 1, ModbusAPI.prototype.readHoldingRegisters).then(() => {
         debug('done')
         done()
+        release()
       })
     })
   })
   it('read readInputRegisters success, Illegal Address', (done) => {
-    singleMutex.runExclusive(() => {
+    singleMutex.acquire().then((release) => {
       testRead(1, 2, 195, 500, ModbusAPI.prototype.readInputRegisters).then(() => {
         done()
+        release()
       })
     })
   })
   it('writeHoldingRegisters success, Illegal Address', (done) => {
-    singleMutex.runExclusive(() => {
+    singleMutex.acquire().then((release) => {
       testWrite(1, 2, 10, ModbusAPI.prototype.writeHoldingRegisters).then(() => {
         done()
+        release()
       })
     })
   })
   it('writeCoils success, Illegal Address', (done) => {
-    singleMutex.runExclusive(() => {
+    singleMutex.acquire().then((release) => {
       testWrite(1, 4, 0, ModbusAPI.prototype.writeCoils).then(() => {
         done()
+        release()
       })
     })
   })
 
-  let specNoError: ImodbusSpecification = {
+  const specNoError: ImodbusSpecification = {
     entities: [{ id: 1, identified: IdentifiedStates.identified } as ImodbusEntity],
     identified: IdentifiedStates.identified,
   } as ImodbusSpecification

@@ -376,8 +376,9 @@ export class ConfigSpecification {
       if ('modbusValue' in (e as object)) delete (e as { modbusValue?: unknown }).modbusValue
       if ('commandTopicModbus' in (e as object)) delete (e as { commandTopicModbus?: unknown }).commandTopicModbus
       if ('commandTopic' in (e as object)) delete (e as { commandTopic?: unknown }).commandTopic
-      const ce = e as unknown as { converter?: { registerTypes?: unknown } }
-      if (ce.converter && 'registerTypes' in ce.converter) delete ce.converter.registerTypes
+      const ce = e as unknown as { converter?: unknown }
+      const conv = ce.converter as Record<string, unknown> | null
+      if (conv && typeof conv === 'object' && 'registerTypes' in conv) delete (conv as Record<string, unknown>)['registerTypes']
     })
     if (!spec.manufacturer || spec.manufacturer.length == 0) delete spec.manufacturer
     if (!spec.model || spec.model.length == 0) delete spec.model

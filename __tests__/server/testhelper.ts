@@ -242,7 +242,7 @@ export class FakeBus implements IModbusAPI {
   }
   readHoldingRegisters(slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
     return new Promise<IModbusResultWithDuration>((resolve) => {
-      let d: number[] = []
+      const d: number[] = []
       this.callCount = 1
       for (let idx = 0; idx < length; idx++) d.push(dataaddress)
       data++
@@ -253,7 +253,7 @@ export class FakeBus implements IModbusAPI {
     return new Promise<IModbusResultWithDuration>((resolve, reject) => {
       if (this.callCount > 0) {
         this.callCount = 0
-        let r: IModbusResultWithDuration = {
+        const r: IModbusResultWithDuration = {
           data: [1],
           duration: 100,
         }
@@ -264,33 +264,33 @@ export class FakeBus implements IModbusAPI {
           case 197:
             {
               this.callCount = 1
-              let e1: any = new Error('Error')
+              const e1: any = new Error('Error')
               e1.modbusCode = 1 // Illegal function address
               reject(e1)
             }
             break
           case 198:
             {
-              let e1: any = new Error('Error')
+              const e1: any = new Error('Error')
               e1.modbusCode = 1 // Illegal function code
               reject(e1)
             }
             break
           case 199:
-            let e1: any = new Error('CRC error')
+            const e1: any = new Error('CRC error')
             reject(e1)
             break
           case 202:
-            let e2: any = new Error('CRC error')
+            const e2: any = new Error('CRC error')
             reject(e2)
             break
           case 200:
-            let e = new Error('Error')
+            const e = new Error('Error')
             ;(e as any).errno = 'ETIMEDOUT'
             reject(e)
             break
           default:
-            let r: IModbusResultWithDuration = {
+            const r: IModbusResultWithDuration = {
               data: [1],
               duration: 100,
             }
@@ -323,12 +323,12 @@ export class ModbusRTUWorkerForTest extends ModbusRTUWorker {
     this.isRunningForTest = false
   }
   override onFinish(): void {
-    let fakeBus: FakeBus = this.modbusAPI as any
+    const fakeBus: FakeBus = this.modbusAPI as any
     expect(fakeBus.callCount).toBe(this.expectedAPIcallCount)
     expect((this.modbusAPI as FakeBus).reconnected).toBe(this.expectedReconnected)
     expect(fakeBus.wroteDataCount).toBe(this.expectedAPIwroteDataCount)
     if (this.expectedRequestCountSpecification > 0) {
-      let min = new Date().getMinutes()
+      const min = new Date().getMinutes()
       expect(this['cache'].get(1)!.requestCount[ModbusTasks.specification][min]).toBe(this.expectedRequestCountSpecification)
     }
     this.done()

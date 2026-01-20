@@ -46,10 +46,10 @@ export class SpecificationServices {
       case MessageTypes.nonUniqueName:
         return $localize`Specification name is not unique`
       case MessageTypes.identifiedByOthers: {
-        let specNames: string = ''
-        message.additionalInformation.forEach((name: string) => {
-          specNames = specNames + name + ' '
-        })
+        let specNames = ''
+        const info = message.additionalInformation
+        if (Array.isArray(info)) specNames = info.join(' ')
+        else if (typeof info === 'string') specNames = info
         return $localize`Test data of this specification matches to the following other public specifications ${specNames}`
       }
       case MessageTypes.nonUniqueName:

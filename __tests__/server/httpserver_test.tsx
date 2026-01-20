@@ -26,7 +26,7 @@ import {
   IidentificationSpecification,
   IUserAuthenticationStatus,
 } from '../../src/server.shared'
-import { IfileSpecification, LogLevelEnum, Logger, M2mSpecification } from '../../src/specification'
+import { IfileSpecification, LogLevelEnum, Logger } from '../../src/specification'
 import { ConfigSpecification } from '../../src/specification'
 import { Mutex } from 'async-mutex'
 import { join } from 'path'
@@ -38,8 +38,8 @@ import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
 import { ModbusAPI } from '../../src/server/modbusAPI'
 import { setConfigsDirsForTest } from './configsbase'
 import { ConfigTestHelper } from './testhelper'
-let mockReject = false
-let debug = Debug('testhttpserver')
+const mockReject = false
+const debug = Debug('testhttpserver')
 const mqttService = {
   host: 'core-mosquitto',
   port: 1883,
@@ -55,16 +55,16 @@ function executeHassioGetRequest<T>(_url: string, next: (_dev: T) => void, rejec
   else next({ data: mqttService } as T)
 }
 
-let log = new Logger('httpserverTest')
+const log = new Logger('httpserverTest')
 setConfigsDirsForTest()
 new ConfigSpecification().readYaml()
 Config['executeHassioGetRequest'] = executeHassioGetRequest
-let mWaterlevel = new Mutex()
-let testdir = ConfigSpecification.getLocalDir() + '/specifications/files/waterleveltransmitter/'
-let testPdf = 'test.pdf'
-let test1 = 'test2.jpg'
+const mWaterlevel = new Mutex()
+const testdir = ConfigSpecification.getLocalDir() + '/specifications/files/waterleveltransmitter/'
+const testPdf = 'test.pdf'
+const test1 = 'test2.jpg'
 
-let spec: ImodbusSpecification = {
+const spec: ImodbusSpecification = {
   filename: 'waterleveltransmitter',
   status: 2,
   entities: [
@@ -93,9 +93,9 @@ let spec: ImodbusSpecification = {
   files: [],
   identified: IdentifiedStates.unknown,
 }
-var httpServer: HttpServer
+let httpServer: HttpServer
 
-let spec2: IfileSpecification = { ...spec, version: VERSION, testdata: {} }
+const spec2: IfileSpecification = { ...spec, version: VERSION, testdata: {} }
 spec2.entities.push({
   id: 2,
   mqttname: '',
@@ -118,7 +118,7 @@ function mockedHttp(_options: any, cb: (res: any) => any) {
   cb({ statusCode: 200 })
 }
 let oldExecuteHassioGetRequest: any
-let lspec = ConfigSpecification.getLocalDir() + '/specifications/'
+const lspec = ConfigSpecification.getLocalDir() + '/specifications/'
 
 // Test Helper Instanz
 let httpTestHelper: ConfigTestHelper
@@ -129,14 +129,14 @@ beforeAll(() => {
     setConfigsDirsForTest()
     httpTestHelper = new ConfigTestHelper('httpserver-test')
     httpTestHelper.setup()
-    let cfg = new Config()
+    const cfg = new Config()
     cfg.readYamlAsync().then(() => {
       ConfigBus.readBusses()
-      let conn = new MqttConnector()
-      let msub = new MqttSubscriptions(conn)
-      let md = new MqttDiscover(conn, msub)
+      const conn = new MqttConnector()
+      const msub = new MqttSubscriptions(conn)
+      const md = new MqttDiscover(conn, msub)
 
-      let fake = new FakeMqtt(msub, FakeModes.Poll)
+      const fake = new FakeMqtt(msub, FakeModes.Poll)
       conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
         onConnectCallback(fake as any as MqttClient)
       }
@@ -196,7 +196,7 @@ it('GET /specsForSlave', (done) => {
     .expect(200)
     .then((response) => {
       expect(response.body.length).toBeGreaterThan(0)
-      let spec: ImodbusSpecification = response.body.find(
+      const spec: ImodbusSpecification = response.body.find(
         (specs: IidentificationSpecification) => specs.filename == 'waterleveltransmitter'
       )
       expect(spec).not.toBeNull()
@@ -252,7 +252,7 @@ it('GET local files', (done) => {
     .get('/specifications/files/waterleveltransmitter/files.yaml')
     .expect(200)
     .then((response) => {
-      let o = parse(response.text)
+      const o = parse(response.text)
       expect(o.files.length).toBeGreaterThan(0)
       expect((o.files[0].url as string).startsWith('/')).toBeFalsy()
       expect(o.files.length).toBeGreaterThan(0)
@@ -270,7 +270,7 @@ it('GET local files', (done) => {
 })
 
 xit('register,login validate fails on github', (done) => {
-  var token = ''
+  let token = ''
   supertest(httpServer['app'])
     .get('/user/reqister?name=test&password=test123')
     .then((_response) => {
@@ -279,13 +279,13 @@ xit('register,login validate fails on github', (done) => {
         .expect(200)
         .then((response) => {
           token = response.body.token
-          let hdrs: Headers = new Map<string, string>() as any
+          const hdrs: Headers = new Map<string, string>() as any
           hdrs.set('Authorization', 'Bearer ' + token)
           expect(response.body.token.length).toBeGreaterThan(0)
-          let req: any = {
+          const req: any = {
             url: '/noauthorization needed',
           }
-          let res: any = {}
+          const res: any = {}
           oldAuthenticate.bind(httpServer)(req, res, () => {
             req.url = '/api/Needs authorization'
             req['header'] = (key: string): string => {
@@ -308,8 +308,8 @@ xit('register,login validate fails on github', (done) => {
 
 it('supervisor login', (done) => {
   // This enables hassio validation
-  let res: any = {}
-  let req: any = {
+  const res: any = {}
+  const req: any = {
     url: '/api/Needs authorization',
     header: () => {
       return undefined
@@ -320,7 +320,7 @@ it('supervisor login', (done) => {
     .get(apiUri.userAuthenticationStatus)
     .expect(200)
     .then((response) => {
-      let status = response.body as any as IUserAuthenticationStatus
+      const status = response.body as any as IUserAuthenticationStatus
       expect(status.mqttConfigured).toBeTruthy()
       expect(status.hasAuthToken).toBeFalsy()
       done()
@@ -368,7 +368,7 @@ test('GET /modbus/specification', (done) => {
     .get('/api/modbus/specification?busid=0&slaveid=1&spec=waterleveltransmitter')
     .expect(HttpErrorsEnum.OK)
     .then((response) => {
-      let spec: ImodbusSpecification = response.body
+      const spec: ImodbusSpecification = response.body
       expect(((spec?.entities[0] as ImodbusEntity).mqttValue as number) - 21).toBeLessThan(0.001)
       done()
     })
@@ -379,7 +379,7 @@ test('GET /busses', (done) => {
     .get('/api/busses')
     .expect(200)
     .then((response) => {
-      let busses: IBus[] = response.body
+      const busses: IBus[] = response.body
       expect(busses.length).toBeGreaterThan(0)
       expect((busses[0].connectionData as IRTUConnection).serialport.length).toBeGreaterThan(0)
       done()
@@ -390,18 +390,18 @@ test('GET /busses', (done) => {
 })
 
 test('ADD/DELETE /busses', (done) => {
-  let newConn: IModbusConnection = {
+  const newConn: IModbusConnection = {
     baudrate: 9600,
     serialport: '/dev/ttyACM1',
     timeout: 200,
   }
   initBussesForTest()
 
-  let oldLength = Bus.getBusses().length
+  const oldLength = Bus.getBusses().length
   const mockStaticF = jest.fn((connection: IModbusConnection) =>
     Promise.resolve(new Bus({ busId: 7, slaves: [], connectionData: {} as any }))
   )
-  let orig = Bus.addBus
+  const orig = Bus.addBus
   Bus.addBus = mockStaticF
   supertest(httpServer['app'])
     .post('/api/bus')
@@ -410,7 +410,7 @@ test('ADD/DELETE /busses', (done) => {
     .set('Content-Type', 'application/json')
     .expect(201)
     .then((response) => {
-      let newNumber = response.body
+      const newNumber = response.body
       supertest(httpServer['app'])
         .delete('/api/bus?busid=' + newNumber.busid)
         .then((_response) => {
@@ -434,8 +434,8 @@ test('post specification zip', (done) => {
     })
 })
 test('POST /mqtt/validate', (done) => {
-  let oldConfig = Config.getConfiguration()
-  let config = Config.getConfiguration()
+  const oldConfig = Config.getConfiguration()
+  const config = Config.getConfiguration()
   config.mqttconnect.mqttserverurl = 'mqtt://doesnt_exist:1007'
   new Config().writeConfiguration(config)
   supertest(httpServer['app'])
@@ -463,22 +463,22 @@ describe('http POST', () => {
   })
 
   test('POST /specification: add new Specification rename device.specification', (done) => {
-    let conn = new MqttConnector()
-    let msub = new MqttSubscriptions(conn)
-    let md = new MqttDiscover(conn, msub)
+    const conn = new MqttConnector()
+    const msub = new MqttSubscriptions(conn)
+    const md = new MqttDiscover(conn, msub)
 
-    let fake = new FakeMqtt(msub, FakeModes.Poll)
+    const fake = new FakeMqtt(msub, FakeModes.Poll)
     conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
       onConnectCallback(fake as any as MqttClient)
     }
     initBussesForTest()
     ConfigBus['listeners'] = []
 
-    let spec1: ImodbusSpecification = Object.assign(spec)
+    const spec1: ImodbusSpecification = Object.assign(spec)
 
-    let filename = ConfigSpecification.getLocalDir() + '/specifications/waterleveltransmitter.yaml'
+    const filename = ConfigSpecification.getLocalDir() + '/specifications/waterleveltransmitter.yaml'
     fs.unlinkSync(ConfigSpecification['getSpecificationPath'](spec1))
-    let url = apiUri.specfication + '?busid=0&slaveid=2&originalFilename=waterleveltransmitter'
+    const url = apiUri.specfication + '?busid=0&slaveid=2&originalFilename=waterleveltransmitter'
 
     //@ts-ignore
     supertest(httpServer['app'])
@@ -492,10 +492,10 @@ describe('http POST', () => {
       })
       .then((_response) => {
         // expect((response as any as Response).status).toBe(HttpErrorsEnum.ErrBadRequest)
-        let bus = Bus.getBus(0)!
-        let modbusAPI = new ModbusAPI(bus)
+        const bus = Bus.getBus(0)!
+        const modbusAPI = new ModbusAPI(bus)
         bus['modbusAPI'] = modbusAPI
-        let ev = modbusAPI['_modbusRTUWorker']!['createEmptyIModbusValues']()
+        const ev = modbusAPI['_modbusRTUWorker']!['createEmptyIModbusValues']()
         ev.holdingRegisters.set(100, { error: new Error('failed!!!'), date: new Date() })
         modbusAPI['_modbusRTUWorker']!['cache'].set(2, ev)
         supertest(httpServer['app'])
@@ -504,8 +504,8 @@ describe('http POST', () => {
           .send(spec1)
           .expect(HttpErrorsEnum.OkCreated)
           .then((response) => {
-            var found = ConfigSpecification.getSpecificationByFilename(spec1.filename)! as any
-            let newFilename = ConfigSpecification['getSpecificationPath'](response.body)
+            const found = ConfigSpecification.getSpecificationByFilename(spec1.filename)! as any
+            const newFilename = ConfigSpecification['getSpecificationPath'](response.body)
             expect(fs.existsSync(newFilename)).toBeTruthy()
             expect(getSpecificationI18nName(found!, 'en')).toBe('Water Level Transmitter')
             expect(response)
@@ -524,7 +524,7 @@ describe('http POST', () => {
       .accept('application/json')
       .expect(201)
       .then((response) => {
-        let entityAndMessages = response.body as ImodbusEntity
+        const entityAndMessages = response.body as ImodbusEntity
         expect(entityAndMessages.modbusValue[0]).toBe(1)
         expect(parseFloat(entityAndMessages.mqttValue as string)).toBe(0.01)
 
@@ -537,7 +537,7 @@ describe('http POST', () => {
   })
 
   test('POST /modbus/bus: update bus', (done) => {
-    let conn = structuredClone(Bus.getBus(0)!.properties.connectionData)
+    const conn = structuredClone(Bus.getBus(0)!.properties.connectionData)
     conn.timeout = 500
     initBussesForTest()
     ConfigBus.updateBusProperties(Bus.getBus(0)!.properties!, conn)
@@ -562,7 +562,7 @@ describe('http POST', () => {
     mWaterlevel.runExclusive(() => {
       if (fs.existsSync(testdir + test)) fs.unlinkSync(testdir + test)
       if (fs.existsSync(testdir + test1)) fs.unlinkSync(testdir + test1)
-      let lspec = ConfigSpecification.getLocalDir() + '/specifications/'
+      const lspec = ConfigSpecification.getLocalDir() + '/specifications/'
       if (!fs.existsSync(lspec + 'waterleveltransmitter.bck'))
         fs.copyFileSync(lspec + 'waterleveltransmitter.yaml', lspec + 'waterleveltransmitter.bck', undefined)
       supertest(httpServer['app'])
@@ -570,7 +570,7 @@ describe('http POST', () => {
         .attach('documents', Buffer.from('whatever'), { filename: testPdf })
         .attach('documents', Buffer.from('whatever2'), { filename: test1 })
         .then((_response) => {
-          let d = _response.body as IimageAndDocumentUrl[]
+          const d = _response.body as IimageAndDocumentUrl[]
           expect(
             d.find(
               (ul) => ul.url.endsWith('waterleveltransmitter' + '/' + testPdf) && ul.usage === SpecificationFileUsage.documentation
@@ -595,7 +595,7 @@ describe('http POST', () => {
             .then(() => {
               expect(fs.existsSync(testdir + testPdf)).toBeFalsy()
               if (fs.existsSync(testdir + test1)) fs.unlinkSync(testdir + test1)
-              let i = {
+              const i = {
                 url: 'http://www.spiegel.de',
                 fileLocation: FileLocation.Global,
                 usage: SpecificationFileUsage.documentation,

@@ -28,8 +28,8 @@ beforeAll(() => {
 function testWait(github: M2mGitHub, done: any) {
   github.init().then((hasGhToken) => {
     expect(hasGhToken).toBeTruthy()
-    let title = 'Test'
-    let content = 'Some Text'
+    const title = 'Test'
+    const content = 'Some Text'
     github
       .deleteSpecBranch('waterleveltransmitter')
       .then(() => {
@@ -66,13 +66,13 @@ function testWait(github: M2mGitHub, done: any) {
   })
 }
 it('checkFiles files.yaml exists, other file is missing=> OK', () => {
-  let localRoot = ConfigSpecification.getLocalDir()
-  let github = new M2mGitHub(null, localRoot)
-  let oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
+  const localRoot = ConfigSpecification.getLocalDir()
+  const github = new M2mGitHub(null, localRoot)
+  const oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
   M2mGitHub.prototype['uploadFileAndCreateTreeParameter'] = jest
     .fn<(root: string, filemname: string) => Promise<any>>()
     .mockResolvedValue({})
-  let a = github['checkFiles'](localRoot, [
+  const a = github['checkFiles'](localRoot, [
     '/specifications/files/waterleveltransmitter/files.yaml',
     '/specifications/files/waterleveltransmitter/test.png',
   ])
@@ -81,13 +81,13 @@ it('checkFiles files.yaml exists, other file is missing=> OK', () => {
 })
 
 it('checkFiles files.yaml does not exist => Exception', () => {
-  let localRoot = ConfigSpecification.getLocalDir()
-  let github = new M2mGitHub(null, localRoot)
-  let oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
+  const localRoot = ConfigSpecification.getLocalDir()
+  const github = new M2mGitHub(null, localRoot)
+  const oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
   M2mGitHub.prototype['uploadFileAndCreateTreeParameter'] = jest
     .fn<(root: string, filemname: string) => Promise<any>>()
     .mockResolvedValue({})
-  let t: () => void = () => {
+  const t: () => void = () => {
     github['checkFiles'](localRoot, [
       '/specifications/files/notexists/files.yaml',
       '/specifications/files/waterleveltransmitter/test.png',
@@ -99,8 +99,8 @@ it('checkFiles files.yaml does not exist => Exception', () => {
 
 describe.skip('skipped because github tests require NODE_AUTH_TOKEN', () => {
   it('init with no github token', (done) => {
-    let publictestdir = join(ConfigSpecification.dataDir, 'publictest')
-    let github = new M2mGitHub(null, publictestdir)
+    const publictestdir = join(ConfigSpecification.dataDir, 'publictest')
+    const github = new M2mGitHub(null, publictestdir)
     github['ownOwner'] = 'modbus2mqtt'
     github
       .init()
@@ -115,7 +115,7 @@ describe.skip('skipped because github tests require NODE_AUTH_TOKEN', () => {
   })
 
   it('init', (done) => {
-    let github = new M2mGitHub(process.env.GITHUB_TOKEN, join(configDir, 'publictest'))
+    const github = new M2mGitHub(process.env.GITHUB_TOKEN, join(configDir, 'publictest'))
     github['ownOwner'] = 'modbus2mqtt'
     testWait(github, done)
     // github.deleteRepository().then(() => {

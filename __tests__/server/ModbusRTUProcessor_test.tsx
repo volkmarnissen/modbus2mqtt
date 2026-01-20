@@ -11,16 +11,16 @@ function addAddresses(addresses: Set<ImodbusAddress>, registerType: ModbusRegist
     })
 }
 it('prepare', () => {
-  let addresses = new Set<ImodbusAddress>()
+  const addresses = new Set<ImodbusAddress>()
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 0, 4)
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 7, 9)
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 27, 29)
 
   addAddresses(addresses, ModbusRegisterType.Coils, 0, 4)
 
-  let queue = new ModbusRTUQueue()
-  let modbusProcessor = new ModbusRTUProcessor(queue)
-  let preparedAddresses = modbusProcessor['prepare'](1, addresses)
+  const queue = new ModbusRTUQueue()
+  const modbusProcessor = new ModbusRTUProcessor(queue)
+  const preparedAddresses = modbusProcessor['prepare'](1, addresses)
   expect(preparedAddresses.addresses.length).toBe(3)
   expect(preparedAddresses.addresses[0].address).toBe(0)
   expect(preparedAddresses.addresses[0].length).toBe(4)
@@ -34,7 +34,7 @@ it('prepare', () => {
 })
 
 function prepareQueue(): IQueueEntry {
-  let qe: IQueueEntry = {
+  const qe: IQueueEntry = {
     slaveId: 1,
     address: { address: 1, length: 2, registerType: ModbusRegisterType.HoldingRegister },
     onError(qe, e) {
@@ -47,13 +47,13 @@ function prepareQueue(): IQueueEntry {
 }
 
 it('execute', (done) => {
-  let addresses = new Set<ImodbusAddress>()
+  const addresses = new Set<ImodbusAddress>()
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 0, 4)
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 7, 9)
   addAddresses(addresses, ModbusRegisterType.Coils, 0, 4)
 
-  let queue = new ModbusRTUQueue()
-  let modbusProcessor = new ModbusRTUProcessor(queue)
+  const queue = new ModbusRTUQueue()
+  const modbusProcessor = new ModbusRTUProcessor(queue)
   modbusProcessor.execute(1, addresses, { task: ModbusTasks.deviceDetection, errorHandling: { retry: true } }).then((result) => {
     expect(result.coils.size).toBe(4)
     result.coils.forEach((res) => {
@@ -69,13 +69,13 @@ it('execute', (done) => {
   })
   // Wait for queue to be ready
   setTimeout(() => {
-    let length = queue.getLength()
-    let entries = queue.getEntries()
+    const length = queue.getLength()
+    const entries = queue.getEntries()
     queue.clear()
     entries.forEach((qe, idx) => {
       if (qe.address.registerType == ModbusRegisterType.Coils) qe.onResolve(qe, [1, 1, 0, 0])
       else if (qe.address.address == 0 && qe.address.length != undefined && qe.address.length > 1) {
-        let e: any = new Error('Timeout')
+        const e: any = new Error('Timeout')
         e.errno = 'ETIMEDOUT'
         qe.onError(qe, e)
       }

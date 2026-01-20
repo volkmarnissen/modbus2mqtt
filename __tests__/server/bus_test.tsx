@@ -49,12 +49,12 @@ beforeAll(() => {
 })
 
 it('read slaves/delete slave/addSlave/read slave', () => {
-  let bus = Bus.getBus(0)
+  const bus = Bus.getBus(0)
   expect(bus).toBeDefined()
   if (bus) {
     bus.deleteSlave(10)
     let slaves = bus.getSlaves()
-    let oldLength = slaves.length
+    const oldLength = slaves.length
     expect(bus.getSlaves().find((s) => s.slaveid == 10)).not.toBeDefined()
     bus.writeSlave({ slaveid: 10 })
     slaves = bus.getSlaves()
@@ -78,8 +78,8 @@ it('read slaves/delete slave/addSlave/read slave', () => {
 //    })
 // })
 
-var readConfig = new Config()
-var prepared: boolean = false
+let readConfig = new Config()
+let prepared: boolean = false
 function prepareIdentification() {
   if (!prepared) {
     prepared = true
@@ -90,7 +90,7 @@ function prepareIdentification() {
 }
 function readModbusRegisterFake(): Promise<ImodbusValues> {
   return new Promise<ImodbusValues>((resolve, reject) => {
-    let ev = emptyModbusValues()
+    const ev = emptyModbusValues()
     ev.holdingRegisters.set(3, { data: [40] })
     ev.holdingRegisters.set(4, { data: [40] })
     ev.holdingRegisters.set(5, { data: [2] })
@@ -100,7 +100,7 @@ function readModbusRegisterFake(): Promise<ImodbusValues> {
 it('Bus getSpecsForDevice', (done) => {
   prepareIdentification()
   if (Config.getConfiguration().fakeModbus) debug(LogLevelEnum.info, 'Fakemodbus')
-  let bus = Bus.getBus(0)
+  const bus = Bus.getBus(0)
   expect(bus).toBeDefined()
   bus!['modbusAPI'] = new ModbusAPI(bus!)
   bus!['modbusAPI'].readModbusRegister = readModbusRegisterFake

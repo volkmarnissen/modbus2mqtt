@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect, it, test, afterAll, beforeAll } from '@jest/globals'
 import { Config, MqttValidationResult } from '../../src/server/config'
 import { getFileNameFromName } from '../../src/specification.shared'

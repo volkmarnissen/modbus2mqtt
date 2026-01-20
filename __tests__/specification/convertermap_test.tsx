@@ -1,10 +1,10 @@
 import { ConverterMap } from '../../src/specification'
 import { Converters, EnumNumberFormat, Ientity, Ispecification, ModbusRegisterType } from '../../src/specification.shared'
 import { ConfigSpecification } from '../../src/specification'
-import { it, expect, beforeAll } from '@jest/globals'
+import { it, expect } from '@jest/globals'
 
 ConfigSpecification.setMqttdiscoverylanguage('en', undefined)
-let spec: Ispecification = {
+const spec: Ispecification = {
   entities: [
     {
       id: 1,
@@ -55,7 +55,7 @@ let spec: Ispecification = {
 }
 
 it('test sensor converter', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -65,12 +65,12 @@ it('test sensor converter', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let sensorConverter = ConverterMap.getConverter(entity)
-  let mqttValue = parseFloat(sensorConverter?.modbus2mqtt(spec, entity.id, [5]) as string)
+  const sensorConverter = ConverterMap.getConverter(entity)
+  const mqttValue = parseFloat(sensorConverter?.modbus2mqtt(spec, entity.id, [5]) as string)
   expect(mqttValue).toBe(0.05)
 })
 it('test sensor converter with stringlength', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -80,9 +80,9 @@ it('test sensor converter with stringlength', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let sensorConverter = ConverterMap.getConverter(entity)
-  let r = [5, 6, 7]
-  let mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, r)
+  const sensorConverter = ConverterMap.getConverter(entity)
+  const r = [5, 6, 7]
+  const mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, r)
   expect(parseFloat(mqttValue as string)).toBe(5)
 })
 it('test binary_sensor converter', () => {
@@ -95,7 +95,7 @@ it('test binary_sensor converter', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let sensorConverter = ConverterMap.getConverter(entity)
+  const sensorConverter = ConverterMap.getConverter(entity)
   let mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, [0])
   expect(mqttValue).toBe('OFF')
   mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, [1])
@@ -140,11 +140,11 @@ it('test select_sensor converter', () => {
   }
   sensorConverter = ConverterMap.getConverter(entity)
 })
-let r68 = [(65 << 8) | 66, (67 << 8) | 68]
-let r69 = [(65 << 8) | 66, (67 << 8) | 68, 69 << 8]
+const r68 = [(65 << 8) | 66, (67 << 8) | 68]
+const r69 = [(65 << 8) | 66, (67 << 8) | 68, 69 << 8]
 
 it('test text_sensor converter', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'text',
@@ -154,7 +154,7 @@ it('test text_sensor converter', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let sensorConverter = ConverterMap.getConverter(entity)
+  const sensorConverter = ConverterMap.getConverter(entity)
 
   let mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, r68)
   expect(mqttValue).toBe('ABCD')
@@ -164,7 +164,7 @@ it('test text_sensor converter', () => {
 })
 
 it('test value_sensor converter', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'value',
@@ -174,13 +174,13 @@ it('test value_sensor converter', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let sensorConverter = ConverterMap.getConverter(entity)
-  let mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, [])
+  const sensorConverter = ConverterMap.getConverter(entity)
+  const mqttValue = sensorConverter?.modbus2mqtt(spec, entity.id, [])
   expect(mqttValue).toBe('testValue')
 })
 
 it('test text converter', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'text',
@@ -190,8 +190,8 @@ it('test text converter', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(entity)
-  let mqttValue = converter?.modbus2mqtt(spec, entity.id, r68)
+  const converter = ConverterMap.getConverter(entity)
+  const mqttValue = converter?.modbus2mqtt(spec, entity.id, r68)
   expect(mqttValue).toBe('ABCD')
   let modbusValue: any = converter!.mqtt2modbus(spec, entity.id, 'ABCD')
   expect(modbusValue).toEqual([(65 << 8) | 66, (67 << 8) | 68])
@@ -210,8 +210,8 @@ it('test number converter ignore decimal places when returning float', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let mqttValue = parseFloat(converter?.modbus2mqtt(spec, entity.id, [6]) as string)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const mqttValue = parseFloat(converter?.modbus2mqtt(spec, entity.id, [6]) as string)
   expect(mqttValue).toBe(0.06)
   let modbusValue = converter?.mqtt2modbus(spec, entity.id, 0.07)
   // rounding is not relevant
@@ -231,7 +231,7 @@ it('test number converter ignore decimal places when returning float', () => {
   expect(Math.abs(modbusValue![0] - 7)).toBeLessThan(0.00001)
 })
 it('test number float', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -241,16 +241,16 @@ it('test number float', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 17.3)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 17.3)
   expect(modbusValue![0]).toBe(16778)
   expect(modbusValue![1]).toBe(26214)
-  let mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
+  const mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
   expect(Math.abs(mqtt! - 17.3)).toBeLessThan(0.00001)
 })
 
 it('test number signed int16', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -260,15 +260,15 @@ it('test number signed int16', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, -3)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, -3)
   expect(modbusValue![0]).toBeGreaterThan(0)
-  let mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
+  const mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
   expect(mqtt).toBe(-3)
 })
 
 it('test number signed int32 - positive', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -278,16 +278,16 @@ it('test number signed int32 - positive', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 20)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 20)
 
   expect(modbusValue![1]).toBeGreaterThan(0)
-  let mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
+  const mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
   expect(mqtt).toBe(20)
 })
 
 it('test number signed int32 - positive max', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -297,16 +297,16 @@ it('test number signed int32 - positive max', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 2147483647)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 2147483647)
 
   expect(modbusValue![0]).toBeGreaterThan(0)
-  let mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
+  const mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
   expect(mqtt).toBe(2147483647)
 })
 
 it('test number signed int32 - negative', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -316,17 +316,17 @@ it('test number signed int32 - negative', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, -1147483647)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, -1147483647)
 
   expect(modbusValue![0]).toBeGreaterThan(0)
   expect(modbusValue![1]).toBeGreaterThan(0)
-  let mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
+  const mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
   expect(mqtt).toBe(-1147483647)
 })
 
 it('test number unsigned int32 - max', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'number',
@@ -337,11 +337,11 @@ it('test number unsigned int32 - max', () => {
   }
   spec.entities = [entity]
 
-  let converter = ConverterMap.getConverter(spec.entities[0])
-  let modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 4294967295)
+  const converter = ConverterMap.getConverter(spec.entities[0])
+  const modbusValue: number[] | undefined = converter?.mqtt2modbus(spec, entity.id, 4294967295)
 
   expect(modbusValue![0]).toBeGreaterThan(0)
-  let mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
+  const mqtt: number = converter?.modbus2mqtt(spec, entity.id, modbusValue!) as number
   expect(mqtt).toBe(4294967295)
 })
 
@@ -372,7 +372,7 @@ it('test select converter', () => {
   modbusValue = converter?.mqtt2modbus(spec, entity.id, 'ON')
 })
 it('test button converter', () => {
-  let entity: Ientity = {
+  const entity: Ientity = {
     id: 1,
     mqttname: 'mqtt',
     converter: 'binary',
@@ -381,7 +381,7 @@ it('test button converter', () => {
     modbusAddress: 2,
   }
   spec.entities = [entity]
-  let converter = ConverterMap.getConverter(entity)
+  const converter = ConverterMap.getConverter(entity)
   let modbusValue = converter?.mqtt2modbus(spec, entity.id, 'ON')
   expect(modbusValue![0]).toBe(1)
   modbusValue = converter?.mqtt2modbus(spec, entity.id, 'OFF')

@@ -62,6 +62,32 @@ export default [
     },
   },
   {
+    files: ['__tests__/**/*.ts', '__tests__/**/*.tsx', '__tests__/**/*.js'],
+    rules: {
+      // Relax strict TS/Jest rules in tests to reduce noise
+      'unused-imports/no-unused-imports': 'off',
+      'unused-imports/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'no-shadow-restricted-names': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      'no-case-declarations': 'off',
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        sourceType: 'module',
+        project: ['tsconfig.eslint.json'],
+      },
+    },
+  },
+  {
     ignores: ['*.js', '*.mjs'],
   },
 ]

@@ -13,7 +13,6 @@ import { ImodbusValues, M2mSpecification, emptyModbusValues } from '../../src/sp
 import { Converters, IdentifiedStates } from '../../src/specification.shared'
 import * as fs from 'fs'
 import { singleMutex, configDir } from './configsbase'
-import { Mutex } from 'async-mutex'
 import { IfileSpecification } from '../../src/specification'
 import { it, expect, beforeAll, describe, afterAll } from '@jest/globals'
 import { IpullRequest } from '../../src/specification/m2mGithubValidate'
@@ -30,7 +29,7 @@ ConfigSpecification['configDir'] = configDir
 beforeAll(() => {
   new ConfigSpecification().readYaml()
 })
-var entText: ImodbusEntity = {
+const entText: ImodbusEntity = {
   id: 2,
   mqttname: 'mqtt',
   modbusAddress: 5,
@@ -43,7 +42,7 @@ var entText: ImodbusEntity = {
   converter: 'text',
 }
 
-let spec: IfileSpecification = {
+const spec: IfileSpecification = {
   entities: [
     {
       id: 1,
@@ -122,50 +121,65 @@ describe('simple tests', () => {
   })
 
   it('copyModbusDataToEntity  identifiation string identified', () => {
-    let tspec = structuredClone(spec)
+    const tspec = structuredClone(spec)
     tspec.entities = [entText]
-    let values: ImodbusValues = emptyModbusValues()
+    const values: ImodbusValues = emptyModbusValues()
     if (entText.converterParameters) (entText.converterParameters as Itext).identification = 'ABCD'
-    let v: number[] = [(65 << 8) | 66, (67 << 8) | 68]
+    const v: number[] = [(65 << 8) | 66, (67 << 8) | 68]
     values.holdingRegisters.set(5, { data: [v[0]] })
     values.holdingRegisters.set(6, { data: [v[1]] })
 
-    let e = M2mSpecification.copyModbusDataToEntity(tspec, 2, values)
+    const e = M2mSpecification.copyModbusDataToEntity(tspec, 2, values)
     expect(e.identified).toBe(IdentifiedStates.identified)
   })
   it('validation: Find a specification for the given test data', () => {
-    let tspec = structuredClone(spec)
-    let mspec = new M2mSpecification(tspec)
-    let msgs = mspec.validate('en')
+    const tspec = structuredClone(spec)
+    const mspec = new M2mSpecification(tspec)
+    const msgs = mspec.validate('en')
     let count = 0
     msgs.forEach((msg) => {
-      if (msg.type == MessageTypes.identifiedByOthers && msg.additionalInformation.length == 1) count++
+      if (
+        msg.type == MessageTypes.identifiedByOthers &&
+        Array.isArray(msg.additionalInformation) &&
+        msg.additionalInformation.length == 1
+      )
+        count++
     })
     expect(count).toBe(0)
     count = 0
   })
   it('validation: readWrite FunctionCode instead of read', () => {
-    let tspec = structuredClone(spec)
+    const tspec = structuredClone(spec)
     tspec.entities[0].registerType = ModbusRegisterType.HoldingRegister
     tspec.entities[0].readonly = false
-    let mspec = new M2mSpecification(structuredClone(tspec))
-    let msgs = mspec.validate('en')
+    const mspec = new M2mSpecification(structuredClone(tspec))
+    const msgs = mspec.validate('en')
     let count = 0
     msgs.forEach((msg) => {
-      if (msg.type == MessageTypes.identifiedByOthers && msg.additionalInformation.length == 1) count++
+      if (
+        msg.type == MessageTypes.identifiedByOthers &&
+        Array.isArray(msg.additionalInformation) &&
+        msg.additionalInformation.length == 1
+      )
+        count++
     })
     expect(count).toBe(0)
   })
   it('validation: Find no specification for the given test data', () => {
-    let tspec = structuredClone(spec)
+    const tspec = structuredClone(spec)
     tspec!.entities[0].registerType = ModbusRegisterType.AnalogInputs
     tspec.testdata.holdingRegisters!.splice(0, 1)
     tspec.testdata.analogInputs = [{ address: 3, value: 1 }]
-    let mspec = new M2mSpecification(tspec)
-    let msgs = mspec.validate('en')
+    const mspec = new M2mSpecification(tspec)
+    const msgs = mspec.validate('en')
     let count = 0
     msgs.forEach((msg) => {
-      if (msg.type == MessageTypes.identifiedByOthers && msg.additionalInformation.length == 1) count++
+      if (
+        msg.type == MessageTypes.identifiedByOthers &&
+        Array.isArray(msg.additionalInformation) &&
+        msg.additionalInformation.length == 1
+      )
+        count++
     })
     expect(count).toBe(0)
   })
@@ -178,10 +192,10 @@ it.skip('closeContribution need github access', (done) => {
   ConfigSpecification['configDir'] = configDir
   fs.rmSync(configDir, { recursive: true, force: true })
   fs.mkdirSync(configDir)
-  let tspec = structuredClone(spec)
+  const tspec = structuredClone(spec)
   ConfigSpecification['specifications'].push(tspec)
 
-  let mspec = new M2mSpecification(tspec)
+  const mspec = new M2mSpecification(tspec)
   new ConfigSpecification().writeSpecificationFromFileSpec(tspec, tspec.filename, undefined)
   tspec.pullNumber = 81
   M2mSpecification.closeContribution(tspec)
@@ -224,14 +238,14 @@ class TestM2mSpecification {
   }
   static pollOriginal: (specfilename: string, error: (e: any) => void) => void
   static poll(specfilename: string, error: (e: any) => void): void {
-    let contribution = M2mSpecification['ghContributions'].get(specfilename)
+    const contribution = M2mSpecification['ghContributions'].get(specfilename)
     //Speed up test set short intervals
     contribution!.m2mSpecification['ghPollInterval'] = [1, 2, 3, 4]
     TestM2mSpecification.pollOriginal(specfilename, error)
   }
 }
 it('startPolling', (done) => {
-  let specP = structuredClone(spec)
+  const specP = structuredClone(spec)
   specP.pullNumber = 16
   specP.status = SpecificationStatus.contributed
   ConfigSpecification['specifications'].push(specP)
@@ -257,7 +271,7 @@ it('startPolling', (done) => {
           expect(pullRequest.merged).toBeTruthy()
           break
       }
-      let i = M2mSpecification['ghContributions'].get(specP.filename)
+      const i = M2mSpecification['ghContributions'].get(specP.filename)
       expect(i?.nextCheck).toBe('0.0 Sec')
       callCount++
       if (callCount > expectedCallCount) expect(callCount).toBe(expectedCallCount)
