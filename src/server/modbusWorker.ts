@@ -1,11 +1,7 @@
-import { ReadRegisterResult } from 'modbus-serial/ModbusRTU'
-import { Bus, IModbusResultWithDuration } from './bus'
-import { ModbusRTUQueue, IQueueEntry, IQueueOptions } from './modbusRTUqueue'
-import { IFunctionCode, ModbusRegisterType } from '../specification.shared'
+import { IModbusResultWithDuration } from './bus'
+import { ModbusRTUQueue, IQueueEntry } from './modbusRTUqueue'
+import { ModbusRegisterType } from '../specification.shared'
 import ModbusRTU from 'modbus-serial'
-import { IexecuteOptions } from './modbusRTUprocessor'
-import { ImodbusAddress } from '../server.shared'
-import { ImodbusValues } from '../specification'
 
 type TModbusReadFunction = (slaveid: number, dataaddress: number, length: number) => Promise<IModbusResultWithDuration>
 type TModbusWriteFunction = (slaveid: number, dataaddress: number, data: number[]) => Promise<void>

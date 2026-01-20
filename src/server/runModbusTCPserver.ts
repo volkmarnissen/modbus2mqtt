@@ -4,7 +4,7 @@ import Debug from 'debug'
 import { Config } from './config'
 import process from 'process'
 import { startModbusTCPserver } from './modbusTCPserver'
-const debug = Debug('modbusTCPserver')
+const _debug = Debug('modbusTCPserver')
 const log = new Logger('modbusTCPserver')
 
 const cli = new Command()

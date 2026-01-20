@@ -1,8 +1,7 @@
 import { IspecificationValidator, IvalidateIdentificationResult } from './ispecificationvalidator'
-import { IspecificationContributor } from './ispecificationContributor'
-const path = require('path')
 import { join } from 'path'
 import * as fs from 'fs'
+import Debug from 'debug'
 import { Idata, IfileSpecification } from './ifilespecification'
 import { M2mGitHub } from './m2mgithub'
 import {
@@ -14,7 +13,6 @@ import {
   validateTranslation,
   ModbusRegisterType,
 } from '../specification.shared'
-import { ReadRegisterResult } from './converter'
 import {
   Ispecification,
   IbaseSpecification,
@@ -39,9 +37,7 @@ import { Observable, Subject } from 'rxjs'
 import { IpullRequest } from './m2mGithubValidate'
 
 const log = new Logger('m2mSpecification')
-const debug = require('debug')('m2mspecification')
-
-const maxIdentifiedSpecs = 0
+const debug = Debug('m2mspecification')
 export interface IModbusResultOrError {
   data?: number[]
   error?: Error
@@ -119,23 +115,24 @@ export class M2mSpecification implements IspecificationValidator {
         let title = ''
         let message = ''
         switch (spec.status) {
-          case SpecificationStatus.added:
+          case SpecificationStatus.added: {
             title = 'Add specification '
             message = this.generateAddedContributionMessage(note)
             break
-          case SpecificationStatus.cloned:
+          }
+          case SpecificationStatus.cloned: {
             title = 'Update specification '
             //if (spec.publicSpecification)
             //  message = this.isEqual(spec.publicSpecification)
-            const pub = (spec as any).publicSpecification
-
+            const pub = (spec as unknown as { publicSpecification?: IfileSpecification }).publicSpecification
             message = this.generateClonedContributionMessage(note, pub)
             break
+          }
         }
         title = title + getSpecificationI18nName(spec, language!)
         if (ConfigSpecification.githubPersonalToken && ConfigSpecification.githubPersonalToken.length) {
           const github = new M2mGitHub(ConfigSpecification.githubPersonalToken, ConfigSpecification.getPublicDir())
-          const restore = function (spec: IbaseSpecification, github: M2mGitHub, reject: (e: any) => void, e: any) {
+          const restore = function (spec: IbaseSpecification, github: M2mGitHub, reject: (e: unknown) => void, e: unknown) {
             if (spec.status == SpecificationStatus.contributed)
               new ConfigSpecification().changeContributionStatus(spec.filename, SpecificationStatus.added)
             github
@@ -182,7 +179,7 @@ export class M2mSpecification implements IspecificationValidator {
     })
   }
 
-  private generateAddedContributionMessage(note: string | undefined): string {
+  private generateAddedContributionMessage(_note: string | undefined): string {
     // First contribution:
     // Name of Specification(en)
     const spec = this.settings as ImodbusSpecification
@@ -238,8 +235,7 @@ export class M2mSpecification implements IspecificationValidator {
         return `A translation is missing` + ': ' + message.additionalInformation
       case MessageTypes.noEntity:
         return `No entity defined for this specification`
-      case MessageTypes.noDocumentation:
-        return `No dcoumenation file or URL`
+      // duplicate removed: MessageTypes.noDocumentation handled above
       case MessageTypes.noImage:
         return `No image file or URL`
       case MessageTypes.nonUniqueName:
@@ -251,8 +247,7 @@ export class M2mSpecification implements IspecificationValidator {
         })
         return `Test data of this specification matches to the following other public specifications ${specNames}`
       }
-      case MessageTypes.nonUniqueName:
-        return ` The name is already available in public ` + ': ' + message.additionalInformation
+      // duplicate removed: MessageTypes.nonUniqueName handled above
       case MessageTypes.notIdentified:
         return ` The specification can not be identified with it's test data`
       case MessageTypes.differentFilename:
@@ -320,10 +315,10 @@ export class M2mSpecification implements IspecificationValidator {
     if (!notBackwardCompatible) return ' This will break compatibilty with previous version'
     return msg
   }
-  private static handleCloseContributionError(msg: string, reject: (e: any) => void): void {
+  private static handleCloseContributionError(msg: string, reject: (e: unknown) => void): void {
     log.log(LogLevelEnum.error, msg)
-    const e = new Error(msg)
-    ;(e as any).step = 'closeContribution'
+    const e = new Error(msg) as Error & { step?: string }
+    e.step = 'closeContribution'
     reject(e)
   }
   static closeContribution(spec: IfileSpecification): Promise<IpullRequest> {
@@ -355,16 +350,19 @@ export class M2mSpecification implements IspecificationValidator {
                 if (spec.status != SpecificationStatus.contributed) gh.deleteSpecBranch(spec.filename)
                 gh.fetchPublicFiles()
                 resolve({ merged: pullStatus.merged, closed: pullStatus.closed_at != null, pullNumber: spec.pullNumber! })
-              } catch (e: any) {
-                this.handleCloseContributionError('closeContribution: ' + e.message, reject)
+              } catch (e: unknown) {
+                const msg = e instanceof Error ? e.message : String(e)
+                this.handleCloseContributionError('closeContribution: ' + msg, reject)
               }
             })
-            .catch((e) => {
-              this.handleCloseContributionError('closeContribution: ' + e.message, reject)
+            .catch((e: unknown) => {
+              const msg = e instanceof Error ? e.message : String(e)
+              this.handleCloseContributionError('closeContribution: ' + msg, reject)
             })
         })
-        .catch((e) => {
-          this.handleCloseContributionError('closeContribution: ' + e.message, reject)
+        .catch((e: unknown) => {
+          const msg = e instanceof Error ? e.message : String(e)
+          this.handleCloseContributionError('closeContribution: ' + msg, reject)
         })
     })
   }
@@ -475,7 +473,6 @@ export class M2mSpecification implements IspecificationValidator {
         if (entity.modbusAddress != undefined) {
           try {
             let data: number[] = []
-            let error: any = undefined
             for (
               let address = entity.modbusAddress;
               address < entity.modbusAddress + converter.getModbusLength(entity);
@@ -501,9 +498,7 @@ export class M2mSpecification implements IspecificationValidator {
                 data = data!.concat(value.data!)
               }
               // Only the last error will survive
-              if (value && value.error) {
-                error = value.error
-              }
+              // last error is ignored in previous implementation; no-op
             }
             if (data && data.length > 0) {
               const mqtt = converter.modbus2mqtt(spec, entity.id, data)
@@ -703,9 +698,9 @@ export class M2mSpecification implements IspecificationValidator {
     return ent != undefined
   }
 
-  isEqualValue(v1: any, v2: any): boolean {
-    if (!v1 && !v2) return true
-    if (v1 && v2 && v1 == v2) return true
+  isEqualValue(v1: unknown, v2: unknown): boolean {
+    if (v1 == null && v2 == null) return true
+    if (v1 != null && v2 != null && (v1 as unknown) == (v2 as unknown)) return true
     return false
   }
   isEqual(other: Ispecification): Imessage[] {
@@ -893,7 +888,7 @@ export class M2mSpecification implements IspecificationValidator {
     return filename
   }
   private static pollingTimeout = 15 * 1000
-  static startPolling(specfilename: string, error: (e: any) => void): Observable<IpullRequest> | undefined {
+  static startPolling(specfilename: string, error: (e: unknown) => void): Observable<IpullRequest> | undefined {
     debug('startPolling')
     const spec = ConfigSpecification.getSpecificationByFilename(specfilename)
     const contribution = M2mSpecification.ghContributions.get(specfilename)
@@ -938,7 +933,7 @@ export class M2mSpecification implements IspecificationValidator {
   }
 
   private static inCloseContribution: boolean = false
-  private static poll(specfilename: string, error: (e: any) => void) {
+  private static poll(specfilename: string, error: (e: unknown) => void) {
     const contribution = M2mSpecification.ghContributions.get(specfilename)
     const spec = contribution?.m2mSpecification.settings as IfileSpecification
     if (

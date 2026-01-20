@@ -5,7 +5,6 @@ import Debug from 'debug'
 import { IexecuteOptions } from './modbusRTUprocessor'
 import { ModbusRegisterType } from '../specification.shared'
 import { ImodbusAddress, ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../server.shared'
-import { TupleType } from 'typescript'
 
 const debug = Debug('modbusrtuworker')
 const log = new Logger('modbusrtuworker')
@@ -85,15 +84,15 @@ export class ModbusRTUWorker extends ModbusWorker {
       log.log(LogLevelEnum.info, options.task ? options.task + ' ' : '' + msg)
     }
   }
-  private retry(current: IQueueEntry, error: any): Promise<void> {
+  private retry(current: IQueueEntry, error: unknown): Promise<void> {
     // retry is not configured
     if (!current.options.errorHandling.retry)
-      return new Promise((resolve, reject) => {
-        reject(error)
+      return new Promise((resolve, _reject) => {
+        _reject(error as Error)
       })
     if (current.errorState == undefined || [ModbusErrorStates.noerror].includes(current.errorState))
-      return new Promise((resolve, reject) => {
-        reject(new Error('Retry is not helpful'))
+      return new Promise((resolve, _reject) => {
+        _reject(new Error('Retry is not helpful'))
       })
     if (current.errorCount != undefined) current.errorCount++
     else current.errorCount = 1
@@ -102,19 +101,19 @@ export class ModbusRTUWorker extends ModbusWorker {
     switch (current.errorState) {
       case ModbusErrorStates.crc || ModbusErrorStates.illegaladdress:
         if (current.errorCount >= maxErrorRetriesCrc)
-          return new Promise((resolve, reject) => {
-            reject(new Error('Too many retries ' + (current.errorState == ModbusErrorStates.crc ? 'crc' : 'illegal address')))
+          return new Promise((resolve, _reject) => {
+            _reject(new Error('Too many retries ' + (current.errorState == ModbusErrorStates.crc ? 'crc' : 'illegal address')))
           })
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
           this.modbusAPI
             .reconnectRTU('ReconnectOnError')
             .then(() => {
               debug('Reconnected')
-              this.executeModbusFunctionCodeRead(current).then(resolve).catch(reject)
+              this.executeModbusFunctionCodeRead(current).then(resolve).catch(_reject)
             })
             .catch((e1) => {
               log.log(LogLevelEnum.error, 'Unable to reconnect: ' + e1.message)
-              reject(e1)
+              _reject(e1)
             })
         })
       case ModbusErrorStates.timeout:
@@ -124,8 +123,8 @@ export class ModbusRTUWorker extends ModbusWorker {
         maxErrors = maxErrorRetriesOther
     }
     if (current.errorCount > maxErrors)
-      return new Promise((resolve, reject) => {
-        reject(new Error('Too many retries: ' + (current.errorState == ModbusErrorStates.timeout ? 'timeout' : 'other')))
+      return new Promise((resolve, _reject) => {
+        _reject(new Error('Too many retries: ' + (current.errorState == ModbusErrorStates.timeout ? 'timeout' : 'other')))
       })
     else {
       this.debugMessage(current, 'Retrying ...')
@@ -133,7 +132,7 @@ export class ModbusRTUWorker extends ModbusWorker {
     }
   }
 
-  private splitAddresses(entry: IQueueEntry, e: any): void {
+  private splitAddresses(entry: IQueueEntry, e: unknown): void {
     // split request into single parts to avoid invalid address errors as often as possible
     const length = entry.address.length != undefined ? entry.address.length : 1
     if (length > 1) {
@@ -155,7 +154,7 @@ export class ModbusRTUWorker extends ModbusWorker {
   private logErrorInCache(current: IQueueEntry, state: ModbusErrorStates) {
     this.addError(current, state, new Date())
   }
-  private splitWithRestartServer(current: IQueueEntry, error: any, errorState: ModbusErrorStates): Promise<void> {
+  private splitWithRestartServer(current: IQueueEntry, error: unknown, errorState: ModbusErrorStates): Promise<void> {
     current.errorState = errorState
     this.logErrorInCache(current, errorState)
     if (current.options.errorHandling.split && current.address.length != undefined && current.address.length > 1) {
@@ -165,7 +164,7 @@ export class ModbusRTUWorker extends ModbusWorker {
     } else return this.retry(current, error)
   }
 
-  private handleErrors(current: IQueueEntry, error: any): Promise<void> {
+  private handleErrors(current: IQueueEntry, error: unknown): Promise<void> {
     if (error == undefined)
       return new Promise((resolve, reject) => {
         reject(new Error('Unable to handle undefined error'))
@@ -174,9 +173,10 @@ export class ModbusRTUWorker extends ModbusWorker {
     current.error = error
     if (this.cache.get(current.slaveId) == undefined) this.cache.set(current.slaveId, this.createEmptyIModbusValues())
 
-    if (error.message.includes('CRC error')) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (message.includes('CRC error')) {
       return this.splitWithRestartServer(current, error, ModbusErrorStates.crc)
-    } else if (error.errno == 'ETIMEDOUT')
+    } else if ((error as { errno?: string }).errno == 'ETIMEDOUT')
       if (current.options.errorHandling.split && current.address.length != undefined && current.address.length > 1) {
         this.splitAddresses(current, error)
         // New entries are queued. Nothing more to do
@@ -189,7 +189,7 @@ export class ModbusRTUWorker extends ModbusWorker {
         return this.retry(current, error)
       }
     else {
-      const modbusCode = error.modbusCode
+      const modbusCode = (error as { modbusCode?: number }).modbusCode
       if (modbusCode == undefined) {
         current.errorState = ModbusErrorStates.other
         this.addError(current, ModbusErrorStates.other)
@@ -199,8 +199,8 @@ export class ModbusRTUWorker extends ModbusWorker {
         case 1: //Illegal Function Code. No need to retry
           current.errorState = ModbusErrorStates.other
           this.addError(current, ModbusErrorStates.illegalfunctioncode)
-          return new Promise((resolve, reject) => {
-            reject(new Error('Unable to handle Illegal function code'))
+          return new Promise((resolve, _reject) => {
+            _reject(new Error('Unable to handle Illegal function code'))
           })
         case 2: // Illegal Address. No need to retry
           return this.splitWithRestartServer(current, error, ModbusErrorStates.illegaladdress)
@@ -253,7 +253,6 @@ export class ModbusRTUWorker extends ModbusWorker {
   }
   private getCachedMap(current: IQueueEntry): Map<number, IModbusResultCache> | undefined {
     let cacheEntry = this.cache.get(current.slaveId)
-    let f: IModbusResultOrError
     if (cacheEntry == undefined) {
       cacheEntry = this.createEmptyIModbusValues()
       this.cache.set(current.slaveId, cacheEntry)
@@ -264,7 +263,7 @@ export class ModbusRTUWorker extends ModbusWorker {
     const table = this.getCachedMap(current)
     if (table != undefined)
       for (let idx = 0; idx < (current.address.length ? current.address.length : 1); idx++) {
-        if (result[idx] == undefined) debug
+        if (result[idx] == undefined) continue
         if (result.length > idx)
           table.set(current.address.address + idx, structuredClone({ data: [result[idx]], date: this.getCurrentDate() }))
       }
@@ -285,7 +284,6 @@ export class ModbusRTUWorker extends ModbusWorker {
           expired.setTime(cv.date.getTime() + errorTimeout)
           if (expired < this.getCurrentDate()) {
             // expired is more than errorTimeout (5 hours) old
-            const k = 7
             table.set(current.address.address + idx, { error: error, date: this.getCurrentDate() })
           }
         } // No data available
@@ -311,7 +309,7 @@ export class ModbusRTUWorker extends ModbusWorker {
     if (!current) return Promise.resolve()
     const mp = this.isInCacheMap(current)
     if (mp != undefined) {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve) => {
         current.errorState = ModbusErrorStates.noerror
         // Read from Cache
         for (let idx = 0; idx < (current.address.length ? current.address.length : 1); idx++) {
@@ -330,7 +328,7 @@ export class ModbusRTUWorker extends ModbusWorker {
         }
       })
     } else
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve) => {
         const fct = this.functionCodeReadMap.get(current.address.registerType)
         fct!(current.slaveId, current.address.address, current.address.length == undefined ? 1 : current.address.length)
           .then((result) => {
@@ -347,7 +345,7 @@ export class ModbusRTUWorker extends ModbusWorker {
           })
           .catch((e) => {
             this.handleErrors(current, e)
-              .then((result) => {
+              .then(() => {
                 resolve()
               })
               .catch((e) => {
@@ -410,12 +408,12 @@ export class ModbusRTUWorker extends ModbusWorker {
         if (fct)
           return fct(current.slaveId, current.address.address, current.address.write)
             .then(() => this.processOneEntry())
-            .catch((e) => this.processOneEntry())
+            .catch(() => this.processOneEntry())
         else return Promise.reject(new Error('Invalid function code for write' + current.address.registerType))
       } else
         return this.executeModbusFunctionCodeRead(current)
           .then(() => this.processOneEntry())
-          .catch((e) => this.processOneEntry())
+          .catch(() => this.processOneEntry())
     } else {
       this.isRunning = false
       this.onFinish()
@@ -436,7 +434,6 @@ export class ModbusRTUWorker extends ModbusWorker {
   onFinish() {}
   getErrors(slaveid: number): ImodbusStatusForSlave {
     const cache = this.cache.get(slaveid)
-    cache?.errors
     if (cache) {
       return {
         errors: cache.errors.map((d) => {

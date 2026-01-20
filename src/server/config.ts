@@ -71,7 +71,9 @@ export class Config {
             //const iat = Math.floor(Date.now() / 1000)
             //const exp = iat + Config.config.tokenExpiryTimeInMSec // seconds
             const s = sign({ password: password }, Config.secret, {
-              expiresIn: (Config.tokenExpiryTime + 'ms') as any,
+              // jsonwebtoken expects seconds (number) or a time-string like '1d'.
+              // We store milliseconds, so convert to whole seconds.
+              expiresIn: Math.floor(Config.tokenExpiryTime / 1000),
               algorithm: 'HS256',
             })
             return s

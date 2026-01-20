@@ -10,8 +10,8 @@ import {
   Converters,
 } from '../specification.shared'
 import { LogLevelEnum, Logger } from './log'
-import { ReadRegisterResult } from './converter'
 import { ConfigSpecification } from './configspec'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const debug = require('debug')('selectConverter')
 
 const log = new Logger('selectconverter')
@@ -44,7 +44,7 @@ export class SelectConverter extends Converter {
   }
   override modbus2mqtt(spec: Ispecification, entityid: number, value: number[]): number | string {
     const entity = spec.entities.find((e) => e.id == entityid)
-    var msg = ''
+    let msg = ''
     if (entity) {
       const opts: IselectOption[] | undefined = (entity.converterParameters as Iselect).options
       if (opts && opts.length > 0) {
@@ -55,7 +55,7 @@ export class SelectConverter extends Converter {
         if (rc) return rc
       }
       const options = this.getOptions(spec, entityid)
-      var msg =
+      msg =
         'option not found spec: ' +
         spec.filename +
         ' entity id: "' +

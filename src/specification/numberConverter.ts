@@ -1,5 +1,5 @@
 import { Converters, ImodbusEntity, ModbusRegisterType } from '../specification.shared'
-import { Converter, ReadRegisterResult } from './converter'
+import { Converter } from './converter'
 import { EnumNumberFormat, Inumber, Ispecification, Ientity } from '../specification.shared'
 import { M2mSpecification } from './m2mspecification'
 
@@ -47,10 +47,7 @@ export class NumberConverter extends Converter {
       let offset = mspec.getOffset(entityid)
       if (!multiplier) multiplier = 1
       if (!offset) offset = 0
-      const dec = mspec.getDecimals(entityid)
       v = v * multiplier + offset
-      return v
-
       return v
     } else throw new Error('entityid not found in entities')
   }

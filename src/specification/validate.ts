@@ -4,10 +4,9 @@ import { Command } from 'commander'
 import { ConfigSpecification } from './configspec'
 import * as fs from 'fs'
 import { M2mGithubValidate } from './m2mGithubValidate'
-import path from 'path'
 import { M2mSpecification } from './m2mspecification'
-import { Octokit } from '@octokit/rest'
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface ProcessEnv {
       GITHUB_TOKEN: string
@@ -48,10 +47,12 @@ if (options['pr_owner']) {
 }
 const log = new Logger('validate')
 
-function logAndExit(e: any) {
+function logAndExit(e: unknown) {
   let step = ''
-  if (e.step) step = e.step
-  log.log(LogLevelEnum.error, step + ' ' + e.message)
+  const err = e as { step?: string; message?: string }
+  if (err.step) step = err.step
+  const msg = err.message ?? String(e)
+  log.log(LogLevelEnum.error, step + ' ' + msg)
   process.exit(5)
 }
 
@@ -115,8 +116,6 @@ function validate() {
               logAndExit(e)
             })
         } else if (lastSpec) {
-          const m: string = ''
-
           const errors = M2mSpecification.messages2Text(lastSpec, messages)
           log.log(
             LogLevelEnum.error,

@@ -1,10 +1,10 @@
-import { join } from 'path'
-import * as fs from 'fs'
-import { M2mGitHub, githubPublicNames } from './m2mgithub'
+import { githubPublicNames } from './m2mgithub'
 import { Octokit } from '@octokit/rest'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path')
 
-const debug = require('debug')('m2mgithubvalidate')
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const _debug = require('debug')('m2mgithubvalidate')
 export interface IpullRequest {
   files?: string[]
   merged: boolean

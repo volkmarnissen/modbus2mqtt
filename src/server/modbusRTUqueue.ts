@@ -1,7 +1,4 @@
-import { IFunctionCode, ModbusRegisterType } from '../specification.shared'
-import { Bus, IModbusResultWithDuration } from './bus'
 import EventEmitter from 'events'
-import { ReadRegisterResult } from 'modbus-serial/ModbusRTU'
 import { ImodbusAddress, ModbusErrorStates, ModbusTasks } from '../server.shared'
 const EventNewEntry = 'newEntry'
 const EventCachedEntry = 'cachedEntry'
@@ -15,11 +12,11 @@ export interface IQueueEntry {
   slaveId: number
   address: ImodbusAddress
   onResolve: (queueEntry: IQueueEntry, result?: number[]) => void
-  onError: (queueEntry: IQueueEntry, e: any) => void
+  onError: (queueEntry: IQueueEntry, e: unknown) => void
   options: IQueueOptions
   errorState?: ModbusErrorStates
   errorCount?: number
-  error?: any
+  error?: unknown
 }
 export interface IQueueOptions {
   useCache?: boolean
@@ -46,7 +43,7 @@ export class ModbusRTUQueue {
     slaveId: number,
     address: ImodbusAddress,
     onResolve: (queueEntry: IQueueEntry, result?: number[]) => void,
-    onError: (queueEntry: IQueueEntry, e: any) => void,
+    onError: (queueEntry: IQueueEntry, e: unknown) => void,
     options: IQueueOptions
   ) {
     const entry: IQueueEntry = {

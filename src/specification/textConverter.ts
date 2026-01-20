@@ -1,6 +1,5 @@
 import { Converter } from './converter'
 import { Ivalue, Ientity, Ispecification, Converters, ModbusRegisterType, Itext } from '../specification.shared'
-import { ReadRegisterResult } from './converter'
 
 export class TextConverter extends Converter {
   constructor(component?: Converters) {

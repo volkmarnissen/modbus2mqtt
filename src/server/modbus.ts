@@ -1,4 +1,4 @@
-import { Iidentification, ImodbusSpecification, Ispecification } from '../specification.shared'
+import { ImodbusSpecification, Ispecification } from '../specification.shared'
 import { ConfigSpecification, ConverterMap, ImodbusValues, M2mSpecification, emptyModbusValues } from '../specification'
 import { Ientity, ImodbusEntity } from '../specification.shared'
 import { Config } from './config'
@@ -7,11 +7,11 @@ import { Bus } from './bus'
 import { submitGetHoldingRegisterRequest } from './submitRequestMock'
 import { IfileSpecification } from '../specification'
 import { LogLevelEnum, Logger } from '../specification'
-import { ReadRegisterResult } from 'modbus-serial/ModbusRTU'
-import { IidentificationSpecification, ImodbusAddress, Islave, ModbusTasks } from '../server.shared'
-import { IModbusAPI } from './modbusWorker'
+import { ImodbusAddress, Islave, ModbusTasks } from '../server.shared'
 import { IconsumerModbusAPI } from './modbusAPI'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const debug = require('debug')('modbus')
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const debugAction = require('debug')('actions')
 
 const log = new Logger('modbus')
@@ -138,7 +138,7 @@ export class Modbus {
     modbusAPI: IconsumerModbusAPI,
     slave: Islave,
     specificationFilename: string | undefined,
-    failedFunction: (e: any) => void
+    failedFunction: (e: unknown) => void
   ): Observable<ImodbusSpecification> {
     debugAction('getModbusSpecification starts (' + modbusAPI.getName() + ',' + slave.slaveid + ')')
     const rc = new Subject<ImodbusSpecification>()

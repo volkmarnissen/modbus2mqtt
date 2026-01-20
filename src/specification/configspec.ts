@@ -20,7 +20,6 @@ import {
 } from '../specification.shared'
 import { getBaseFilename } from '../specification.shared'
 import { IfileSpecification } from './ifilespecification'
-import { ConverterMap } from './convertermap'
 import { M2mSpecification } from './m2mspecification'
 import { IimageAndDocumentFilesType, Migrator } from './migrator'
 import stream from 'stream'
@@ -83,7 +82,7 @@ export class ConfigSpecification {
           const content = fs.readFileSync(filesName, { encoding: 'utf8' })
           files = parse(content.toString())
           files = new Migrator().migrateFiles(files)
-        } catch (e: any) {
+        } catch (e: unknown) {
           debug('Unable to read Files directory for ' + filesName + '\n' + JSON.stringify(e))
         }
       } else {
@@ -182,8 +181,9 @@ export class ConfigSpecification {
           if (!o.files) o.files = []
           rc.push(o)
         }
-      } catch (e: any) {
-        log.log(LogLevelEnum.error, 'Unable to load spec ' + file + ' continuing ' + e.message)
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        log.log(LogLevelEnum.error, 'Unable to load spec ' + file + ' continuing ' + msg)
       }
     })
     return rc
@@ -249,8 +249,9 @@ export class ConfigSpecification {
       })
 
       //debug("Number of specifications: " + ConfigSpecification.specifications.length);
-    } catch (error: any) {
-      log.log(LogLevelEnum.error, 'readyaml failed: ' + error.message)
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error)
+      log.log(LogLevelEnum.error, 'readyaml failed: ' + msg)
       throw error
       // Expected output: ReferenceError: nonExistentFunction is not defined
       // (Note: the exact output may be browser-dependent)
@@ -310,9 +311,9 @@ export class ConfigSpecification {
     if (fileSpec.testdata.coils?.length == 0) delete fileSpec.testdata.coils
     if (fileSpec.testdata.discreteInputs?.length == 0) delete fileSpec.testdata.discreteInputs
     fileSpec.entities.forEach((entity) => {
-      delete (entity as any)['modbusValue']
-      delete (entity as any)['mqttValue']
-      delete (entity as any)['identified']
+      if ('modbusValue' in (entity as object)) delete (entity as { modbusValue?: unknown }).modbusValue
+      if ('mqttValue' in (entity as object)) delete (entity as { mqttValue?: unknown }).mqttValue
+      if ('identified' in (entity as object)) delete (entity as { identified?: unknown }).identified
     })
     return fileSpec
   }
@@ -345,7 +346,7 @@ export class ConfigSpecification {
           const spec = ConfigSpecification.specifications.find((spec) => spec.filename == specfilename)
           if (spec) spec.files = files.files
         }
-      } catch (e: any) {
+      } catch {
         log.log(LogLevelEnum.error, 'Unable to read Files directory for ' + specfilename)
       }
     }
@@ -370,24 +371,25 @@ export class ConfigSpecification {
   private cleanSpecForWriting(spec: IfileSpecification): void {
     spec.entities.forEach((e) => {
       if (!e.icon || e.icon.length == 0) delete e.icon
-      if ((e as any).identified != undefined) delete (e as any).identified
-      if ((e as any).mqttValue != undefined) delete (e as any).mqttValue
-      if ((e as any).modbusValue != undefined) delete (e as any).modbusValue
-      if ((e as any).commandTopicModbus) delete (e as any).commandTopicModbus
-      if ((e as any).commandTopic) delete (e as any).commandTopic
-      if (e.converter && (e.converter as any).registerTypes) delete (e.converter as any).registerTypes
+      if ('identified' in (e as object)) delete (e as { identified?: unknown }).identified
+      if ('mqttValue' in (e as object)) delete (e as { mqttValue?: unknown }).mqttValue
+      if ('modbusValue' in (e as object)) delete (e as { modbusValue?: unknown }).modbusValue
+      if ('commandTopicModbus' in (e as object)) delete (e as { commandTopicModbus?: unknown }).commandTopicModbus
+      if ('commandTopic' in (e as object)) delete (e as { commandTopic?: unknown }).commandTopic
+      const ce = e as unknown as { converter?: { registerTypes?: unknown } }
+      if (ce.converter && 'registerTypes' in ce.converter) delete ce.converter.registerTypes
     })
     if (!spec.manufacturer || spec.manufacturer.length == 0) delete spec.manufacturer
     if (!spec.model || spec.model.length == 0) delete spec.model
     if (spec.status != SpecificationStatus.contributed) delete spec.pullNumber
-    if ((spec as any).stateTopic) delete (spec as any).stateTopic
-    if ((spec as any).statePayload) delete (spec as any).statePayload
-    if ((spec as any).triggerPollTopic) delete (spec as any).triggerPollTopic
-    if ((spec as any).commandTopicModbus) delete (spec as any).commandTopicModbus
+    if ('stateTopic' in (spec as object)) delete (spec as { stateTopic?: unknown }).stateTopic
+    if ('statePayload' in (spec as object)) delete (spec as { statePayload?: unknown }).statePayload
+    if ('triggerPollTopic' in (spec as object)) delete (spec as { triggerPollTopic?: unknown }).triggerPollTopic
+    if ('commandTopicModbus' in (spec as object)) delete (spec as { commandTopicModbus?: unknown }).commandTopicModbus
 
     delete spec.publicSpecification
-    delete (spec as any).identified
-    delete (spec as any).status
+    if ('identified' in (spec as object)) delete (spec as { identified?: unknown }).identified
+    if ('status' in (spec as object)) delete (spec as { status?: unknown }).status
   }
   changeContributionStatus(filename: string, newStatus: SpecificationStatus, pullNumber?: number) {
     // moves Specification files to contribution directory
@@ -491,10 +493,10 @@ export class ConfigSpecification {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 
     // Update files list add files, which are not in list yet.
-    const ns: any = structuredClone(spec)
+    const ns = structuredClone(spec) as IfileSpecification
     this.cleanSpecForWriting(ns)
     ns.version = SPECIFICATION_VERSION
-    delete ns.files
+    delete (ns as { files?: unknown }).files
     const s = stringify(ns)
     fs.writeFileSync(filename, s, { encoding: 'utf8' })
 
@@ -520,19 +522,17 @@ export class ConfigSpecification {
     if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
   }
   deleteSpecification(specfileName: string) {
-    let found = false
     for (let idx = 0; idx < ConfigSpecification.specifications.length; idx++) {
       const sp = ConfigSpecification.specifications[idx]
       if (sp.filename === specfileName)
         if (sp.status in [SpecificationStatus.cloned, SpecificationStatus.added, SpecificationStatus.new])
           try {
-            found = true
             fs.unlinkSync(ConfigSpecification.getSpecificationPath(sp))
             fs.rmSync(ConfigSpecification.getLocalFilesPath(sp.filename))
             log.log(LogLevelEnum.info, 'Specification removed: ' + sp.filename)
             return
-          } catch (e: any) {
-            log.log(LogLevelEnum.error, 'Unable to remove Specification ' + sp.filename + ' ' + e.message)
+          } catch {
+            log.log(LogLevelEnum.error, 'Unable to remove Specification ' + sp.filename)
           } finally {
             this.readYaml()
           }
@@ -553,12 +553,12 @@ export class ConfigSpecification {
   }
   static clearModbusData(spec: IfileSpecification) {
     spec.entities.forEach((ent) => {
-      delete (ent as any).modbusError
-      delete (ent as any).modbusValue
-      delete (ent as any).mqttValue
-      delete (ent as any).identified
+      if ('modbusError' in (ent as object)) delete (ent as { modbusError?: unknown }).modbusError
+      if ('modbusValue' in (ent as object)) delete (ent as { modbusValue?: unknown }).modbusValue
+      if ('mqttValue' in (ent as object)) delete (ent as { mqttValue?: unknown }).mqttValue
+      if ('identified' in (ent as object)) delete (ent as { identified?: unknown }).identified
     })
-    delete (spec as any).identified
+    if ('identified' in (spec as object)) delete (spec as { identified?: unknown }).identified
   }
 
   static getSpecificationByFilename(filename: string | undefined): IfileSpecification | undefined {
@@ -603,12 +603,12 @@ export class ConfigSpecification {
   }
 
   static createZipFromSpecification(specfilename: string, r: stream.Writable): void {
-    const spec = { filename: specfilename } as any as IbaseSpecification
+    const spec = { filename: specfilename } as unknown as IbaseSpecification
     let specFilePath = ConfigSpecification.getSpecificationPath(spec)
     let fn = ConfigSpecification.getLocalFilesPath(specfilename)
     if (!fs.existsSync(fn)) {
-      ;((fn = ConfigSpecification.getContributedFilesPath(specfilename)),
-        (specFilePath = ConfigSpecification.getContributedSpecificationPath(spec)))
+      fn = ConfigSpecification.getContributedFilesPath(specfilename)
+      specFilePath = ConfigSpecification.getContributedSpecificationPath(spec)
     }
     if (!fs.existsSync(fn)) {
       fn = ConfigSpecification.getPublicFilesPath(specfilename)
@@ -655,8 +655,9 @@ export class ConfigSpecification {
         new ConfigSpecification().readYaml()
         return errors
       }
-    } catch (e: any) {
-      return { errors: e.message, warnings: '' }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      return { errors: msg, warnings: '' }
     }
     // Just to make compiler happy
     return { errors: '', warnings: '' }

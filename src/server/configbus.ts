@@ -311,12 +311,10 @@ export class ConfigBus {
       ConfigBus.listDevicesHassio(next, () => {
         this.listDevicesUdev(next, reject)
       })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
+    } catch {
       try {
         this.listDevicesUdev(next, reject)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (e) {
+      } catch {
         next([])
       }
     }

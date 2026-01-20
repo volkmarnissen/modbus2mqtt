@@ -1,6 +1,5 @@
 import { Converter } from './converter'
 import { Converters, Ientity, Ispecification, ModbusRegisterType } from '../specification.shared'
-import { ReadRegisterResult } from './converter'
 
 export class BinaryConverter extends Converter {
   constructor(component?: Converters) {

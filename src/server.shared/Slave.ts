@@ -1,5 +1,5 @@
 import { Ientity, IidentEntity, ImodbusEntity, ImodbusSpecification, Ispecification } from '../specification.shared'
-import { IidentificationSpecification, Islave, PollModes } from './types'
+import { Islave, PollModes } from './types'
 export interface IEntityCommandTopics {
   entityId: number
   commandTopic: string
@@ -53,7 +53,6 @@ export class Slave {
 
   getCommandTopic(): string | undefined {
     let commandTopic: string | undefined = undefined
-    const modbusCommandTopic: string | undefined = undefined
     if (this.slave.specification?.entities.find((e) => !e.readonly)) {
       commandTopic = this.getBaseTopic() + '/set/'
       return commandTopic
@@ -61,8 +60,6 @@ export class Slave {
     return undefined
   }
   getEntityFromCommandTopic(topic: string): Ientity | undefined {
-    const commandTopic: string | undefined = undefined
-    const modbusCommandTopic: string | undefined = undefined
     const start = this.getBaseTopic()!.length
     const idx = topic.indexOf('/', start + 1)
 
@@ -79,7 +76,8 @@ export class Slave {
     return this.getBaseTopic() + '/availability/'
   }
   getStatePayload(entities: ImodbusEntity[], defaultValue: string | null = null): string {
-    const o: any = {}
+    type StatePayload = { [key: string]: unknown; modbusValues?: Record<string, number> }
+    const o: StatePayload = {}
     for (const e of entities) {
       if (e.mqttname != undefined && e.mqttname.length > 0 && e.variableConfiguration == undefined) {
         o[e.mqttname] = e.mqttValue != undefined ? e.mqttValue : defaultValue

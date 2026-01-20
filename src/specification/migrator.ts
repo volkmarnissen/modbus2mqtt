@@ -1,9 +1,7 @@
 import { IModbusData, Idata, IfileSpecification } from './ifilespecification'
 import {
   FileLocation,
-  Ientity,
   IimageAndDocumentUrl,
-  Ispecification,
   ModbusRegisterType,
   SPECIFICATION_FILES_VERSION,
   SPECIFICATION_VERSION,
@@ -31,9 +29,8 @@ enum ModbusFunctionCodes {
 const FCOffset: number = 100000
 export class Migrator {
   constructor() {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate(filecontent: any): IfileSpecification {
-    let rc: IfileSpecification
-
     let count = 0
     const maxCount = 4
     while (filecontent.version != undefined && count < maxCount) {
@@ -111,10 +108,12 @@ export class Migrator {
     return undefined
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate0_1to0_2(filecontent: any): IfileSpecification {
     filecontent.version = '0.2'
     // functioncode to registerType
     if (filecontent.entities)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       filecontent.entities.forEach((entity: any) => {
         delete entity.converter.functionCodes
         entity.converter.name = this.getConvertername0_1(entity.converter.name)
@@ -132,6 +131,7 @@ export class Migrator {
       holdingRegisters: [],
     }
     if (filecontent.testdata) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       filecontent.testdata.forEach((data: any) => {
         const fc = Math.floor(data.address / FCOffset)
         const address = data.address % FCOffset
@@ -161,6 +161,7 @@ export class Migrator {
   }
   convertTestData0_2to0_3(data: Idata[]) {
     if (data)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data.forEach((data: any) => {
         if (data?.value == null) {
           delete data.value
@@ -168,6 +169,7 @@ export class Migrator {
         }
       })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate0_2to0_3(filecontent: any): IfileSpecification {
     filecontent.version = '0.3'
 
@@ -178,9 +180,12 @@ export class Migrator {
     }
     return filecontent
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate0_3to0_4(filecontent: any): IfileSpecification {
     filecontent.version = '0.4'
-    if (filecontent.entities) filecontent.entities.forEach((e: any) => (e.converter = e.converter.name))
+    if (filecontent.entities)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      filecontent.entities.forEach((e: any) => (e.converter = e.converter.name))
     return filecontent
   }
   getConvertername0_1(converter: string): string {
@@ -204,6 +209,7 @@ export class Migrator {
     log.log(LogLevelEnum.error, 'Unable to convert converter to registerType ' + converter)
     return converter
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrateFiles(fileContent: any): IimageAndDocumentFilesType {
     if (fileContent.length) {
       fileContent.forEach((fc: IimageAndDocumentUrl) => {

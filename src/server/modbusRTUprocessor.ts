@@ -168,7 +168,8 @@ export class ModbusRTUProcessor {
             }
           },
           (currentEntry, error) => {
-            const r: IModbusResultOrError = { error: error }
+            const errObj: Error = error instanceof Error ? error : new Error(String(error))
+            const r: IModbusResultOrError = { error: errObj }
 
             const id =
               ModbusTasks[options.task] +
@@ -182,7 +183,7 @@ export class ModbusRTUProcessor {
               (currentEntry.address.length ? currentEntry.address.length : 1) +
               ')'
 
-            debug(id + ': Failure not handled: ' + error.message)
+            debug(id + ': Failure not handled: ' + errObj.message)
             // error is not handled by the error handler
 
             if (currentEntry.address.length != undefined)

@@ -27,11 +27,11 @@ function queueRegister<T>(
         try {
           const v = onResolve(result)
           resolve(v)
-        } catch (e: any) {
+        } catch (e: unknown) {
           reject(e)
         }
       },
-      (_qe: IQueueEntry, e: any) => {
+      (_qe: IQueueEntry, e: unknown) => {
         reject(e)
       },
       { useCache: false, task: ModbusTasks.tcpBridge, errorHandling: {} }
@@ -192,15 +192,17 @@ export class ModbusTcpRtuBridge {
     },
   }
   async startServer(port: number = ModbusTcpRtuBridge.getDefaultPort()): Promise<ServerTCP> {
-    const rc = new Promise<ServerTCP>((resolve, reject) => {
+    const rc = new Promise<ServerTCP>((resolve) => {
       this.serverTCP = new ServerTCP(this.vector, {
         host: '0.0.0.0',
         port: port,
       })
 
-      this.serverTCP.on('socketError', function (err: any) {
-        // Handle socket error if needed, can be ignored
-        log.log(LogLevelEnum.error, 'TCP bridge' + err!.message + ' (Continue w/o TCP bridge)')
+      this.serverTCP.on('socketError', function (err: unknown) {
+        if (err instanceof Error) {
+          // Handle socket error if needed, can be ignored
+          log.log(LogLevelEnum.error, 'TCP bridge' + err!.message + ' (Continue w/o TCP bridge)')
+        }
       })
       this.serverTCP.on('serverError', function (err) {
         // Handle socket error if needed, can be ignored

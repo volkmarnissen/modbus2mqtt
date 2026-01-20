@@ -5,7 +5,6 @@ import { SelectConverter } from './selectConverter'
 import { ValueConverter } from './valueconverter'
 import { Ientity, Converters } from '../specification.shared'
 import { BinaryConverter } from './binaryConverter'
-import { ConfigSpecification } from './configspec'
 
 export class ConverterMap extends Map<Converters, Converter> {
   private static converterMap = new ConverterMap()
@@ -26,7 +25,6 @@ export class ConverterMap extends Map<Converters, Converter> {
     if (entity.converter) cv = ConverterMap.getConverterMap().get(entity.converter)
     return cv
   }
-  //@ts-ignore
   private static _initialize = (() => {
     if (ConverterMap.converterMap.size == 0) {
       // read/write not a sensor

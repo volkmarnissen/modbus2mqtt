@@ -85,7 +85,7 @@ const vector: IServiceVector = {
       if (v) rc.push(v.value)
       else {
         debug('getMultipleInputRegisters not found addr:' + addr + ' slave: ' + unitID)
-        cb({ modbusErrorCode: 2 } as any as Error, [])
+        cb(new Error('Modbus error 2'), [])
         return
       }
     }
@@ -99,7 +99,7 @@ const vector: IServiceVector = {
       if (v) rc.push(v.value)
       else {
         log.log(LogLevelEnum.info, 'Invalid holding reg s:' + unitID + ' a: ' + addr + idx)
-        cb({ modbusErrorCode: 2 } as any as Error, [])
+        cb(new Error('Modbus error 2'), [])
         return
       }
     }
@@ -115,7 +115,7 @@ const vector: IServiceVector = {
       if (v) {
         v.value = value
         resolve()
-      } else reject({ modbusErrorCode: 2, msg: '' })
+      } else reject(new Error('Modbus error 2'))
     })
   },
   setCoil: (addr: number, value: boolean, unitID: number, cb: FCallbackVal<number>): void => {
@@ -124,14 +124,14 @@ const vector: IServiceVector = {
       v.value = value
       cb(null, value ? 1 : 0)
     } else {
-      cb({ modbusErrorCode: 2 } as any as Error, 0)
+      cb(new Error('Modbus error 2'), 0)
       return
     }
   },
 }
 export class ModbusServer {
   serverTCP: ServerTCP | undefined
-  startServerForTest(port: number) {
+  startServerForTest(_port: number) {
     dimplexHolding.forEach((nv) => {
       values.holdingRegisters.push({
         slaveid: Dimplexslaveid,
@@ -285,7 +285,7 @@ export function startModbusTCPserver(configDir: string, dataDir: string, busId: 
                   let spec: IfileSpecification = parse(content.toString())
                   spec = new Migrator().migrate(spec)
                   if (spec.testdata) {
-                    const testdata = spec.testdata
+                    // const testdata = spec.testdata
                     if (spec.testdata.analogInputs)
                       spec.testdata.analogInputs.forEach((avp) => {
                         const a = avp.address
@@ -305,7 +305,7 @@ export function startModbusTCPserver(configDir: string, dataDir: string, busId: 
                 }
               }
               //  logValues()
-            } catch (e: any) {
+            } catch (e) {
               console.error('Unable to read  directory for ' + e)
               reject(e)
             }

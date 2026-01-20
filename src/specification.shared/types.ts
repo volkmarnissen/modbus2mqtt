@@ -81,11 +81,11 @@ export interface Icvtparameter {
   needsOptions: boolean
 }
 
-export function jsonConverter<K, V>(body: object, cnv: (a: string) => K): Map<K, V> {
+export function jsonConverter<K, V>(body: Record<string, V>, cnv: (a: string) => K): Map<K, V> {
   const m = new Map<K, V>()
   for (const prop in body) {
     if (Object.prototype.hasOwnProperty.call(body, prop)) {
-      m.set(cnv(prop), (body as any)[prop])
+      m.set(cnv(prop), body[prop])
     }
   }
   return m
@@ -161,7 +161,7 @@ export function getParameterType(converter: Converters | null | undefined): stri
   return undefined
 }
 export function cleanConverterParameters(entity: Ientity) {
-  const o: any = entity.converterParameters
+  const o = entity.converterParameters as Record<string, unknown> | undefined
   let validKeys: string[] | undefined = undefined
   switch (getParameterType(entity.converter)) {
     case 'Inumber':
@@ -177,22 +177,20 @@ export function cleanConverterParameters(entity: Ientity) {
       validKeys = ['options']
       break
   }
-  if (!validKeys) return
-  const availableKeys = Object(o)
-  for (const k in availableKeys) {
+  if (!validKeys || !o) return
+  for (const k in o) {
     if (
       validKeys.findIndex((vk) => {
         return k === vk
       }) < 0
     )
-      delete o[k]
+      delete (o as Record<string, unknown>)[k]
   }
 }
 export function removeModbusData(entity: Ientity) {
-  const o: any = entity
-  delete o.modbusValue
-  delete o.mqttValue
-  delete o.identified
+  if ('modbusValue' in (entity as object)) delete (entity as { modbusValue?: unknown }).modbusValue
+  if ('mqttValue' in (entity as object)) delete (entity as { mqttValue?: unknown }).mqttValue
+  if ('identified' in (entity as object)) delete (entity as { identified?: unknown }).identified
 }
 export interface ImodbusEntityAndMessages {
   ent: ImodbusEntity | undefined
@@ -206,14 +204,23 @@ export interface ImodbusData {
 }
 export interface ImodbusEntity extends ImodbusData, Ientity {}
 
-export function instanceOfIentity(object: any): object is Ientity {
-  return 'name' in object && 'converter' in object && 'converterParameters' in object && 'converterOptions' in object
+export function instanceOfIentity(object: unknown): object is Ientity {
+  return (
+    typeof object === 'object' &&
+    object !== null &&
+    'name' in object &&
+    'converter' in object &&
+    'converterParameters' in object &&
+    'converterOptions' in object
+  )
 }
-export function instanceOfIModbusEntity(object: any): object is ImodbusEntity {
-  return instanceOfIentity(object) && 'modbusValue' in object && 'mqttValue' in object
+export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntity {
+  // prettier-ignore
+  return typeof object === 'object' && object !== null && instanceOfIentity(object) && 'modbusValue' in object && 'mqttValue' in object
 }
 
 declare global {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   interface Array<T> {
     errormessage: string
   }
@@ -262,7 +269,6 @@ export interface ISpecificationTexts {
   lang: string
   texts: ISpecificationText[]
 }
-;[]
 export interface IUpdatei18nText {
   key: string
   i18n: ISpecificationTexts[]
@@ -423,10 +429,10 @@ export function getSpecificationI18nEntityOptionId(
 }
 
 export function getCurrentLanguage(_ins: string) {
-  return navigator.language.replace(/\-.*/g, '')
+  return navigator.language.replace(/-.*/g, '')
 }
 export function getFileNameFromName(name: string): string | undefined {
-  const searchRegExp = /[^a-z^A-Z^\.^0-9+-._]*/g
+  const searchRegExp = /[^a-z^A-Z^.^0-9+-._]*/g
   if (!name) return undefined
   const n = name.toLowerCase()
   return n.replace(searchRegExp, '')

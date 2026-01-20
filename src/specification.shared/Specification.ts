@@ -50,7 +50,7 @@ export interface Imessage {
   type: MessageTypes
   category: MessageCategories
   referencedEntity?: number
-  additionalInformation?: any
+  additionalInformation?: unknown
 }
 export const editableConverters: string[] = ['binary_sensor', 'number', 'text', 'select', 'button']
 
@@ -65,7 +65,7 @@ export function validateTranslation(spec: Ispecification, language: string, msgs
         additionalInformation: language,
       })
     else {
-      spec.entities.forEach((ent: { variableConfiguration?: any; id: number }) => {
+      spec.entities.forEach((ent: { variableConfiguration?: unknown; id: number }) => {
         if (!ent.variableConfiguration) {
           const translation = en!.texts.find((tx: { textId: string }) => tx.textId == 'e' + ent.id)
           if (!translation)
@@ -89,7 +89,6 @@ export function getBaseFilename(filename: string): string {
   return filename
 }
 export function getUom(spec: ImodbusSpecification, entityId: number): string {
-  const ent = spec.entities.find((e) => e.id == entityId)
   const entUom = spec.entities.find(
     (e) =>
       e.variableConfiguration &&

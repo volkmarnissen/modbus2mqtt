@@ -213,8 +213,7 @@ export class HttpServerBase {
             resolve()
           }
         )
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (e) {
+      } catch {
         this.initBase()
         resolve()
       }
@@ -273,8 +272,7 @@ export class HttpServerBase {
       }
       next()
       return
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
+    } catch {
       res.status(401).setHeader('Content-Type', 'text/html').send('No or invalid index.html file ')
     }
   }

@@ -1,4 +1,3 @@
-import { ReadRegisterResult } from 'modbus-serial/ModbusRTU'
 import { ModbusRegisterType } from '../specification.shared'
 import { IModbusResultOrError, ImodbusValues, emptyModbusValues } from '../specification'
 import { ImodbusAddress } from '../server.shared'

@@ -1,7 +1,7 @@
 import Debug from 'debug'
 import fs from 'fs'
 import { format } from 'util'
-import winston, { Logger as WinstonLogger, LoggerOptions } from 'winston'
+import winston, { Logger as WinstonLogger } from 'winston'
 import Transport from 'winston-transport'
 export enum LogLevelEnum {
   verbose = 'verbose',
@@ -12,10 +12,6 @@ export enum LogLevelEnum {
   error = 'error',
 }
 const debug = Debug('logger')
-// Reserved for potential future extension of logger configuration
-interface LogLoggerOptions extends LoggerOptions {
-  prefix?: string
-}
 
 class DebugTransport extends Transport {
   constructor() {
@@ -52,16 +48,18 @@ export class Logger {
             winston.format.timestamp(),
             commonLabel,
             winston.format.printf((info) => {
-              const time = (info as any)['timestamp']
-              const label = (info as any).label ?? (info as any).prefix ?? ''
-              return `${time} ${info.level}${label ? ' ' + label : ''}: ${info.message}`
+              const i = info as { timestamp?: string; label?: string; prefix?: string; level?: string; message?: unknown }
+              const time = i.timestamp ?? ''
+              const label = i.label ?? i.prefix ?? ''
+              return `${i.level ?? ''}${label ? ' ' + label : ''}: ${String(i.message ?? '')}`.replace(/^/, `${time} `)
             })
           )
         : winston.format.combine(
             commonLabel,
             winston.format.printf((info) => {
-              const label = (info as any).label ?? (info as any).prefix ?? ''
-              return `${info.level}${label ? ' ' + label : ''}: ${info.message}`
+              const i = info as { label?: string; prefix?: string; level?: string; message?: unknown }
+              const label = i.label ?? i.prefix ?? ''
+              return `${i.level ?? ''}${label ? ' ' + label : ''}: ${String(i.message ?? '')}`
             })
           )
 
@@ -73,10 +71,12 @@ export class Logger {
       transports: [loggerTransport],
     })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   log(level: LogLevelEnum, message: any, ...args: any[]) {
     const msg = format(message, ...args)
     this.logger.log({ level: level, message: msg, prefix: this.prefix })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   log2File(message: any, ...args: any[]) {
     if (process.env['JEST_WORKER_ID'] !== undefined) fs.appendFileSync('test.log', format(message, ...args))
   }

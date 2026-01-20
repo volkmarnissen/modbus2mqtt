@@ -1,5 +1,4 @@
 import { Ispecification } from '../specification.shared'
-import { IModbusResultOrError } from './m2mspecification'
 export interface Idata {
   address: number
   value?: number

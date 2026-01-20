@@ -61,7 +61,10 @@ export class MqttPoller {
               devicesToPoll++
               const slave = bus.getSlaveBySlaveId(bs.getSlaveId())!
               Modbus.getModbusSpecification(ModbusTasks.poll, bus.getModbusAPI(), slave, bs.getSpecificationId(), (e) => {
-                log.log(LogLevelEnum.error, 'reading spec failed' + e.message)
+                {
+                  const msg = e instanceof Error ? e.message : String(e)
+                  log.log(LogLevelEnum.error, 'reading spec failed' + msg)
+                }
                 const si = this.slavePollInfo.get(bs.getSlaveId())
                 if (si) this.slavePollInfo.set(bs.getSlaveId(), { count: si.count, processing: false })
                 pollDeviceCount++

@@ -448,7 +448,10 @@ export class HttpServer extends HttpServerBase {
             .then((response) => {
               // poll status updates of pull request
               M2mSpecification.startPolling(spec!.filename, (e) => {
-                log.log(LogLevelEnum.error, e.message)
+                {
+                  const msg = e instanceof Error ? e.message : String(e)
+                  log.log(LogLevelEnum.error, msg)
+                }
               })?.subscribe((pullRequest) => {
                 if (pullRequest.merged) log.log(LogLevelEnum.info, 'Merged ' + pullRequest.pullNumber)
                 else if (pullRequest.closed) log.log(LogLevelEnum.info, 'Closed ' + pullRequest.pullNumber)
@@ -466,7 +469,10 @@ export class HttpServer extends HttpServerBase {
             })
         } else if (spec && spec.status && spec.status == SpecificationStatus.contributed) {
           M2mSpecification.startPolling(spec.filename, (e) => {
-            log.log(LogLevelEnum.error, e.message)
+            {
+              const msg = e instanceof Error ? e.message : String(e)
+              log.log(LogLevelEnum.error, msg)
+            }
           })
           this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, 'Specification is already contributed')
         }

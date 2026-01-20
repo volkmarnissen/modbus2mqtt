@@ -3,6 +3,7 @@ import tseslint from 'typescript-eslint'
 import prettier from 'eslint-config-prettier'
 import jest from 'eslint-plugin-jest'
 import prettierPlugin from 'eslint-plugin-prettier'
+import unusedImportsPlugin from 'eslint-plugin-unused-imports'
 
 export default [
   js.configs.recommended,
@@ -14,6 +15,7 @@ export default [
       '@typescript-eslint': tseslint.plugin,
       jest,
       prettier: prettierPlugin,
+      'unused-imports': unusedImportsPlugin,
     },
     languageOptions: {
       parser: tseslint.parser,
@@ -36,14 +38,17 @@ export default [
     },
     rules: {
       'prettier/prettier': 'error',
-      // Prefer TS rule over core
+      // Prefer plugin rule for unused imports/vars
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
         'error',
         {
+          vars: 'all',
+          varsIgnorePattern: '^_',
           args: 'after-used',
           argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
           ignoreRestSiblings: true,
         },
       ],
