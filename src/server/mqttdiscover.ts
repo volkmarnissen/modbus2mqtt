@@ -1,5 +1,5 @@
-import { Config, ConfigListenerEvent } from './config.js'
-import { ConverterMap } from '../specification/index.js'
+import { Config, ConfigListenerEvent } from './config'
+import { ConverterMap } from '../specification/index'
 import {
   Inumber,
   Iselect,
@@ -9,17 +9,17 @@ import {
   EnumStateClasses,
   Itext,
   Ispecification,
-} from '../shared/specification/index.js'
-import { Ientity, ImodbusEntity, VariableTargetParameters, getSpecificationI18nEntityName } from '../shared/specification/index.js'
+} from '../shared/specification'
+import { Ientity, ImodbusEntity, VariableTargetParameters, getSpecificationI18nEntityName } from '../shared/specification'
 import { IClientPublishOptions, MqttClient } from 'mqtt'
-import { ConfigBus } from './configbus.js'
+import { ConfigBus } from './configbus'
 import Debug from 'debug'
-import { LogLevelEnum, Logger } from '../specification/index.js'
-import { Islave, Slave } from '../shared/server/index.js'
+import { LogLevelEnum, Logger } from '../specification/index'
+import { Islave, Slave } from '../shared/server/index'
 import { QoS } from 'mqtt-packet'
 
-import { MqttConnector } from './mqttconnector.js'
-import { MqttSubscriptions } from './mqttsubscriptions.js'
+import { MqttConnector } from './mqttconnector'
+import { MqttSubscriptions } from './mqttsubscriptions'
 const debug = Debug('mqttdiscover')
 const log = new Logger('mqttdiscover')
 export interface ItopicAndPayloads {

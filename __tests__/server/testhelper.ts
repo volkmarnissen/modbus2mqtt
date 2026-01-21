@@ -6,6 +6,8 @@ import { IModbusAPI } from '../../src/server/modbusWorker'
 import { ModbusTasks } from '../../src/shared/server'
 import * as fs from 'fs'
 import { Config } from '../../src/server/config'
+import { ConfigSpecification } from '../../src/specification'
+import { join } from 'path'
 
 /**
  * Universal Test Helper for file backup/restore
@@ -336,4 +338,65 @@ export class ModbusRTUWorkerForTest extends ModbusRTUWorker {
 }
 export interface Itest {
   worker?: ModbusRTUWorkerForTest
+}
+
+/**
+ * Helper to create per-test temporary config/data directories and switch the app to use them.
+ * Prevents tests from modifying shared fixtures like waterleveltransmitter.yaml.
+ */
+export class TempConfigDirHelper {
+  private originalConfigDir: string
+  private originalDataDir: string
+  private originalSslDir: string
+  private tempRoot: string
+  private tempConfigDir: string
+  private tempDataDir: string
+
+  constructor(private name: string = 'temp') {
+    this.originalConfigDir = ConfigSpecification.configDir || Config.configDir
+    this.originalDataDir = ConfigSpecification.dataDir || Config.dataDir
+    this.originalSslDir = Config.sslDir
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    this.tempRoot = join('/tmp', `modbus2mqtt-${this.name}-${stamp}`)
+    this.tempConfigDir = join(this.tempRoot, 'config-dir')
+    this.tempDataDir = join(this.tempRoot, 'data-dir')
+  }
+
+  /** Recursively copy a directory */
+  private copyDirSync(src: string, dest: string): void {
+    fs.cpSync(src, dest, { recursive: true })
+  }
+
+  /** Set up temp dirs and switch Config/ConfigSpecification to use them */
+  setup(): void {
+    // Copy config-dir and data-dir if defined
+    if (this.originalConfigDir && this.originalConfigDir.length > 0) this.copyDirSync(this.originalConfigDir, this.tempConfigDir)
+    if (this.originalDataDir && this.originalDataDir.length > 0) this.copyDirSync(this.originalDataDir, this.tempDataDir)
+
+    // Point runtime to the temp directories
+    ConfigSpecification.configDir = this.tempConfigDir
+    ConfigSpecification.dataDir = this.tempDataDir
+    Config.configDir = this.tempConfigDir
+    Config.dataDir = this.tempDataDir
+    Config.sslDir = this.tempConfigDir
+  }
+
+  /** Restore original directories and remove temp dirs */
+  cleanup(): void {
+    // Restore paths
+    ConfigSpecification.configDir = this.originalConfigDir
+    ConfigSpecification.dataDir = this.originalDataDir
+    Config.configDir = this.originalConfigDir
+    Config.dataDir = this.originalDataDir
+    Config.sslDir = this.originalSslDir
+
+    // Remove temp root
+    if (fs.existsSync(this.tempRoot)) {
+      try {
+        fs.rmSync(this.tempRoot, { recursive: true, force: true })
+      } catch {
+        // ignore cleanup errors in tests
+      }
+    }
+  }
 }

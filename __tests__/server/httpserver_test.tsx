@@ -584,6 +584,8 @@ describe('http POST', () => {
           expect(fs.existsSync(testdir + testPdf)).toBeTruthy()
           expect(fs.existsSync(testdir + test1)).toBeTruthy()
           fs.unlinkSync(testdir + test1)
+          if (fs.existsSync(testdir + test1)) fs.unlinkSync(testdir + test1)
+          if (fs.existsSync(testdir + testPdf)) fs.unlinkSync(testdir + testPdf)
           fs.copyFileSync(lspec + 'waterleveltransmitter.bck', lspec + 'waterleveltransmitter.yaml', undefined)
           supertest(httpServer['app'])
             .delete(

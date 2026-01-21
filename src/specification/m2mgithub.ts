@@ -214,12 +214,15 @@ export class M2mGitHub {
   }
   fetchPublicFiles(): void {
     debug('Fetch public files')
-    if (existsSync(join(this.publicRoot, '.git'))) {
-      const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
-      // log more than two lines only. Two lines usually means up-to-date 1th line + \n
-      if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
-    } // creating a repo is worth a notice
-    else
+    // If directory exists and is a git repo, pull. If it exists but isn't a repo, skip cloning.
+    if (existsSync(this.publicRoot)) {
+      if (existsSync(join(this.publicRoot, '.git'))) {
+        const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
+        if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
+      } else {
+        log.log(LogLevelEnum.info, 'Public files directory exists, skipping git clone')
+      }
+    } else {
       log.log(
         LogLevelEnum.info,
         execSync(
@@ -231,6 +234,7 @@ export class M2mGitHub {
             this.publicRoot
         ).toString()
       )
+    }
     new ConfigSpecification().readYaml()
   }
   static getPullRequestUrl(pullNumber: number): string {

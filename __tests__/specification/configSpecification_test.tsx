@@ -1,4 +1,4 @@
-import { it, expect, xit, beforeEach, afterEach } from '@jest/globals'
+import { it, expect, beforeEach, afterEach } from 'vitest'
 import { ConfigSpecification } from '../../src/specification'
 import * as fs from 'fs'
 import { join } from 'path'
@@ -14,7 +14,7 @@ import {
 } from '../../src/shared/specification'
 import { IModbusResultOrError } from '../../src/specification'
 import { ImodbusValues } from '../../src/specification'
-import { SpecificationTestHelper } from '../server/testhelper'
+import { SpecificationTestHelper, TempConfigDirHelper } from '../server/testhelper'
 
 ConfigSpecification['configDir'] = configDir
 ConfigSpecification['dataDir'] = dataDir
@@ -22,16 +22,21 @@ ConfigSpecification.setMqttdiscoverylanguage('en')
 
 // Test helper for file backups
 let testHelper: SpecificationTestHelper
+let tempHelper: TempConfigDirHelper
 
 beforeEach(() => {
+  // Use per-test temp dirs to avoid mutating shared specs
+  tempHelper = new TempConfigDirHelper('configSpecification_test')
+  tempHelper.setup()
   testHelper = new SpecificationTestHelper()
-  // Backup essential files before each test
-  testHelper.backupAll(configDir)
+  // Backup essential files inside the temp config dir
+  testHelper.backupAll(ConfigSpecification.configDir)
 })
 
 afterEach(() => {
-  // Restore all files after each test
+  // Restore files within temp dir and cleanup
   testHelper.restoreAll()
+  if (tempHelper) tempHelper.cleanup()
 })
 
 const testdata: ImodbusValues = {
@@ -121,7 +126,7 @@ it('getSpecificationI18nName ', () => {
   expect(fn).toBe('asdf+-_.')
 })
 
-it('add new specification, add files, set filename', (done) => {
+it('add new specification, add files, set filename', async () => {
   const cfgSpec = new ConfigSpecification()
   cfgSpec.readYaml()
 
@@ -143,7 +148,7 @@ it('add new specification, add files, set filename', (done) => {
   expect(g!.files.find((f) => f.url.endsWith('/_new/test.jpg'))).not.toBeNull()
   expect(g!.files.find((f) => f.url.endsWith('/_new/test.pdf'))).not.toBeNull()
   expect(g).not.toBeNull()
-  cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img).then((files) => {
+  await cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img).then((files) => {
     mspec.filename = 'addspectest'
     let wasCalled = false
 
@@ -171,7 +176,6 @@ it('add new specification, add files, set filename', (done) => {
       null
     )
     cfgSpec.deleteSpecification('addspectest')
-    done()
   })
 })
 it('contribution', () => {
@@ -296,7 +300,7 @@ it('contribution cloned', () => {
   })
 })
 
-xit('importSpecificationZip existing Specification', () => {
+it.skip('importSpecificationZip existing Specification', () => {
   return new Promise<void>((resolve, reject) => {
     const zipFile = 'spec.zip'
     const cs = new ConfigSpecification()

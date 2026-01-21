@@ -1,2 +1,2 @@
-export * from './types.js'
-export * from './Specification.js'
+export * from './types'
+export * from './Specification'

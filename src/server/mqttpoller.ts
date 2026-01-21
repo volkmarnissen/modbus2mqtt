@@ -1,6 +1,6 @@
 import { Slave, PollModes, ModbusTasks } from '../shared/server/index.js'
 import Debug from 'debug'
-import { LogLevelEnum, Logger } from '../specification/index.js'
+import { LogLevelEnum, Logger } from '../specification'
 import { Bus } from './bus.js'
 import { Config } from './config.js'
 import { Modbus } from './modbus.js'

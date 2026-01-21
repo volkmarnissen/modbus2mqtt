@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
+import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
 import Debug from 'debug'
 import { Config } from './config.js'
 import process from 'process'

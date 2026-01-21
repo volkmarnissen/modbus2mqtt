@@ -27,6 +27,8 @@
   "scripts": {
     "ng": "npx ng",
     "test": "jest",
+    "test:vitest": "vitest -c vitest.config.ts",
+    "test:vitest:run": "vitest -c vitest.config.ts --run",
     "migrate:shared": "node scripts/migrate-shared.js",
     "cypress": "TS_NODE_PROJECT=angular/tsconfig.angular.json ;CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress",
     "cypress:open": "npm run cypress -- open",
@@ -130,6 +132,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4",
     "typescript-map": "^0.1.0",
+    "vitest": "^1.6.1",
     "zone.js": "^0.15.1"
   }
 }

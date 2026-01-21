@@ -17,14 +17,13 @@ import { getReadRegisterResult } from '../../src/server/submitRequestMock'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase'
 import { Islave, ModbusTasks } from '../../src/shared/server'
 import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification'
-import { expect, xit, it, describe, beforeEach, jest, beforeAll } from '@jest/globals'
+import { expect, it, describe, beforeEach, vi, beforeAll } from 'vitest'
 import Debug from 'debug'
 import { ConfigBus } from '../../src/server/configbus'
 setConfigsDirsForTest()
 const debug = Debug('modbus_test')
 
 beforeAll(() => {
-  jest.mock('../../src/server/modbus')
   // TODO Fix test ModbusCache.prototype.submitGetHoldingRegisterRequest = submitGetHoldingRegisterRequest
   initBussesForTest()
 })
@@ -127,46 +126,45 @@ function prepareIdentification() {
 }
 
 describe('Modbus read', () => {
-  it('Modbus read', (done) => {
+  it('Modbus read', async () => {
     const readConfig: Config = new Config()
     readConfig.readYaml()
     ConfigBus.readBusses()
     new ConfigSpecification().readYaml()
     const dev = ConfigBus.getSlave(0, 1)!
     expect(dev).toBeDefined
-    Modbus.getModbusSpecification(
-      ModbusTasks.specification,
-      Bus.getBus(0)!.getModbusAPI(),
-      Bus.getBus(0)!.getSlaveBySlaveId(1)!,
-      dev!.specificationid!,
-      (_e) => {
-        expect(false).toBeTruthy()
-        done()
-      }
-    ).subscribe((spec1) => {
-      const spec = ConfigSpecification.getSpecificationByFilename(dev!.specificationid!)!
-      expect(spec).toBeDefined()
-      expect((spec1?.entities[0] as ImodbusEntity).mqttValue).toBe((spec1?.entities[0] as ImodbusEntity).mqttValue)
-      expect(((spec1?.entities[0] as ImodbusEntity).mqttValue as number) - 21).toBeLessThan(0.001)
-      done()
+    await new Promise<void>((resolve, reject) => {
+      Modbus.getModbusSpecification(
+        ModbusTasks.specification,
+        Bus.getBus(0)!.getModbusAPI(),
+        Bus.getBus(0)!.getSlaveBySlaveId(1)!,
+        dev!.specificationid!,
+        (_e) => {
+          expect(false).toBeTruthy()
+          reject(_e)
+        }
+      ).subscribe((spec1) => {
+        const spec = ConfigSpecification.getSpecificationByFilename(dev!.specificationid!)!
+        expect(spec).toBeDefined()
+        expect((spec1?.entities[0] as ImodbusEntity).mqttValue).toBe((spec1?.entities[0] as ImodbusEntity).mqttValue)
+        expect(((spec1?.entities[0] as ImodbusEntity).mqttValue as number) - 21).toBeLessThan(0.001)
+        resolve()
+      })
     })
   })
 
-  it('Modbus read Entity identifiation unknown', (done) => {
+  it('Modbus read Entity identifiation unknown', async () => {
     prepareIdentification()
     expect(dev).toBeDefined
     spec.entities = ents
-    mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1)
-      .then((arg0: ImodbusEntity) => {
-        expect(arg0!.identified).toBe(IdentifiedStates.unknown)
-        done()
-      })
-      .catch((_e) => {
-        expect(false).toBeTruthy()
-        done()
-      }) // unidenfified
+    try {
+      const arg0 = await mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1)
+      expect(arg0!.identified).toBe(IdentifiedStates.unknown)
+    } catch (_e) {
+      expect(false).toBeTruthy()
+    }
   })
-  it('Modbus read Entity identifiation identified', (done) => {
+  it('Modbus read Entity identifiation identified', async () => {
     prepareIdentification()
     expect(dev).toBeDefined
     if (ent.converterParameters)
@@ -175,12 +173,10 @@ describe('Modbus read', () => {
         max: 0.4,
       }
     spec.entities = ents
-    mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1).then((arg0: ImodbusEntity) => {
-      expect(arg0!.identified).toBe(IdentifiedStates.identified)
-      done()
-    }) // unidenfified
+    const arg0 = await mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1)
+    expect(arg0!.identified).toBe(IdentifiedStates.identified)
   })
-  it('Modbus read Entity identifiation Iselect identified', (done) => {
+  it('Modbus read Entity identifiation Iselect identified', async () => {
     prepareIdentification()
     expect(dev).toBeDefined
     Config['config'].fakeModbus = true
@@ -197,32 +193,23 @@ describe('Modbus read', () => {
     }
     ent.id = 1
     spec.entities = [ent]
-    mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1)
-      .then((arg0: ImodbusEntity) => {
-        expect(arg0!.identified).toBe(IdentifiedStates.identified)
-        Config['config'].fakeModbus = true
-
-        done()
-      })
-      .catch((err) => {
-        debug(JSON.stringify(err))
-      }) // unidenfified
+    const arg0 = await mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1)
+    expect(arg0!.identified).toBe(IdentifiedStates.identified)
+    Config['config'].fakeModbus = true
   })
 
-  it('Modbus read Entity identifiation string not identified', (done) => {
+  it('Modbus read Entity identifiation string not identified', async () => {
     //@ts-ignore
     prepareIdentification()
     Config['config'].fakeModbus = true
     expect(dev).toBeDefined
     if (entText.converterParameters) (entText.converterParameters as Itext).identification = 'test'
     spec.entities = [entText]
-    mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 2, spec, 2).then((arg0: ImodbusEntity) => {
-      expect(arg0!.identified).toBe(IdentifiedStates.notIdentified)
-      done()
-    }) // unidenfified
+    const arg0 = await mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 2, spec, 2)
+    expect(arg0!.identified).toBe(IdentifiedStates.notIdentified)
   })
 
-  it('Modbus read Entity identifiation string identified', (done) => {
+  it('Modbus read Entity identifiation string identified', async () => {
     prepareIdentification()
     Config['config'].fakeModbus = true
     //jest.spyOn(Modbus.prototype, 'readHoldingRegister').mockReturnValue([65 << 8 | 66, 67 << 8 | 68])
@@ -231,17 +218,15 @@ describe('Modbus read', () => {
     dev!.slaveid = 2
     spec.entities = [entText]
     const mb = new Modbus()
-    mb.readEntityFromModbus(Bus.getBus(1)!.getModbusAPI(), 2, spec, 2).then((arg0: ImodbusEntity) => {
-      expect(arg0!.identified).toBe(IdentifiedStates.identified)
-      done()
-    }) // unidenfified
+    const arg0 = await mb.readEntityFromModbus(Bus.getBus(1)!.getModbusAPI(), 2, spec, 2)
+    expect(arg0!.identified).toBe(IdentifiedStates.identified)
   })
   // it("Modbus getUsbDevices", done => {
   //     mr.getUsbDevices();
   //     done();
   // });
 })
-xit('Modbus modbusDataToSpec spec.identified = identified', () => {
+it.skip('Modbus modbusDataToSpec spec.identified = identified', () => {
   const spec: IfileSpecification = {
     version: '0.1',
     entities: [
@@ -337,7 +322,7 @@ function writeRegisters(slaveid: number, _startaddress: number, registerType: Mo
     resolve()
   })
 }
-it('Modbus writeEntityMqtt', (done) => {
+it('Modbus writeEntityMqtt', async () => {
   // TODO Fix test ModbusCache.prototype.writeRegisters = writeRegisters
   const readConfig: Config = new Config()
   readConfig.readYaml()
@@ -345,11 +330,9 @@ it('Modbus writeEntityMqtt', (done) => {
   const dev = ConfigBus.getSlave(0, 1)!
   expect(dev).toBeDefined
 
-  Modbus.writeEntityMqtt(Bus.getBus(0)!.getModbusAPI(), 1, spec, 3, 'test')
-    .catch((e) => {
-      expect(`[FAIL] ${e}`.trim()).toBeFalsy()
-    })
-    .then(() => {
-      done()
-    })
+  try {
+    await Modbus.writeEntityMqtt(Bus.getBus(0)!.getModbusAPI(), 1, spec, 3, 'test')
+  } catch (e) {
+    expect(`[FAIL] ${e}`.trim()).toBeFalsy()
+  }
 })
