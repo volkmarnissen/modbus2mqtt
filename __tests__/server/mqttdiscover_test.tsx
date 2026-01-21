@@ -6,12 +6,13 @@ import { FakeModes, FakeMqtt, initBussesForTest, setConfigsDirsForTest } from '.
 import { Bus } from '../../src/server/bus'
 import Debug from 'debug'
 import { ConfigSpecification, Logger } from '../../src/specification'
-import { expect, test, beforeAll, vi } from 'vitest'
+import { expect, test, beforeAll, vi, afterAll } from 'vitest'
 import { Islave, Slave } from '../../src/shared/server'
 import { ConfigBus } from '../../src/server/configbus'
 import { Modbus } from '../../src/server/modbus'
 import { MqttConnector } from '../../src/server/mqttconnector'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
+import { TempConfigDirHelper } from './testhelper'
 const debug = Debug('mqttdiscover_test')
 
 const topic4Deletion = {
@@ -68,7 +69,7 @@ const selectTestWritable: ImodbusEntity = {
   identified: 1,
   converterParameters: { optionModbusValues: [1, 2, 3] },
 }
-
+let mqttDiscoverTestHelper: TempConfigDirHelper
 beforeAll(async () => {
   // Fix ModbusCache ModbusCache.prototype.submitGetHoldingRegisterRequest = submitGetHoldingRegisterRequest
   oldLog = Logger.prototype.log
@@ -79,6 +80,9 @@ beforeAll(async () => {
   msub1 = new MqttSubscriptions(conn)
   // trigger subscription to ConfigBus Events
   const md = new MqttDiscover(conn, msub1)
+  setConfigsDirsForTest()
+  mqttDiscoverTestHelper = new TempConfigDirHelper('httpserver-test')
+  mqttDiscoverTestHelper.setup()
   initBussesForTest()
   const fake = new FakeMqtt(msub1, FakeModes.Poll)
   conn['client'] = fake as any as MqttClient
@@ -150,6 +154,11 @@ beforeAll(async () => {
   new ConfigSpecification().writeSpecification(spec as any, () => {}, spec.filename)
   bus!.writeSlave(slave)
 })
+afterAll(() => {
+  Logger.prototype.log = oldLog
+  mqttDiscoverTestHelper.cleanup()
+})
+
 const numberTest: ImodbusEntity = {
   id: numberTestId,
   mqttname: 'mqtt',
