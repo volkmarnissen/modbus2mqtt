@@ -10,7 +10,7 @@ export default [
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs', 'vitest.config.ts'],
+    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs', 'vitest.config.ts', 'angular/**'],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       jest,
@@ -56,7 +56,7 @@ export default [
     settings: {
       'import/resolver': {
         typescript: {
-          project: ['tsconfig.eslint.json', 'tsconfig.angular.json'],
+          project: ['tsconfig.eslint.json', 'angular/tsconfig.angular.json'],
         },
       },
     },

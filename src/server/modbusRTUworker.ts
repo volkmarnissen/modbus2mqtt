@@ -1,16 +1,16 @@
 import { ModbusRTUQueue, IQueueEntry, IQueueOptions } from './modbusRTUqueue.js'
 import { IModbusAPI, ModbusWorker } from './modbusWorker.js'
-import { IModbusResultOrError, Logger, LogLevelEnum } from '../specification/index'
+import { IModbusResultOrError, Logger, LogLevelEnum } from '../specification/index.js'
 import Debug from 'debug'
 import { IexecuteOptions } from './modbusRTUprocessor.js'
-import { ModbusRegisterType } from '../shared/specification/index'
+import { ModbusRegisterType } from '../shared/specification/index.js'
 import {
   ImodbusAddress,
   ImodbusErrorsForSlave,
   ImodbusStatusForSlave,
   ModbusErrorStates,
   ModbusTasks,
-} from '../shared/server/index'
+} from '../shared/server/index.js'
 
 const debug = Debug('modbusrtuworker')
 const log = new Logger('modbusrtuworker')

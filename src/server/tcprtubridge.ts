@@ -1,6 +1,6 @@
 import { FCallbackVal, IServiceVector, ServerTCP } from 'modbus-serial'
 import { IQueueEntry, ModbusRTUQueue } from './modbusRTUqueue.js'
-import { ImodbusAddress, ModbusTasks } from '../shared/server'
+import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
 import { ModbusRegisterType } from '../shared/specification/index.js'
 import { Logger, LogLevelEnum } from '../specification/index.js'
 import { Config } from './config.js'

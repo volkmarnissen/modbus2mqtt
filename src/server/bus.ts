@@ -7,11 +7,11 @@ import {
 } from '../shared/specification/index.js'
 import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
 import { IdentifiedStates } from '../shared/specification/index.js'
-import { ConverterMap, ImodbusValues, M2mSpecification } from '../specification'
+import { ConverterMap, ImodbusValues, M2mSpecification } from '../specification/index.js'
 import { ConfigBus } from './configbus.js'
 import * as fs from 'fs'
-import { IfileSpecification } from '../specification'
-import { LogLevelEnum, Logger } from '../specification'
+import { IfileSpecification } from '../specification/index.js'
+import { LogLevelEnum, Logger } from '../specification/index.js'
 import {
   Islave,
   IModbusConnection,
@@ -20,7 +20,7 @@ import {
   ITCPConnection,
   IidentificationSpecification,
 } from '../shared/server/index.js'
-import { ConfigSpecification } from '../specification'
+import { ConfigSpecification } from '../specification/index.js'
 import { ModbusTcpRtuBridge } from './tcprtubridge.js'
 import { MqttPoller } from './mqttpoller.js'
 import { MqttConnector } from './mqttconnector.js'

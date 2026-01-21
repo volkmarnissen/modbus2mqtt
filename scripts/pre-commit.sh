@@ -155,7 +155,7 @@ check_eslint() {
     ESLINT_ERRORS=0
     for file in $CHANGED_FILES; do
       case "$file" in
-        src/angular/*)
+        src/angular/*|angular/src/*)
           # Skip Angular app files in hook (use angular's own lint/build)
           continue
           ;;
@@ -250,7 +250,7 @@ run_eslint_full() {
   if command -v npx >/dev/null 2>&1; then
     echo "[pre-commit] Running full ESLint (src and __tests__) ..." >&2
     # Keep Angular app excluded per existing project lint scripts
-    if ! npx eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --format stylish src __tests__; then
+    if ! npx eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --ignore-pattern 'angular/**' --format stylish src __tests__; then
       echo -e "\033[31m[pre-commit] ERROR: ESLint failed for the repository.\033[0m" >&2
       return 1
     fi

@@ -7,7 +7,7 @@
       "projectType": "application",
       "schematics": {},
       "root": ".",
-      "sourceRoot": "src/angular",
+      "sourceRoot": "angular/src",
       "prefix": "app",
       "architect": {
         "build": {
@@ -16,14 +16,15 @@
             "baseHref": "./",
             "outputPath": "dist/angular",
             "localize": true,
-            "index": "src/angular/index.html",
+            "index": "angular/src/index.html",
             "polyfills": ["@angular/localize/init"],
             "tsConfig": "angular/tsconfig.angular.json",
-            "assets": ["src/angular/assets/images", "src/angular/assets"],
-            "styles": ["src/angular/styles.css"],
+            "assets": ["angular/src/assets/images", "angular/src/assets"],
+            "styles": ["angular/src/styles.css"],
             "scripts": [],
+            "preserveSymlinks": true,
             "allowedCommonJsDependencies": ["../shared"],
-            "browser": "src/angular/main.ts"
+            "browser": "angular/src/main.ts"
           },
           "configurations": {
             "production": {

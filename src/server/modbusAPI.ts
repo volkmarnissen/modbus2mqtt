@@ -7,7 +7,7 @@ import {
   IModbusConnection,
   ImodbusStatusForSlave,
 } from '../shared/server/index.js'
-import { ImodbusValues, Logger, LogLevelEnum } from '../specification'
+import { ImodbusValues, Logger, LogLevelEnum } from '../specification/index.js'
 import { ModbusRegisterType } from '../shared/specification/index.js'
 import { Mutex } from 'async-mutex'
 import ModbusRTU from 'modbus-serial'

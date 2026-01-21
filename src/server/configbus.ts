@@ -1,5 +1,5 @@
 import { IBus, IModbusConnection, Islave, Slave } from '../shared/server/index.js'
-import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
+import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
 import { getSpecificationI18nEntityName, IidentEntity, Ispecification } from '../shared/specification/index.js'
 import { parse, stringify } from 'yaml'
 import * as fs from 'fs'
