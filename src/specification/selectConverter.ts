@@ -11,8 +11,8 @@ import {
 } from '../shared/specification/index.js'
 import { LogLevelEnum, Logger } from './log.js'
 import { ConfigSpecification } from './configspec.js'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const debug = require('debug')('selectConverter')
+import Debug from 'debug'
+const debug = Debug('selectConverter')
 
 const log = new Logger('selectconverter')
 export class SelectConverter extends Converter {

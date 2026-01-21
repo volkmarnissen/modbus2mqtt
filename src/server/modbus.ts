@@ -9,10 +9,10 @@ import { IfileSpecification } from '../specification/index.js'
 import { LogLevelEnum, Logger } from '../specification/index.js'
 import { ImodbusAddress, Islave, ModbusTasks } from '../shared/server/index.js'
 import { IconsumerModbusAPI } from './modbusAPI.js'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const debug = require('debug')('modbus')
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const debugAction = require('debug')('actions')
+import Debug from 'debug'
+const debug = Debug('modbus')
+
+const debugAction = Debug('actions')
 
 const log = new Logger('modbus')
 export class Modbus {

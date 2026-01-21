@@ -7,7 +7,7 @@ import packageJson from '../../package.json' with { type: 'json' }
 import stream from 'stream'
 import { Subject } from 'rxjs'
 import { getBaseFilename } from '../shared/specification/index.js'
-import { JwtPayload, sign, verify } from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
 import { LogLevelEnum, Logger, filesUrlPrefix } from '../specification/index.js'
 import { ImqttClient, AuthenticationErrors, Iconfiguration, IUserAuthenticationStatus } from '../shared/server/index.js'
@@ -70,7 +70,7 @@ export class Config {
           try {
             //const iat = Math.floor(Date.now() / 1000)
             //const exp = iat + Config.config.tokenExpiryTimeInMSec // seconds
-            const s = sign({ password: password }, Config.secret, {
+            const s = jwt.sign({ password: password }, Config.secret, {
               // jsonwebtoken expects seconds (number) or a time-string like '1d'.
               // We store milliseconds, so convert to whole seconds.
               expiresIn: Math.floor(Config.tokenExpiryTime / 1000),
@@ -112,7 +112,7 @@ export class Config {
     if (token == undefined) return MqttValidationResult.error
 
     try {
-      const payload = verify(token, Config.secret) as JwtPayload & { password: string }
+      const payload = jwt.verify(token, Config.secret) as JwtPayload & { password: string }
       if (bcrypt.compareSync(payload.password, Config.config.password!)) {
         return MqttValidationResult.OK
       }

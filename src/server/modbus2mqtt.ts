@@ -8,7 +8,8 @@ import * as os from 'os'
 import Debug from 'debug'
 import { MqttDiscover } from './mqttdiscover.js'
 import { ConfigSpecification } from '../specification/index.js'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { SpecificationStatus } from '../shared/specification/index.js'
 import * as fs from 'fs'
 import { ConfigBus } from './configbus.js'
@@ -107,8 +108,9 @@ export class Modbus2Mqtt {
         // Prefer configured frontend directory; fallback to Angular build output
         let angulardir = Config.getConfiguration().frontendDir
         if (!angulardir) {
-          // Fallback: derive from built server file location to dist/angular/browser
-          angulardir = join(require.resolve('./mqttdiscover'), '../../angular/browser')
+          // Fallback: derive from current module location to dist/angular/browser (ESM-safe)
+          const currentDir = dirname(fileURLToPath(import.meta.url))
+          angulardir = join(currentDir, '..', 'angular', 'browser')
         }
         // Did not work in github workflow for testing
 

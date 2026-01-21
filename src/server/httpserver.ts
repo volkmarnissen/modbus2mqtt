@@ -40,26 +40,6 @@ const log = new Logger('httpserver')
 // import cors from 'cors';
 //import { IfileSpecification } from './ispecification';
 
-interface GetRequestWithParameter extends express.Request {
-  query: {
-    name: string
-    usecache: string
-    timeout: string
-    busid: string
-    slaveid: string
-    spec: string
-    filter: string
-    deviceDetection: string
-    entityid: string
-    language: string
-    originalFilename: string
-    password: string
-    mqttValue: string
-    forContribution: string
-    showAllPublicSpecs: string
-  }
-}
-
 export class HttpServer extends HttpServerBase {
   constructor(angulardir: string = '.') {
     super(angulardir)
@@ -760,36 +740,36 @@ export class HttpServer extends HttpServerBase {
           return
         }
 
-        const msg = this.checkBusidSlaveidParameter(req as GetRequestWithParameter)
-        if (msg !== '') {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-          return
-        } else {
-          debug('Files uploaded')
-          if (req.files) {
-            // req.body.documents
-            const config = new ConfigSpecification()
-            const f: string[] = []
-            ;(req.files as Express.Multer.File[])!.forEach((f0) => {
-              f.push(f0.originalname)
-            })
-            if (req.query['usage'] === undefined) {
-              this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-            }
-            config
-              .appendSpecificationFiles(
-                String(req.query['specification']!),
-                f,
-                String(req.query['usage']!) as unknown as SpecificationFileUsage
-              )
-              .then((files) => {
-                if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-                else this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
-              })
-          } else {
-            this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
+        // const msg = this.checkBusidSlaveidParameter(req as GetRequestWithParameter)
+        // if (msg !== '') {
+        //   this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
+        //   return
+        // } else {
+        debug('Files uploaded')
+        if (req.files) {
+          // req.body.documents
+          const config = new ConfigSpecification()
+          const f: string[] = []
+          ;(req.files as Express.Multer.File[])!.forEach((f0) => {
+            f.push(f0.originalname)
+          })
+          if (req.query['usage'] === undefined) {
+            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
           }
+          config
+            .appendSpecificationFiles(
+              String(req.query['specification']!),
+              f,
+              String(req.query['usage']!) as unknown as SpecificationFileUsage
+            )
+            .then((files) => {
+              if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
+              else this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
+            })
+        } else {
+          this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
         }
+        //}
       } catch (e: unknown) {
         this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Upload failed: ' + (e as Error).message, e)
       }

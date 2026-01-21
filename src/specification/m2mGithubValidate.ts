@@ -1,10 +1,6 @@
 import { githubPublicNames } from './m2mgithub.js'
 import { Octokit } from '@octokit/rest'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const path = require('path')
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const _debug = require('debug')('m2mgithubvalidate')
+import path from 'path'
 export interface IpullRequest {
   files?: string[]
   merged: boolean
