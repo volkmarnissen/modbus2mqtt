@@ -6,7 +6,9 @@ import { join, dirname, basename, extname } from 'node:path'
 
 const REPO_ROOT = process.cwd()
 const VITEST_CONFIG = 'vitest.config.ts'
-const TARGET = '__tests__/server/config-dir/modbus2mqtt/specifications/waterleveltransmitter.yaml'
+// Default: watch the entire server config directory to catch modified and new files
+let WATCH_PATH = '__tests__/server/config-dir/modbus2mqtt'
+let CLEAN_UNTRACKED = false
 
 function run(cmd, args, opts = {}) {
   const res = spawnSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], ...opts })
@@ -19,17 +21,20 @@ function runShow(cmd, args, opts = {}) {
 }
 
 function restoreTarget() {
-  run('git', ['restore', '--staged', '--', TARGET])
-  run('git', ['restore', '--', TARGET])
+  run('git', ['restore', '--staged', '--', WATCH_PATH])
+  run('git', ['restore', '--', WATCH_PATH])
+  if (CLEAN_UNTRACKED) {
+    run('git', ['clean', '-fd', '--', WATCH_PATH])
+  }
 }
 
 function isTargetDirty() {
-  const r = run('git', ['status', '--porcelain', '--', TARGET])
+  const r = run('git', ['status', '--porcelain', '--', WATCH_PATH])
   return (r.stdout?.toString() || '').trim().length > 0
 }
 
 function printDiff() {
-  runShow('git', ['--no-pager', 'diff', '--', TARGET])
+  runShow('git', ['--no-pager', 'diff', '--', WATCH_PATH])
 }
 
 function listTestFiles(pattern) {
@@ -128,7 +133,15 @@ function parseArgs(argv) {
   for (let i = 0; i < args.length; i++) {
     const a = args[i]
     if (a === '-d' || a === '--diff') showDiffFlag = true
-    else if (!a.startsWith('-')) pattern = a
+    else if (a === '-t' || a === '--target') {
+      const next = args[i + 1]
+      if (next) {
+        WATCH_PATH = next
+        i++
+      }
+    } else if (a === '-C' || a === '--clean-untracked') {
+      CLEAN_UNTRACKED = true
+    } else if (!a.startsWith('-')) pattern = a
   }
   return { showDiff: showDiffFlag, pattern }
 }
@@ -140,7 +153,7 @@ function main() {
     console.error(`No test files matched pattern: ${pattern}`)
     process.exit(1)
   }
-  console.log(`Scanning ${files.length} tests for mutations to ${TARGET}`)
+  console.log(`Scanning ${files.length} tests for mutations to ${WATCH_PATH}`)
   const offenders = []
   for (const f of files) {
     console.log(`\n=== Running: ${f} ===`)
@@ -150,7 +163,7 @@ function main() {
     if (!ok) console.log(`Test failed: ${f} (continuing to check for mutation)`)
     if (isTargetDirty()) {
       console.log(`MUTATION DETECTED by ${f}`)
-      const status = run('git', ['status', '--porcelain', '--', TARGET]).stdout?.toString().trim()
+      const status = run('git', ['status', '--porcelain', '--', WATCH_PATH]).stdout?.toString().trim()
       if (status) console.log(`Status:  ${status}`)
       if (showDiff) {
         console.log('Diff:')
@@ -164,7 +177,7 @@ function main() {
   }
   console.log(`\nSummary:`)
   if (!offenders.length) {
-    console.log(`No mutating tests detected for ${TARGET}`)
+    console.log(`No mutating tests detected for ${WATCH_PATH}`)
   } else {
     console.log(`Mutating tests (${offenders.length}):`)
     for (const o of offenders) console.log(` - ${o}`)
@@ -198,7 +211,7 @@ function main() {
       if (!ok2) console.log(`Fallback run failed for: ${t}`)
       if (isTargetDirty()) {
         console.log(`MUTATION DETECTED by test: ${t}`)
-        const status = run('git', ['status', '--porcelain', '--', TARGET]).stdout?.toString().trim()
+        const status = run('git', ['status', '--porcelain', '--', WATCH_PATH]).stdout?.toString().trim()
         if (status) console.log(`Status:  ${status}`)
         if (showDiff) {
           console.log('Diff:')
