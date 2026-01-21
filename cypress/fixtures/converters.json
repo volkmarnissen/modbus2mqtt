@@ -1,7 +1,1 @@
-[
-  "number",
-   "select",
-   "text",
-   "binary",
-   "value"
-]
+["number", "select", "text", "binary", "value"]

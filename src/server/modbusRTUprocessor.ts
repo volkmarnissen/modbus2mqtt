@@ -1,12 +1,11 @@
-import { ImodbusValues, IModbusResultOrError, LogLevelEnum } from '../specification'
-import { ModbusRegisterType } from '../specification.shared'
-import { IQueueOptions, ModbusRTUQueue } from './modbusRTUqueue'
-import { Logger } from '../specification'
+import { ImodbusValues, IModbusResultOrError, LogLevelEnum } from '../specification/index.js'
+import { ModbusRegisterType } from '../shared/specification/index.js'
+import { IQueueOptions, ModbusRTUQueue } from './modbusRTUqueue.js'
+import { Logger } from '../specification/index.js'
 import Debug from 'debug'
-import { ImodbusAddress, ModbusTasks } from '../server.shared'
+import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
 
 const debug = Debug('modbusrtuprocessor')
-const debugRequest = Debug('modbusrtuprocessor:request')
 const debugResult = Debug('modbusrtuprocessor:result')
 const debugLog = Debug('modbusrtuprocessor.log')
 const log = new Logger('modbusrtuprocessor')
@@ -32,7 +31,7 @@ export class ModbusRTUProcessor {
 
   constructor(private queue: ModbusRTUQueue) {}
   private prepare(slaveId: number, addresses: Set<ImodbusAddress>): ImodbusAddressesWithSlave {
-    let preparedAddresses: ImodbusAddress[] = []
+    const preparedAddresses: ImodbusAddress[] = []
 
     let previousAddress = {
       address: -1,
@@ -42,12 +41,12 @@ export class ModbusRTUProcessor {
       address: -1,
       registerType: ModbusRegisterType.IllegalFunctionCode,
     }
-    let sortedAddresses = Array.from<ImodbusAddress>(addresses.values()).sort(function (a, b) {
-      let v = a.registerType - b.registerType
+    const sortedAddresses = Array.from<ImodbusAddress>(addresses.values()).sort(function (a, b) {
+      const v = a.registerType - b.registerType
       if (v) return v
       return a.address - b.address
     })
-    for (let addr of sortedAddresses) {
+    for (const addr of sortedAddresses) {
       if (previousAddress.address == -1) previousAddress = addr
       if (startAddress.address == -1) startAddress = addr
       if (addr.registerType != previousAddress.registerType || addr.address - previousAddress.address > maxAddressDelta) {
@@ -74,7 +73,7 @@ export class ModbusRTUProcessor {
       return
     }
     // suppress similar duplicate messages
-    let repeatMessage =
+    const repeatMessage =
       ModbusRTUProcessor.lastNoticeMessageTime != undefined &&
       ModbusRTUProcessor.lastNoticeMessageTime + logNoticeMaxWaitTime < Date.now()
     if (repeatMessage || msg != ModbusRTUProcessor.lastNoticeMessage) {
@@ -85,7 +84,6 @@ export class ModbusRTUProcessor {
   }
 
   private countResults(results: ImodbusValues): number {
-    let properties = Object.getOwnPropertyNames(results)
     let size: number = results.analogInputs.size
     size += results.coils.size
     size += results.discreteInputs.size
@@ -103,27 +101,26 @@ export class ModbusRTUProcessor {
   }
   execute(slaveId: number, addresses: Set<ImodbusAddress>, options: IexecuteOptions): Promise<ImodbusValues> {
     return new Promise<ImodbusValues>((resolve) => {
-      let preparedAddresses = this.prepare(slaveId, addresses)
+      const preparedAddresses = this.prepare(slaveId, addresses)
 
       debug(ModbusTasks[options.task] + ': slaveId: ' + slaveId + '=====================')
-      for (let a of preparedAddresses.addresses) {
+      for (const a of preparedAddresses.addresses) {
         debug(a.registerType + ':' + a.address + '(' + (a.length ? a.length : 1) + ')')
       }
       debug('=====================')
 
-      let addressCount = this.countAddresses(preparedAddresses.addresses)
-      let values: ImodbusValues = {
+      const addressCount = this.countAddresses(preparedAddresses.addresses)
+      const values: ImodbusValues = {
         holdingRegisters: new Map<number, IModbusResultOrError>(),
         analogInputs: new Map<number, IModbusResultOrError>(),
         coils: new Map<number, IModbusResultOrError>(),
         discreteInputs: new Map<number, IModbusResultOrError>(),
       }
-      let resultMaps = new Map<ModbusRegisterType, Map<number, IModbusResultOrError>>()
+      const resultMaps = new Map<ModbusRegisterType, Map<number, IModbusResultOrError>>()
       resultMaps.set(ModbusRegisterType.AnalogInputs, values.analogInputs)
       resultMaps.set(ModbusRegisterType.HoldingRegister, values.holdingRegisters)
       resultMaps.set(ModbusRegisterType.Coils, values.coils)
       resultMaps.set(ModbusRegisterType.DiscreteInputs, values.discreteInputs)
-      let resultCount = 0
       preparedAddresses.addresses.forEach((address) => {
         this.queue.enqueue(
           preparedAddresses.slave,
@@ -138,16 +135,15 @@ export class ModbusRTUProcessor {
                   ' address: ' +
                   queueEntry.address.address
               )
-            resultCount++
             if (queueEntry.address.length != undefined)
               for (let idx = 0; idx < queueEntry.address.length; idx++) {
-                let r: IModbusResultOrError = structuredClone({
+                const r: IModbusResultOrError = structuredClone({
                   data: [data[idx]],
                 })
                 resultMaps.get(queueEntry.address.registerType)!.set(queueEntry.address.address + idx, r)
               }
             else resultMaps.get(queueEntry.address.registerType)!.set(queueEntry.address.address, { data: data })
-            let valueCount = this.countResults(values)
+            const valueCount = this.countResults(values)
             debug(
               ModbusTasks[options.task] +
                 ': ' +
@@ -172,9 +168,10 @@ export class ModbusRTUProcessor {
             }
           },
           (currentEntry, error) => {
-            let r: IModbusResultOrError = { error: error }
+            const errObj: Error = error instanceof Error ? error : new Error(String(error))
+            const r: IModbusResultOrError = { error: errObj }
 
-            let id =
+            const id =
               ModbusTasks[options.task] +
               ' slave: ' +
               currentEntry.slaveId +
@@ -186,16 +183,15 @@ export class ModbusRTUProcessor {
               (currentEntry.address.length ? currentEntry.address.length : 1) +
               ')'
 
-            debug(id + ': Failure not handled: ' + error.message)
+            debug(id + ': Failure not handled: ' + errObj.message)
             // error is not handled by the error handler
-            resultCount++
 
             if (currentEntry.address.length != undefined)
               for (let idx = 0; idx < currentEntry.address.length; idx++)
                 resultMaps.get(currentEntry.address.registerType)!.set(currentEntry.address.address + idx, r)
             else resultMaps.get(currentEntry.address.registerType)!.set(currentEntry.address.address, r)
 
-            let valueCount = this.countResults(values)
+            const valueCount = this.countResults(values)
             if (valueCount == addressCount) {
               debugResult('Finished ' + id)
               resolve(values)

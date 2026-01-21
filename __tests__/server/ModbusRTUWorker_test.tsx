@@ -1,9 +1,9 @@
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import { ModbusRTUWorker } from '../../src/server/modbusRTUworker'
 import { IModbusAPI } from '../../src/server/modbusWorker'
 import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue'
-import { ModbusRegisterType } from '../../src/specification.shared'
-import { ModbusTasks } from '../../src/server.shared'
+import { ModbusRegisterType } from '../../src/shared/specification'
+import { ModbusTasks } from '../../src/shared/server'
 import { Itest, ModbusRTUWorkerForTest, FakeBus } from './testhelper'
 
 function enqueue(queue: ModbusRTUQueue, num: number, test: Itest) {
@@ -41,13 +41,15 @@ function enqueueWrite(queue: ModbusRTUQueue, num: number, test: Itest) {
     { task: ModbusTasks.specification, errorHandling: {} }
   )
 }
-it('Sequential read successful processing', (done) => {
-  let queue = new ModbusRTUQueue()
-  let test: Itest = {}
+it('Sequential read successful processing', async () => {
+  const queue = new ModbusRTUQueue()
+  const test: Itest = {}
   enqueue(queue, 199, test) //CRC
   enqueue(queue, 200, test) //Timeout
 
-  test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, done, 'read')
+  const finished = new Promise<void>((resolve) => {
+    test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, resolve, 'read')
+  })
   test.worker.expectedReconnected = false
   test.worker.expectedAPIcallCount = 1
   test.worker.expectedAPIwroteDataCount = 0
@@ -55,12 +57,13 @@ it('Sequential read successful processing', (done) => {
   test.worker.run()
   // Hopefully, the run process resetted the queue before next queue entry is added
   enqueue(queue, 201, test)
+  await finished
 })
 
 describe('ModbusRTUWorker read', () => {
-  it('Sequential read error processing', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+  it('Sequential read error processing', async () => {
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 199 },
@@ -85,16 +88,18 @@ describe('ModbusRTUWorker read', () => {
       },
       { task: ModbusTasks.specification, errorHandling: { retry: true } }
     )
-
-    test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, done, 'read')
+    const finished = new Promise<void>((resolve) => {
+      test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, resolve, 'read')
+    })
     test.worker.expectedReconnected = true
     test.worker.expectedAPIcallCount = 0
     test.worker.run()
+    await finished
   })
-  it('Sequential read error Illegal Function code', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
-    let fb = new FakeBus()
+  it('Sequential read error Illegal Function code', async () => {
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
+    const fb = new FakeBus()
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 198 },
@@ -106,15 +111,17 @@ describe('ModbusRTUWorker read', () => {
       },
       { task: ModbusTasks.specification, errorHandling: {} }
     )
-    test.worker = new ModbusRTUWorkerForTest(fb, queue, done, 'read')
+    const finished = new Promise<void>((resolve) => {
+      test.worker = new ModbusRTUWorkerForTest(fb, queue, resolve, 'read')
+    })
     test.worker.expectedReconnected = false
     test.worker.expectedAPIcallCount = 199
     test.worker.run()
+    await finished
   })
-
-  it('Sequential read error processing with reconnect', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+  it('Sequential read error processing with reconnect', async () => {
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 199 },
@@ -127,16 +134,17 @@ describe('ModbusRTUWorker read', () => {
       },
       { task: ModbusTasks.specification, errorHandling: { retry: true } }
     )
-
-    test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, done, 'read')
+    const finished = new Promise<void>((resolve) => {
+      test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, resolve, 'read')
+    })
     test.worker.expectedReconnected = true
     test.worker.expectedAPIcallCount = 0
     test.worker.run()
+    await finished
   })
-
-  it('Sequential read error processing with split', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+  it('Sequential read error processing with split', async () => {
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 202, length: 3 },
@@ -149,16 +157,17 @@ describe('ModbusRTUWorker read', () => {
       },
       { task: ModbusTasks.specification, errorHandling: { retry: true, split: true } }
     )
-
-    test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, done, 'read')
+    const finished = new Promise<void>((resolve) => {
+      test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, resolve, 'read')
+    })
     test.worker.expectedReconnected = true
     test.worker.expectedAPIcallCount = 0
     test.worker.run()
+    await finished
   })
-
-  it('Sequential read error processing: Timeout', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+  it('Sequential read error processing: Timeout', async () => {
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     queue.enqueue(
       1,
       { registerType: ModbusRegisterType.Coils, address: 200 },
@@ -172,11 +181,13 @@ describe('ModbusRTUWorker read', () => {
       },
       { task: ModbusTasks.specification, errorHandling: { retry: true } }
     )
-
-    test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, done, 'readExcpetion')
+    const finished = new Promise<void>((resolve) => {
+      test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, resolve, 'readExcpetion')
+    })
     test.worker.expectedReconnected = false
     test.worker.expectedAPIcallCount = 0
     test.worker.run()
+    await finished
   })
 })
 function genCacheEntry(
@@ -211,9 +222,9 @@ class RTUWorkerCached extends ModbusRTUWorker {
 }
 describe('ModbusRTUWorker Cache', () => {
   it('updateCacheError', () => {
-    let queue = new ModbusRTUQueue()
-    let worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
-    let e199 = genCacheEntry(
+    const queue = new ModbusRTUQueue()
+    const worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
+    const e199 = genCacheEntry(
       199,
       (qe, result) => {},
       () => {}
@@ -234,21 +245,21 @@ describe('ModbusRTUWorker Cache', () => {
     expect(worker['cache'].get(1)!.holdingRegisters.get(199)!.error).toBeDefined()
   })
   it('cleanupCache', () => {
-    let queue = new ModbusRTUQueue()
-    let worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
-    let e199 = genCacheEntry(
+    const queue = new ModbusRTUQueue()
+    const worker = new RTUWorkerCached(new FakeBus(), queue, () => {})
+    const e199 = genCacheEntry(
       199,
       (qe, result) => {},
       () => {}
     )
     // expired entry
-    let e200 = genCacheEntry(
+    const e200 = genCacheEntry(
       200,
       (qe, result) => {},
       () => {}
     )
     worker['updateCache'](e199, [-199])
-    let cd = worker.currentDate
+    const cd = worker.currentDate
     worker.currentDate = new Date(2025, 1, 1, 5 - 13, 0, 0, 0)
     worker['updateCache'](e200, [-200])
     worker.currentDate = cd
@@ -256,11 +267,11 @@ describe('ModbusRTUWorker Cache', () => {
     expect(worker['cache'].get(1)!.holdingRegisters.get(199)!.data).toBeDefined()
     expect(worker['cache'].get(1)!.holdingRegisters.get(200)).toBeUndefined()
   })
-  it('Read from cache', (done) => {
-    let queue = new ModbusRTUQueue()
+  it('Read from cache', async () => {
+    const queue = new ModbusRTUQueue()
     let onResultCallCount = 0
     let onErrorCallCount = 0
-    let e199 = genCacheEntry(
+    const e199 = genCacheEntry(
       199,
       (qe, result) => {
         onResultCallCount++
@@ -270,7 +281,7 @@ describe('ModbusRTUWorker Cache', () => {
         onErrorCallCount++
       }
     )
-    let e200 = genCacheEntry(
+    const e200 = genCacheEntry(
       200,
       (qe, result) => {
         onResultCallCount++
@@ -280,7 +291,7 @@ describe('ModbusRTUWorker Cache', () => {
         onErrorCallCount++
       }
     )
-    let e201 = genCacheEntry(
+    const e201 = genCacheEntry(
       201,
       (qe, result) => {
         onResultCallCount++
@@ -290,33 +301,38 @@ describe('ModbusRTUWorker Cache', () => {
         onErrorCallCount++
       }
     )
-    let worker = new RTUWorkerCached(new FakeBus(), queue, () => {
-      expect(onResultCallCount).toBe(2)
-      expect(onErrorCallCount).toBe(1)
-      done()
+    const finished = new Promise<void>((resolve) => {
+      const worker = new RTUWorkerCached(new FakeBus(), queue, () => {
+        expect(onResultCallCount).toBe(2)
+        expect(onErrorCallCount).toBe(1)
+        resolve()
+      })
+      worker['updateCache'](e199, [2])
+      worker['updateCacheError'](e200, new Error('Error'))
+      worker['updateCache'](e201, [3])
+      queue.enqueueEntry(e199)
+      queue.enqueueEntry(e200)
+      queue.enqueueEntry(e201)
+      worker.run()
     })
-    worker['updateCache'](e199, [2])
-    worker['updateCacheError'](e200, new Error('Error'))
-    worker['updateCache'](e201, [3])
-    queue.enqueueEntry(e199)
-    queue.enqueueEntry(e200)
-    queue.enqueueEntry(e201)
-    worker.run()
+    await finished
   })
 })
 describe('ModbusRTUWorker write', () => {
-  it('Sequential read and write successful processing', (done) => {
-    let queue = new ModbusRTUQueue()
-    let test: Itest = {}
+  it('Sequential read and write successful processing', async () => {
+    const queue = new ModbusRTUQueue()
+    const test: Itest = {}
     enqueue(queue, 199, test)
     enqueueWrite(queue, 200, test)
-
-    test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, done, 'write')
+    const finished = new Promise<void>((resolve) => {
+      test.worker = new ModbusRTUWorkerForTest(new FakeBus(), queue, resolve, 'write')
+    })
     test.worker.expectedReconnected = false
     test.worker.expectedAPIcallCount = 1
     test.worker.expectedAPIwroteDataCount = 2
     test.worker.run()
     // Hopefully, the run process resetted the queue before next queue entry is added
     enqueueWrite(queue, 201, test)
+    await finished
   })
 })

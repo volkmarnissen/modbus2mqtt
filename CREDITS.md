@@ -1,15 +1,19 @@
 # Credits
+
 This application uses Open Source components. You can find the source code of their open source projects along with license information below. We acknowledge and are grateful to these developers for their contributions to open source.
 
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 @octokit/rest
 
 ### Source
+
 https://github.com/octokit/rest.js
 
 ### License
+
 The MIT License
 
 Copyright (c) 2012 Cloud9 IDE, Inc. (Mike de Boer)
@@ -33,16 +37,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 adm-zip
 
 ### Source
+
 https://github.com/cthackers/adm-zip
 
 ### License
+
 MIT License
 
 Copyright (c) 2012 Another-D-Mention Software and other contributors
@@ -65,16 +71,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 assert
 
 ### Source
+
 https://github.com/browserify/commonjs-assert
 
 ### License
+
 Copyright Joyent, Inc. and other Node contributors. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to
@@ -94,16 +102,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 async-mutex
 
 ### Source
+
 https://github.com/DirtyHairy/async-mutex
 
 ### License
+
 The MIT License (MIT)
 
 Copyright (c) 2016 Christian Speckner <cnspeckn@googlemail.com>
@@ -126,18 +136,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 bcryptjs
 
 ### Source
+
 https://github.com/dcodeIO/bcrypt.js
 
 ### License
-bcrypt.js
----------
+
+## bcrypt.js
+
 Copyright (c) 2012 Nevins Bartolomeo <nevins.bartolomeo@gmail.com>
 Copyright (c) 2012 Shane Girish <shaneGirish@gmail.com>
 Copyright (c) 2025 Daniel Wirtz <dcode@dcode.io>
@@ -145,6 +157,7 @@ Copyright (c) 2025 Daniel Wirtz <dcode@dcode.io>
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
+
 1. Redistributions of source code must retain the above copyright
    notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
@@ -164,16 +177,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 body-parser
 
 ### Source
+
 https://github.com/expressjs/body-parser
 
 ### License
+
 (The MIT License)
 
 Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>
@@ -198,16 +213,18 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 bootstrap
 
 ### Source
+
 https://github.com/twbs/bootstrap
 
 ### License
+
 The MIT License (MIT)
 
 Copyright (c) 2011-2025 The Bootstrap Authors
@@ -230,16 +247,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 commander
 
 ### Source
+
 https://github.com/tj/commander.js
 
 ### License
+
 (The MIT License)
 
 Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
@@ -263,16 +282,18 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 cors
 
 ### Source
+
 https://github.com/expressjs/cors
 
 ### License
+
 (The MIT License)
 
 Copyright (c) 2013 Troy Goode <troygoode@gmail.com>
@@ -296,16 +317,18 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 debug
 
 ### Source
+
 https://github.com/debug-js/debug
 
 ### License
+
 (The MIT License)
 
 Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>
@@ -326,17 +349,18 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMA
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 express
 
 ### Source
+
 https://github.com/expressjs/express
 
 ### License
+
 (The MIT License)
 
 Copyright (c) 2009-2014 TJ Holowaychuk <tj@vision-media.ca>
@@ -362,16 +386,18 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 express-fileupload
 
 ### Source
+
 https://github.com/richardgirges/express-fileupload
 
 ### License
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Richard Girges
@@ -394,18 +420,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 http-server
 
 ### Source
+
 https://github.com/http-party/http-server
 
 ### License
-Copyright (c) 2011-2025 Charlie Robbins, Marak Squires, Jade Michael Thornton and the Contributors.
+
+Copyright (c) 2011-2026 Charlie Robbins, Marak Squires, Jade Michael Thornton and the Contributors.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -426,30 +453,32 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 jsonwebtoken
 
 ### Source
+
 https://github.com/auth0/node-jsonwebtoken
 
 ### License
+
 The MIT License (MIT)
- 
+
 Copyright (c) 2015 Auth0, Inc. <support@auth0.com> (http://auth0.com)
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -458,16 +487,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 modbus-serial
 
 ### Source
+
 https://github.com/yaacov/node-modbus-serial
 
 ### License
+
 Copyright (c) 2015-2017, Yaacov Zamir <kobi.zamir@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -482,23 +513,23 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 mqtt
 
 ### Source
+
 https://github.com/mqttjs/MQTT.js
 
 ### License
-The MIT License (MIT)
-=====================
 
-Copyright (c) 2015-2016 MQTT.js contributors
----------------------------------------
+# The MIT License (MIT)
 
-*MQTT.js contributors listed at <https://github.com/mqttjs/MQTT.js#contributors>*
+## Copyright (c) 2015-2016 MQTT.js contributors
+
+_MQTT.js contributors listed at <https://github.com/mqttjs/MQTT.js#contributors>_
 
 Copyright 2011-2014 by Adam Rudd
 
@@ -508,16 +539,18 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 multer
 
 ### Source
+
 https://github.com/expressjs/multer
 
 ### License
+
 Copyright (c) 2014 Hage Yaapa <[http://www.hacksparrow.com](http://www.hacksparrow.com)>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -536,16 +569,18 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 node-html-parser
 
 ### Source
+
 https://github.com/taoqf/node-fast-html-parser
 
 ### License
+
 Copyright 2019 Tao Qiufeng
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -554,22 +589,25 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 rxjs
 
 ### Source
+
 https://github.com/reactivex/rxjs
 
 ### License
+
                                Apache License
                          Version 2.0, January 2004
                       http://www.apache.org/licenses/
 
- TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
- 1. Definitions.
+1.  Definitions.
 
     "License" shall mean the terms and conditions for use, reproduction,
     and distribution as defined by Sections 1 through 9 of this document.
@@ -628,14 +666,14 @@ https://github.com/reactivex/rxjs
     on behalf of whom a Contribution has been received by Licensor and
     subsequently incorporated within the Work.
 
- 2. Grant of Copyright License. Subject to the terms and conditions of
+2.  Grant of Copyright License. Subject to the terms and conditions of
     this License, each Contributor hereby grants to You a perpetual,
     worldwide, non-exclusive, no-charge, royalty-free, irrevocable
     copyright license to reproduce, prepare Derivative Works of,
     publicly display, publicly perform, sublicense, and distribute the
     Work and such Derivative Works in Source or Object form.
 
- 3. Grant of Patent License. Subject to the terms and conditions of
+3.  Grant of Patent License. Subject to the terms and conditions of
     this License, each Contributor hereby grants to You a perpetual,
     worldwide, non-exclusive, no-charge, royalty-free, irrevocable
     (except as stated in this section) patent license to make, have made,
@@ -651,39 +689,39 @@ https://github.com/reactivex/rxjs
     granted to You under this License for that Work shall terminate
     as of the date such litigation is filed.
 
- 4. Redistribution. You may reproduce and distribute copies of the
+4.  Redistribution. You may reproduce and distribute copies of the
     Work or Derivative Works thereof in any medium, with or without
     modifications, and in Source or Object form, provided that You
     meet the following conditions:
 
     (a) You must give any other recipients of the Work or
-        Derivative Works a copy of this License; and
+    Derivative Works a copy of this License; and
 
     (b) You must cause any modified files to carry prominent notices
-        stating that You changed the files; and
+    stating that You changed the files; and
 
     (c) You must retain, in the Source form of any Derivative Works
-        that You distribute, all copyright, patent, trademark, and
-        attribution notices from the Source form of the Work,
-        excluding those notices that do not pertain to any part of
-        the Derivative Works; and
+    that You distribute, all copyright, patent, trademark, and
+    attribution notices from the Source form of the Work,
+    excluding those notices that do not pertain to any part of
+    the Derivative Works; and
 
     (d) If the Work includes a "NOTICE" text file as part of its
-        distribution, then any Derivative Works that You distribute must
-        include a readable copy of the attribution notices contained
-        within such NOTICE file, excluding those notices that do not
-        pertain to any part of the Derivative Works, in at least one
-        of the following places: within a NOTICE text file distributed
-        as part of the Derivative Works; within the Source form or
-        documentation, if provided along with the Derivative Works; or,
-        within a display generated by the Derivative Works, if and
-        wherever such third-party notices normally appear. The contents
-        of the NOTICE file are for informational purposes only and
-        do not modify the License. You may add Your own attribution
-        notices within Derivative Works that You distribute, alongside
-        or as an addendum to the NOTICE text from the Work, provided
-        that such additional attribution notices cannot be construed
-        as modifying the License.
+    distribution, then any Derivative Works that You distribute must
+    include a readable copy of the attribution notices contained
+    within such NOTICE file, excluding those notices that do not
+    pertain to any part of the Derivative Works, in at least one
+    of the following places: within a NOTICE text file distributed
+    as part of the Derivative Works; within the Source form or
+    documentation, if provided along with the Derivative Works; or,
+    within a display generated by the Derivative Works, if and
+    wherever such third-party notices normally appear. The contents
+    of the NOTICE file are for informational purposes only and
+    do not modify the License. You may add Your own attribution
+    notices within Derivative Works that You distribute, alongside
+    or as an addendum to the NOTICE text from the Work, provided
+    that such additional attribution notices cannot be construed
+    as modifying the License.
 
     You may add Your own copyright statement to Your modifications and
     may provide additional or different license terms and conditions
@@ -692,7 +730,7 @@ https://github.com/reactivex/rxjs
     reproduction, and distribution of the Work otherwise complies with
     the conditions stated in this License.
 
- 5. Submission of Contributions. Unless You explicitly state otherwise,
+5.  Submission of Contributions. Unless You explicitly state otherwise,
     any Contribution intentionally submitted for inclusion in the Work
     by You to the Licensor shall be under the terms and conditions of
     this License, without any additional terms or conditions.
@@ -700,12 +738,12 @@ https://github.com/reactivex/rxjs
     the terms of any separate license agreement you may have executed
     with Licensor regarding such Contributions.
 
- 6. Trademarks. This License does not grant permission to use the trade
+6.  Trademarks. This License does not grant permission to use the trade
     names, trademarks, service marks, or product names of the Licensor,
     except as required for reasonable and customary use in describing the
     origin of the Work and reproducing the content of the NOTICE file.
 
- 7. Disclaimer of Warranty. Unless required by applicable law or
+7.  Disclaimer of Warranty. Unless required by applicable law or
     agreed to in writing, Licensor provides the Work (and each
     Contributor provides its Contributions) on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
@@ -715,7 +753,7 @@ https://github.com/reactivex/rxjs
     appropriateness of using or redistributing the Work and assume any
     risks associated with Your exercise of permissions under this License.
 
- 8. Limitation of Liability. In no event and under no legal theory,
+8.  Limitation of Liability. In no event and under no legal theory,
     whether in tort (including negligence), contract, or otherwise,
     unless required by applicable law (such as deliberate and grossly
     negligent acts) or agreed to in writing, shall any Contributor be
@@ -727,7 +765,7 @@ https://github.com/reactivex/rxjs
     other commercial damages or losses), even if such Contributor
     has been advised of the possibility of such damages.
 
- 9. Accepting Warranty or Additional Liability. While redistributing
+9.  Accepting Warranty or Additional Liability. While redistributing
     the Work or Derivative Works thereof, You may choose to offer,
     and charge a fee for, acceptance of support, warranty, indemnity,
     or other liability obligations and/or rights consistent with this
@@ -738,9 +776,9 @@ https://github.com/reactivex/rxjs
     incurred by, or claims asserted against, such Contributor by reason
     of your accepting any such warranty or additional liability.
 
- END OF TERMS AND CONDITIONS
+END OF TERMS AND CONDITIONS
 
- APPENDIX: How to apply the Apache License to your work.
+APPENDIX: How to apply the Apache License to your work.
 
     To apply the Apache License to your work, attach the following
     boilerplate notice, with the fields enclosed by brackets "[]"
@@ -751,36 +789,37 @@ https://github.com/reactivex/rxjs
     same "printed page" as the copyright notice for easier
     identification within third-party archives.
 
-Copyright (c) 2015-2025 
-    Ben Lesh <ben@benlesh.com>
-    Google, Inc.
-    Netflix, Inc.
-    Microsoft Corp.
-    and contributors
+Copyright (c) 2015-2025
+Ben Lesh <ben@benlesh.com>
+Google, Inc.
+Netflix, Inc.
+Microsoft Corp.
+and contributors
 
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
      http://www.apache.org/licenses/LICENSE-2.0
 
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 serve-static
 
 ### Source
+
 https://github.com/expressjs/serve-static
 
 ### License
+
 (The MIT License)
 
 Copyright (c) 2010 Sencha Inc.
@@ -807,19 +846,21 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 url-parse
 
 ### Source
+
 https://github.com/unshiftio/url-parse
 
 ### License
+
 The MIT License (MIT)
 
-Copyright (c) 2015 Unshift.io, Arnout Kazemier,  the Contributors.
+Copyright (c) 2015 Unshift.io, Arnout Kazemier, the Contributors.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -839,17 +880,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
-
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 winston
 
 ### Source
+
 https://github.com/winstonjs/winston
 
 ### License
+
 Copyright (c) 2010 Charlie Robbins
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -870,15 +912,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
--------------------------------------------------------------------------------
+---
 
 ## Project
+
 yaml
 
 ### Source
+
 https://github.com/eemeli/yaml
 
 ### License
+
 Copyright Eemeli Aro <eemeli@gmail.com>
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
@@ -893,5 +938,4 @@ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
 TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
-
--------------------------------------------------------------------------------
+---

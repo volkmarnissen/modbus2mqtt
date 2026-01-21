@@ -3,9 +3,9 @@ import Debug from 'debug'
 import { HttpServer as HttpServer } from '../../src/server/httpserver'
 import { Config } from '../../src/server/config'
 import supertest from 'supertest'
-import { ImodbusSpecification } from '../../src/specification.shared'
+import { ImodbusSpecification } from '../../src/shared/specification'
 import { Bus } from '../../src/server/bus'
-import { Slave } from '../../src/server.shared'
+import { Slave } from '../../src/shared/server'
 import { LogLevelEnum, Logger } from '../../src/specification'
 import { ConfigSpecification } from '../../src/specification'
 import { join } from 'path'
@@ -14,8 +14,8 @@ import { Observable, Subject } from 'rxjs'
 import { initBussesForTest } from './configsbase'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
 import { setConfigsDirsForTest } from './configsbase'
-let mockReject = false
-let debug = Debug('testhttpserver')
+const mockReject = false
+const debug = Debug('testhttpserver')
 const mqttService = {
   host: 'core-mosquitto',
   port: 1883,
@@ -31,12 +31,12 @@ function executeHassioGetRequest<T>(_url: string, next: (_dev: T) => void, rejec
   else next({ data: mqttService } as T)
 }
 
-let log = new Logger('httpserverTest')
+const log = new Logger('httpserverTest')
 setConfigsDirsForTest()
 new ConfigSpecification().readYaml()
 Config['executeHassioGetRequest'] = executeHassioGetRequest
 
-var httpServer: HttpServer
+let httpServer: HttpServer
 
 function mockedAuthorization(_param: any): Promise<any> {
   return new Promise<any>((resolve) => {
@@ -51,7 +51,7 @@ const oldAuthenticate: (req: any, res: any, next: () => void) => void = HttpServ
 beforeAll(() => {
   return new Promise<void>((resolve, reject) => {
     setConfigsDirsForTest()
-    let cfg = new Config()
+    const cfg = new Config()
     cfg.readYamlAsync().then(() => {
       ConfigBus.readBusses()
       initBussesForTest()
@@ -77,10 +77,10 @@ class MockMqttSubsctription {
     return this.slave
   }
   readModbus(slave: Slave): Observable<ImodbusSpecification> | undefined {
-    let bus = Bus.getBus(slave.getBusId())
+    const bus = Bus.getBus(slave.getBusId())
     if (bus) {
-      let sub = new Subject<ImodbusSpecification>()
-      let f = async function (sub: Subject<ImodbusSpecification>) {
+      const sub = new Subject<ImodbusSpecification>()
+      const f = async function (sub: Subject<ImodbusSpecification>) {
         setTimeout(() => {
           sub.next(slave.getSpecification() as ImodbusSpecification)
         }, 20)
@@ -105,12 +105,12 @@ class MockMqttSubsctription {
   }
 }
 function prepareMqttDiscover(): MockMqttSubsctription {
-  let mockDiscover = new MockMqttSubsctription()
+  const mockDiscover = new MockMqttSubsctription()
   MqttSubscriptions['instance'] = mockDiscover as any as MqttSubscriptions
   return mockDiscover
 }
 it('GET state topic', (done) => {
-  let mockDiscover = prepareMqttDiscover()
+  const mockDiscover = prepareMqttDiscover()
 
   supertest(httpServer['app'])
     .get('/' + mockDiscover.slave.getStateTopic())
@@ -126,9 +126,9 @@ it('GET state topic', (done) => {
 })
 
 test('GET command Entity topic', (done) => {
-  let mockDiscover = prepareMqttDiscover()
+  const mockDiscover = prepareMqttDiscover()
   ConfigBus.addSpecification(mockDiscover.slave['slave'])
-  let spec = mockDiscover.slave.getSpecification()
+  const spec = mockDiscover.slave.getSpecification()
   let url = '/' + mockDiscover.slave.getEntityCommandTopic(spec!.entities[2] as any)!.commandTopic
   url = url + '20.2'
   supertest(httpServer['app'])
@@ -141,8 +141,8 @@ test('GET command Entity topic', (done) => {
     })
 })
 test('POST command topic', (done) => {
-  let mockDiscover = prepareMqttDiscover()
-  let url = '/' + mockDiscover.slave.getCommandTopic()
+  const mockDiscover = prepareMqttDiscover()
+  const url = '/' + mockDiscover.slave.getCommandTopic()
   supertest(httpServer['app'])
     .post(url)
     .send({ hotwatertargettemperature: 20.2 })

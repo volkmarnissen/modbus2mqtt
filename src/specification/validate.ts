@@ -1,13 +1,12 @@
-import { IbaseSpecification, Imessage, SPECIFICATION_VERSION } from '../specification.shared'
-import { LogLevelEnum, Logger } from './log'
+import { IbaseSpecification, Imessage, SPECIFICATION_VERSION } from '../shared/specification/index.js'
+import { LogLevelEnum, Logger } from './log.js'
 import { Command } from 'commander'
-import { ConfigSpecification } from './configspec'
+import { ConfigSpecification } from './configspec.js'
 import * as fs from 'fs'
-import { M2mGithubValidate } from './m2mGithubValidate'
-import path from 'path'
-import { M2mSpecification } from './m2mspecification'
-import { Octokit } from '@octokit/rest'
+import { M2mGithubValidate } from './m2mGithubValidate.js'
+import { M2mSpecification } from './m2mspecification.js'
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface ProcessEnv {
       GITHUB_TOKEN: string
@@ -17,7 +16,7 @@ declare global {
   }
 }
 
-let cli = new Command()
+const cli = new Command()
 cli.version(SPECIFICATION_VERSION)
 cli.usage('--config <config-dir> --data <data-dir> [--pr_number <pull request number>]')
 cli.option('-c, --config <config-dir>', 'set directory for add on configuration')
@@ -28,7 +27,7 @@ cli.option('-o, --pr_owner <owner>', 'Creator of the pull request')
 cli.parse(process.argv)
 let pr_number: number | undefined
 let pr_owner: string | undefined
-let options = cli.opts()
+const options = cli.opts()
 if (options['config']) {
   ConfigSpecification.configDir = options['config']
 } else {
@@ -46,12 +45,14 @@ if (options['pr_number']) {
 if (options['pr_owner']) {
   pr_owner = options['pr_owner']
 }
-let log = new Logger('validate')
+const log = new Logger('validate')
 
-function logAndExit(e: any) {
+function logAndExit(e: unknown) {
   let step = ''
-  if (e.step) step = e.step
-  log.log(LogLevelEnum.error, step + ' ' + e.message)
+  const err = e as { step?: string; message?: string }
+  if (err.step) step = err.step
+  const msg = err.message ?? String(e)
+  log.log(LogLevelEnum.error, step + ' ' + msg)
   process.exit(5)
 }
 
@@ -72,13 +73,13 @@ function validate() {
     process.exit(2)
   }
   log.log(LogLevelEnum.info, 'pull request: ' + pr_number)
-  let gh = new M2mGithubValidate(process.env.GITHUB_TOKEN)
+  const gh = new M2mGithubValidate(process.env.GITHUB_TOKEN)
   gh.listPullRequestFiles(pr_owner, pr_number)
     .then((data) => {
-      let pr_number = data.pr_number
-      let s = new ConfigSpecification()
+      const pr_number = data.pr_number
+      const s = new ConfigSpecification()
       s.readYaml()
-      let messages: Imessage[] = []
+      const messages: Imessage[] = []
       let specnames: string = ''
       let lastSpec: IbaseSpecification | undefined
       let specsOnly = true
@@ -86,11 +87,11 @@ function validate() {
         if (!fname.startsWith('specifications/')) {
           specsOnly = false
         } else if (!fname.startsWith('specifications/files/')) {
-          let specname = fname.substring('specifications/'.length)
+          const specname = fname.substring('specifications/'.length)
           specnames = specnames + ', ' + specname
-          let fs = ConfigSpecification.getSpecificationByFilename(specname)
+          const fs = ConfigSpecification.getSpecificationByFilename(specname)
           if (fs) {
-            let m2mSpec = new M2mSpecification(fs)
+            const m2mSpec = new M2mSpecification(fs)
             lastSpec = fs
             messages.concat(m2mSpec.validate('en'))
           }
@@ -115,9 +116,7 @@ function validate() {
               logAndExit(e)
             })
         } else if (lastSpec) {
-          let m: string = ''
-
-          let errors = M2mSpecification.messages2Text(lastSpec, messages)
+          const errors = M2mSpecification.messages2Text(lastSpec, messages)
           log.log(
             LogLevelEnum.error,
             'not all specifications of \\space ' + specnames + '\\space are valid\\space Proceed manually'

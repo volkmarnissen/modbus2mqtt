@@ -1,18 +1,20 @@
 import Debug from 'debug'
 import * as http from 'http'
 import { Application, NextFunction, Request } from 'express'
+import type { ParamsDictionary } from 'express-serve-static-core'
+import type { ParsedQs } from 'qs'
 import express from 'express'
-import * as bodyparser from 'body-parser'
-import { Config, MqttValidationResult } from './config'
-import { HttpErrorsEnum } from '../specification.shared'
+import bodyParser from 'body-parser'
+import { Config, MqttValidationResult } from './config.js'
+import { HttpErrorsEnum } from '../shared/specification/index.js'
 import { join, basename } from 'path'
 import { parse } from 'node-html-parser'
 import * as fs from 'fs'
-import { LogLevelEnum, Logger } from '../specification'
+import { LogLevelEnum, Logger } from '../specification/index.js'
 
-import { apiUri } from '../server.shared'
+import { apiUri } from '../shared/server/index.js'
 import { AddressInfo } from 'net'
-import { MqttSubscriptions } from './mqttsubscriptions'
+import { MqttSubscriptions } from './mqttsubscriptions.js'
 
 interface IAddonInfo {
   slug: string
@@ -107,23 +109,50 @@ export class HttpServerBase {
     })
     if (this.statics.size > 0) this.languages = Array.from(this.statics.keys())
   }
-  get(url: apiUri, func: (req: express.Request, response: express.Response) => void): void {
+  get<
+    P extends ParamsDictionary = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery extends ParsedQs = ParsedQs,
+    Locals extends Record<string, unknown> = Record<string, unknown>,
+  >(
+    url: apiUri,
+    func: (req: express.Request<P, ResBody, ReqBody, ReqQuery, Locals>, response: express.Response<ResBody, Locals>) => void
+  ): void {
     debugUrl('start get' + url)
-    this.app.get(url, (req: express.Request, response: express.Response) => {
+    this.app.get<P, ResBody, ReqBody, ReqQuery, Locals>(url, (req, response) => {
       debug(req.method + ': ' + req.originalUrl)
       func(req, response)
     })
   }
-  post(url: apiUri, func: (req: express.Request, response: express.Response) => void): void {
+  post<
+    P extends ParamsDictionary = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery extends ParsedQs = ParsedQs,
+    Locals extends Record<string, unknown> = Record<string, unknown>,
+  >(
+    url: apiUri,
+    func: (req: express.Request<P, ResBody, ReqBody, ReqQuery, Locals>, response: express.Response<ResBody, Locals>) => void
+  ): void {
     debugUrl('start post' + url)
-    this.app.post(url, (req: express.Request, response: express.Response) => {
+    this.app.post<P, ResBody, ReqBody, ReqQuery, Locals>(url, (req, response) => {
       debug(req.method + ': ' + req.originalUrl)
       func(req, response)
     })
   }
-  delete(url: apiUri, func: (req: express.Request, response: express.Response) => void): void {
+  delete<
+    P extends ParamsDictionary = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery extends ParsedQs = ParsedQs,
+    Locals extends Record<string, unknown> = Record<string, unknown>,
+  >(
+    url: apiUri,
+    func: (req: express.Request<P, ResBody, ReqBody, ReqQuery, Locals>, response: express.Response<ResBody, Locals>) => void
+  ): void {
     debugUrl('start delete' + url)
-    this.app.delete(url, (req: express.Request, response: express.Response) => {
+    this.app.delete<P, ResBody, ReqBody, ReqQuery, Locals>(url, (req, response) => {
       debug(req.method + ': ' + req.originalUrl)
       func(req, response)
     })
@@ -213,8 +242,7 @@ export class HttpServerBase {
             resolve()
           }
         )
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (e) {
+      } catch {
         this.initBase()
         resolve()
       }
@@ -273,8 +301,7 @@ export class HttpServerBase {
       }
       next()
       return
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
+    } catch {
       res.status(401).setHeader('Content-Type', 'text/html').send('No or invalid index.html file ')
     }
   }
@@ -286,8 +313,8 @@ export class HttpServerBase {
     this.initStatics()
 
     //this.app.use(cors);
-    this.app.use(bodyparser.json())
-    this.app.use(bodyparser.urlencoded({ extended: true }))
+    this.app.use(bodyParser.json())
+    this.app.use(bodyParser.urlencoded({ extended: true }))
     this.app.use(express.json())
     this.app.use(function (_undefined: unknown, res: http.ServerResponse, next: NextFunction) {
       //            res.setHeader('charset', 'utf-8')

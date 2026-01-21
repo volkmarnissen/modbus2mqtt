@@ -1,10 +1,6 @@
-import { join } from 'path'
-import * as fs from 'fs'
-import { M2mGitHub, githubPublicNames } from './m2mgithub'
+import { githubPublicNames } from './m2mgithub.js'
 import { Octokit } from '@octokit/rest'
-let path = require('path')
-
-const debug = require('debug')('m2mgithubvalidate')
+import path from 'path'
 export interface IpullRequest {
   files?: string[]
   merged: boolean
@@ -29,7 +25,7 @@ export class M2mGithubValidate {
         pull_number: pull_number,
       })
         .then((files) => {
-          let f: string[] = []
+          const f: string[] = []
           files.data.forEach((file) => {
             if (['added', 'modified', 'renamed', 'copied', 'changed'].includes(file.status)) f.push(file.filename)
           })

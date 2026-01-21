@@ -1,7 +1,7 @@
 import { Mutex } from 'async-mutex'
 import Debug from 'debug'
 import { Config } from '../../src/server/config'
-import { ImqttClient } from '../../src/server.shared'
+import { ImqttClient } from '../../src/shared/server'
 import { ConfigBus } from '../../src/server/configbus'
 import { Bus } from '../../src/server/bus'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
@@ -11,13 +11,13 @@ const configDir = '__tests__/server/config-dir'
 const dataDir = '__tests__/server/data-dir'
 const backendTCPConfigDir = '__tests__/server/backendTCP/config-dir'
 const backendTCPDataDir = '__tests__/server/backendTCP/data-dir'
-export let singleMutex = new Mutex()
+export const singleMutex = new Mutex()
 export enum FakeModes {
   Poll,
   Poll2,
   Discovery,
 }
-let debug = Debug('configsbase')
+const debug = Debug('configsbase')
 export function setConfigsDirsForTest(): void {
   ConfigSpecification.configDir = configDir
   ConfigSpecification.dataDir = dataDir
@@ -77,13 +77,13 @@ export class FakeMqtt {
 export function initBussesForTest() {
   new ConfigSpecification().readYaml()
   ConfigBus.readBusses()
-  let ibs = ConfigBus.getBussesProperties()
+  const ibs = ConfigBus.getBussesProperties()
   if (!Bus['busses']) Bus['busses'] = []
   ibs.forEach((ib) => {
-    let bus = Bus['busses']!.find((bus) => bus.getId() == ib.busId)
+    const bus = Bus['busses']!.find((bus) => bus.getId() == ib.busId)
     if (bus !== undefined) bus.properties = ib
     else {
-      let b = new Bus(ib)
+      const b = new Bus(ib)
       b.getSlaves().forEach((s) => {
         s.evalTimeout = true
       })

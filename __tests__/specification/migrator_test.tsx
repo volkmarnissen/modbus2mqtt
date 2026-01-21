@@ -1,7 +1,7 @@
 import { expect, it } from '@jest/globals'
 import { ConfigSpecification } from '../../src/specification'
 import { configDir, dataDir } from './configsbase'
-import { SPECIFICATION_VERSION } from '../../src/specification.shared'
+import { SPECIFICATION_VERSION } from '../../src/shared/specification'
 
 ConfigSpecification['configDir'] = configDir
 ConfigSpecification['dataDir'] = dataDir
@@ -9,7 +9,7 @@ ConfigSpecification['dataDir'] = dataDir
 it('check device type status', () => {
   const configSpec = new ConfigSpecification()
   configSpec.readYaml()
-  let spec = ConfigSpecification.getSpecificationByFilename('dimplexpco5')
+  const spec = ConfigSpecification.getSpecificationByFilename('dimplexpco5')
   expect(spec?.testdata.holdingRegisters?.length).toBeGreaterThan(0)
   spec?.entities.forEach((e) => {
     expect(e.converter.indexOf('sensor')).toBe(-1)

@@ -1,10 +1,10 @@
 import { expect, it, beforeAll, afterAll } from '@jest/globals'
 import { startModbusTCPserver, stopModbusTCPServer } from '../../src/server/modbusTCPserver'
 
-import { HttpErrorsEnum, ImodbusSpecification } from '../../src/specification.shared'
+import { HttpErrorsEnum, ImodbusSpecification } from '../../src/shared/specification'
 import { FakeMqtt, FakeModes, setConfigsDirsBackendTCPForTest, initBussesForTest } from './configsbase'
 import supertest from 'supertest'
-import { apiUri } from '../../src/server.shared'
+import { apiUri } from '../../src/shared/server'
 import { HttpServer } from '../../src/server/httpserver'
 import { Config } from '../../src/server/config'
 import { ConfigBus } from '../../src/server/configbus'
@@ -13,22 +13,22 @@ import { join } from 'path'
 import { ConfigSpecification } from '../../src/specification'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
 import { MqttConnector } from '../../src/server/mqttconnector'
-var httpServer: HttpServer
+let httpServer: HttpServer
 
 beforeAll(() => {
   return new Promise<void>((resolve, reject) => {
     // fake MQTT: avoid reconnect
     setConfigsDirsBackendTCPForTest()
 
-    let conn = new MqttConnector()
-    let msub = new MqttSubscriptions(conn)
+    const conn = new MqttConnector()
+    const msub = new MqttSubscriptions(conn)
 
-    let fake = new FakeMqtt(msub, FakeModes.Poll)
+    const fake = new FakeMqtt(msub, FakeModes.Poll)
     conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
       onConnectCallback(fake as any as MqttClient)
     }
     new ConfigSpecification().readYaml()
-    let cfg = new Config()
+    const cfg = new Config()
     cfg.readYamlAsync().then(() => {
       ConfigBus.readBusses()
       initBussesForTest()
@@ -58,7 +58,7 @@ it('Discrete Inputs definition provided check', (done) => {
       .get(apiUri.modbusSpecification + '?busid=0&slaveid=3&spec=lc-technology-relay-input')
       .expect(HttpErrorsEnum.OK)
       .then((response) => {
-        let spec: ImodbusSpecification = response.body
+        const spec: ImodbusSpecification = response.body
 
         expect(spec.entities).toBeDefined()
         expect(spec.entities.length).toEqual(16)
@@ -73,7 +73,7 @@ it('Coils definition provided check', (done) => {
       .get(apiUri.modbusSpecification + '?busid=0&slaveid=3&spec=lc-technology-relay-input')
       .expect(HttpErrorsEnum.OK)
       .then((response) => {
-        let spec: ImodbusSpecification = response.body
+        const spec: ImodbusSpecification = response.body
 
         expect(spec.entities).toBeDefined()
         expect(spec.entities.length).toEqual(16)

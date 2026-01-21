@@ -1,6 +1,6 @@
-import { expect, jest, describe, test } from '@jest/globals'
+import { expect, describe, test } from '@jest/globals'
 import { Logger, LogLevelEnum } from '../../src/specification/log'
-
+import fs from 'fs'
 describe('Logger wrapper (npmlog backend)', () => {
   test('initializes and logs in jest environment without throwing', () => {
     // Simulate jest environment
@@ -21,7 +21,6 @@ describe('Logger wrapper (npmlog backend)', () => {
     process.env['JEST_WORKER_ID'] = '1'
     const logger = new Logger('fileTest')
     logger.log2File('File %s', 'Entry')
-    const fs = require('fs')
     const content = fs.readFileSync('test.log').toString()
     expect(content).toContain('File Entry')
     fs.unlinkSync('test.log')

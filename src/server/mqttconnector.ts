@@ -1,11 +1,10 @@
-import { Slave, ImqttClient } from '../server.shared'
-import { IClientOptions, IClientPublishOptions, MqttClient, connect } from 'mqtt'
+import { Slave, ImqttClient } from '../shared/server/index.js'
+import { IClientOptions, MqttClient, connect } from 'mqtt'
 import { format } from 'util'
-import { Config } from './config'
-import { Logger, LogLevelEnum } from '../specification'
+import { Config } from './config.js'
+import { Logger, LogLevelEnum } from '../specification/index.js'
 import Debug from 'debug'
-import { Ispecification } from '../specification.shared'
-import { QoS } from 'mqtt-packet'
+// removed unused imports
 
 const log = new Logger('mqttconnector')
 const debugMqttClient = Debug('mqttclient')
@@ -57,7 +56,7 @@ export class MqttConnector {
 
   validateConnection(connectionData: ImqttClient | undefined, callback: (valid: boolean, message: string) => void) {
     if (connectionData && connectionData.mqttserverurl != undefined) {
-      let client = connect(connectionData.mqttserverurl, connectionData as IClientOptions)
+      const client = connect(connectionData.mqttserverurl, connectionData as IClientOptions)
       client.on('error', (e) => {
         client!.end(() => {})
         callback(false, connectionData.mqttserverurl + ': ' + e.toString())
@@ -84,18 +83,18 @@ export class MqttConnector {
   private connectMqtt(connectionData: ImqttClient | undefined): void {
     let mqttConnect = Config.getConfiguration().mqttconnect
     if (Config.getConfiguration().mqttusehassio && Config.mqttHassioLoginData) mqttConnect = Config.mqttHassioLoginData
-    let conn = () => {
+    const conn = () => {
       if (!connectionData) connectionData = mqttConnect
       if (!connectionData) {
         this.handleErrors(new Error('No mqtt connection configured.'))
         return
       }
       if (connectionData.mqttserverurl) {
-        let opts = connectionData
+        const opts = connectionData
         // connect need IClientOptions which has some additional properties in the type
-        let iopts = connectionData as IClientOptions
+        const iopts = connectionData as IClientOptions
         iopts.log = (...args) => {
-          let message = args.shift()
+          const message = args.shift()
           debugMqttClient(format(message, args))
         }
         iopts.clean = false

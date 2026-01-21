@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "module": "commonjs",
+    "module": "nodenext",
     "outDir": "./dist",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -19,25 +19,14 @@
     "declaration": true,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "importHelpers": true,
     "target": "es2022",
     "useDefineForClassFields": false,
     "rootDir": "src",
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
-    "types": [
-      "node","jest", "debug"
-    ]
+    "lib": ["ES2022", "dom"],
+    "types": ["node", "jest", "debug"]
   },
   "include": ["src/**/*", "__test__/**/*"],
-  "exclude":[
-    "src/angular/**/*",
-    "node_modules/**/*",
-    "**/testHelpers/*",
-    "dist/**/*",
-    "eslint.config.mjs"
-   ],
+  "exclude": ["src/angular/**/*", "node_modules/**/*", "**/testHelpers/*", "dist/**/*", "eslint.config.mjs"]
 }

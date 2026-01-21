@@ -1,11 +1,11 @@
 filename: noFunctionCode
 entities:
   - id: 1
-    converter: 
+    converter:
       name: number
     modbusAddress: 4
     registerType: 3
-    icon: ""
+    icon: ''
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -15,14 +15,14 @@ entities:
         max: 200
 manufacturer: unknown
 model: QDY30A
-files: 
+files:
   - filename: 51WMttnsOML._AC_SX569_.jpg
     usage: img
   - filename: documentation.pdf
     usage: doc
 i18n:
-  - lang: "en" 
-    texts: 
+  - lang: 'en'
+    texts:
       - textId: name
         text: no Function Code
       - textId: e1
@@ -30,7 +30,7 @@ i18n:
       - textId: e3
         text: multiplier
 identified: 0
-version: "0.2"
+version: '0.2'
 testData:
   holdingRegister:
     - address: 4

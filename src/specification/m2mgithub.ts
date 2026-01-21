@@ -1,13 +1,14 @@
 import { Octokit } from '@octokit/rest'
-import { LogLevelEnum, Logger } from './log'
+import { LogLevelEnum, Logger } from './log.js'
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { Subject, first } from 'rxjs'
 import * as fs from 'fs'
-import { ConfigSpecification } from './configspec'
+import { ConfigSpecification } from './configspec.js'
 
-const debug = require('debug')('m2mgithub')
+import Debug from 'debug'
+const debug = Debug('m2mgithub')
 export const githubPublicNames = {
   publicModbus2mqttOwner: 'modbus2mqtt',
   modbus2mqttRepo: 'modbus2mqtt.config',
@@ -15,6 +16,7 @@ export const githubPublicNames = {
 }
 
 const log = new Logger('m2mGithub')
+type StepError = { message?: string; status?: number; code?: number; stack?: string; step?: string }
 export interface ITreeParam {
   path: string
   mode: '100644'
@@ -42,7 +44,7 @@ export class M2mGitHub {
             type: 'all',
           })
           .then((repos) => {
-            let found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
+            const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
             if (found == null && !M2mGitHub.forking) this.createOwnModbus2MqttRepo().then(resolve).catch(reject)
             else {
               if (found != null) M2mGitHub.forking = false
@@ -62,7 +64,7 @@ export class M2mGitHub {
             repo: exports.githubPublicNames.modbus2mqttRepo,
             ref: 'heads/' + branch,
           })
-          .then((branches) => {
+          .then((_branches) => {
             resolve(true)
           })
           .catch((e) => {
@@ -124,7 +126,7 @@ export class M2mGitHub {
             type: 'all',
           })
           .then((repos) => {
-            let found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
+            const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
             if (found) {
               debug('checkRepo: sync fork')
               M2mGitHub.forking = false
@@ -134,12 +136,13 @@ export class M2mGitHub {
                 .then((_r) => {
                   resolve(true)
                 })
-                .catch((e) => {
-                  let e1 = new Error(e.message)
-                  ;(e1 as any).step = e.step
+                .catch((e: StepError) => {
+                  const e1 = new Error(e.message ?? '') as Error & { step?: string; status?: number; code?: number }
+                  e1.step = e.step
                   e1.stack = e.stack
-                  if (e.code == 422)
-                    e1.message = e.message + '\n Permission denied for the github token. Please sync Repository in github.com.'
+                  if (e.code === 422)
+                    // prettier-ignore
+                    e1.message = (e.message ?? '') + '\n Permission denied for the github token. Please sync Repository in github.com.'
                   reject(e1)
                 })
             }
@@ -163,7 +166,7 @@ export class M2mGitHub {
           let count = 0
 
           // Once per second for 30 seconds, then once per minute
-          let interval = setInterval(() => {
+          const interval = setInterval(() => {
             debug('inInterval')
             if (!this.isRunning && (count > 30 ? Math.floor(count % 60) == 0 : true)) {
               this.isRunning = true
@@ -176,7 +179,7 @@ export class M2mGitHub {
                     resolve()
                   }
                 })
-                .catch((e) => {
+                .catch((e: StepError) => {
                   this.isRunning = false
                   log.log(
                     LogLevelEnum.error,
@@ -185,9 +188,9 @@ export class M2mGitHub {
                       '/' +
                       githubPublicNames.publicModbus2mqttOwner +
                       ' failed. message: ' +
-                      e.message +
+                      (e.message ?? '') +
                       ' Status: ' +
-                      e.status
+                      (e.status ?? '')
                   )
                   reject(e)
                 })
@@ -211,12 +214,15 @@ export class M2mGitHub {
   }
   fetchPublicFiles(): void {
     debug('Fetch public files')
-    if (existsSync(join(this.publicRoot, '.git'))) {
-      let msg = execSync('git pull', { cwd: this.publicRoot }).toString()
-      // log more than two lines only. Two lines usually means up-to-date 1th line + \n
-      if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
-    } // creating a repo is worth a notice
-    else
+    // If directory exists and is a git repo, pull. If it exists but isn't a repo, skip cloning.
+    if (existsSync(this.publicRoot)) {
+      if (existsSync(join(this.publicRoot, '.git'))) {
+        const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
+        if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
+      } else {
+        log.log(LogLevelEnum.info, 'Public files directory exists, skipping git clone')
+      }
+    } else {
       log.log(
         LogLevelEnum.info,
         execSync(
@@ -228,6 +234,7 @@ export class M2mGitHub {
             this.publicRoot
         ).toString()
       )
+    }
     new ConfigSpecification().readYaml()
   }
   static getPullRequestUrl(pullNumber: number): string {
@@ -257,12 +264,12 @@ export class M2mGitHub {
               .then((res) => {
                 resolve(res.data.number)
               })
-              .catch((e) => {
+              .catch((e: StepError) => {
                 e.step = 'create pull'
                 reject(e)
               })
           })
-          .catch((e) => {
+          .catch((e: StepError) => {
             e.step = 'create issue'
             reject(e)
           })
@@ -282,27 +289,28 @@ export class M2mGitHub {
           .then((pull) => {
             resolve(pull.data)
           })
-          .catch((e) => {
+          .catch((e: StepError) => {
             if (e.step == undefined) e.step = 'downloadFile'
             debug(JSON.stringify(e))
             reject(e)
           })
     })
   }
-  getInfoFromError(e: any) {
+  getInfoFromError(e: unknown) {
+    const err = e as StepError
     let msg = JSON.stringify(e)
-    if (e.message) msg = 'ERROR: ' + e.message
-    if (e.status) msg += ' status: ' + e.status
-    if (e.message) msg += ' message: ' + e.message
-    if (e.step) msg += ' in ' + e.step
+    if (err.message) msg = 'ERROR: ' + err.message
+    if (err.status) msg += ' status: ' + err.status
+    if (err.message) msg += ' message: ' + err.message
+    if (err.step) msg += ' in ' + err.step
     return msg
   }
 
   private uploadFileAndCreateTreeParameter(root: string, filename: string): Promise<ITreeParam> {
     return new Promise<ITreeParam>((resolve, reject) => {
       debug('uploadFileAndCreateTreeParameter')
-      let encoding: BufferEncoding = filename.endsWith('.yaml') ? 'utf8' : 'base64'
-      let params = {
+      const encoding: BufferEncoding = filename.endsWith('.yaml') ? 'utf8' : 'base64'
+      const params = {
         owner: this.ownOwner!,
         repo: githubPublicNames.modbus2mqttRepo,
         encoding: encoding == 'utf8' ? 'utf-8' : encoding,
@@ -320,7 +328,7 @@ export class M2mGitHub {
               sha: res.data.sha,
             })
           })
-          .catch((e) => {
+          .catch((e: StepError) => {
             e.step = 'createBlob'
             reject(e)
           })
@@ -347,7 +355,7 @@ export class M2mGitHub {
               .then(() => {
                 resolve(true)
               })
-              .catch((e) => {
+              .catch((e: StepError) => {
                 this.ownOwner = undefined
                 reject(e)
               })
@@ -358,7 +366,7 @@ export class M2mGitHub {
           .then(() => {
             resolve(true)
           })
-          .catch((e) => {
+          .catch((e: StepError) => {
             this.ownOwner = undefined
             reject(e)
           })
@@ -380,10 +388,10 @@ export class M2mGitHub {
     })
   }
   private checkFiles(root: string, files: string[]): Promise<ITreeParam>[] {
-    let all: Promise<ITreeParam>[] = []
+    const all: Promise<ITreeParam>[] = []
     files.forEach((file) => {
       debug('root: ' + root + ' file: ' + file)
-      let fullPath = join(root, file)
+      const fullPath = join(root, file)
       if (!fs.existsSync(fullPath)) {
         if (fullPath.indexOf('/files/') != -1 && !fullPath.endsWith('files.yaml')) {
           // Can be ignored if the files are missing, they have been published already
@@ -415,9 +423,9 @@ export class M2mGitHub {
                 )
               else {
                 debug('start committing')
-                let all: Promise<ITreeParam>[]
+                // list of blob creations
                 try {
-                  let all = this.checkFiles(root, files)
+                  const all = this.checkFiles(root, files)
 
                   Promise.all(all!)
                     .then((trees) => {
@@ -428,7 +436,7 @@ export class M2mGitHub {
                         ref: 'heads/' + githubPublicNames.modbus2mqttBranch,
                       })
                         .then((ref) => {
-                          let sha = ref.data.object.sha
+                          // base sha is used by API calls below
                           // create a new branch
                           this.octokit!.git.createRef({
                             owner: this.ownOwner!,
@@ -437,7 +445,6 @@ export class M2mGitHub {
                             sha: ref.data.object.sha,
                           })
                             .then((branch) => {
-                              branch.data.object.sha
                               //this.octokit.git.getTree()
                               this.octokit!.request(
                                 `GET /repos/${this.ownOwner}/${githubPublicNames.modbus2mqttRepo}/git/trees/${githubPublicNames.modbus2mqttBranch}`
@@ -471,53 +478,53 @@ export class M2mGitHub {
                                               debug('updated')
                                               resolve(_result.data.sha)
                                             })
-                                            .catch((e) => {
+                                            .catch((e: StepError) => {
                                               e.step = 'updateRef'
                                               reject(e)
                                             })
                                         })
-                                        .catch((e) => {
+                                        .catch((e: StepError) => {
                                           e.step = 'createCommit'
                                           reject(e)
                                         })
                                     })
-                                    .catch((e) => {
+                                    .catch((e: StepError) => {
                                       e.step = 'create Tree'
                                       reject(e)
                                     })
                                 })
-                                .catch((e) => {
+                                .catch((e: StepError) => {
                                   e.step = 'get base tree'
                                   reject(e)
                                 })
                             })
-                            .catch((e) => {
+                            .catch((e: StepError) => {
                               e.step = 'create branch'
                               reject(e)
                             })
                         })
-                        .catch((e) => {
+                        .catch((e: StepError) => {
                           e.step = 'get branch'
                           reject(e)
                         })
                     })
-                    .catch((e) => {
+                    .catch((e: StepError) => {
                       e.step = 'create blobs'
                       reject(e)
                     })
-                } catch (e: any) {
-                  e.step = 'waiting for all failed'
-                  reject(e)
+                } catch (e: unknown) {
+                  ;(e as StepError).step = 'waiting for all failed'
+                  reject(e as StepError)
                   return
                 }
               }
             })
-            .catch((e) => {
+            .catch((e: StepError) => {
               e.step = 'hasSpecBranch'
               reject(e)
             })
         })
-        .catch((e) => {
+        .catch((e: StepError) => {
           e.step = 'waitForOwnModbus2MqttRepo'
           reject(e)
         })

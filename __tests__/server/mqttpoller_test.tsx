@@ -1,13 +1,12 @@
 import { Config } from '../../src/server/config'
-import { ImodbusEntity, ModbusRegisterType } from '../../src/specification.shared'
+import { ImodbusEntity, ModbusRegisterType } from '../../src/shared/specification'
 import { ItopicAndPayloads, MqttDiscover } from '../../src/server/mqttdiscover'
 import { MqttClient } from 'mqtt'
 import { FakeModes, FakeMqtt, initBussesForTest, setConfigsDirsForTest } from './configsbase'
 import { Bus } from '../../src/server/bus'
 import Debug from 'debug'
-import { ConfigSpecification } from '../../src/specification'
-import { expect, test, beforeAll } from '@jest/globals'
-import { Islave, Slave } from '../../src/server.shared'
+import { expect, test, beforeAll } from 'vitest'
+import { Islave, Slave } from '../../src/shared/server'
 import { ConfigBus } from '../../src/server/configbus'
 import { MqttConnector } from '../../src/server/mqttconnector'
 import { MqttPoller } from '../../src/server/mqttpoller'
@@ -41,7 +40,7 @@ const selectTestId = 3
 const numberTestId = 4
 const selectTestWritableId = 5
 let msub1: MqttSubscriptions
-let selectTest: ImodbusEntity = {
+const selectTest: ImodbusEntity = {
   id: selectTestWritableId,
   mqttname: 'selecttestWr',
   modbusAddress: 7,
@@ -54,7 +53,7 @@ let selectTest: ImodbusEntity = {
   converterParameters: { optionModbusValues: [1, 2, 3] },
 }
 
-let selectTestWritable: ImodbusEntity = {
+const selectTestWritable: ImodbusEntity = {
   id: selectTestId,
   mqttname: 'selecttest',
   modbusAddress: 1,
@@ -76,9 +75,9 @@ interface IfakeDiscovery {
 }
 
 function getFakeDiscovery(): IfakeDiscovery {
-  let conn = new MqttConnector()
-  let msub = new MqttSubscriptions(conn)
-  let rc: IfakeDiscovery = {
+  const conn = new MqttConnector()
+  const msub = new MqttSubscriptions(conn)
+  const rc: IfakeDiscovery = {
     conn: conn,
     mdl: new MqttPoller(conn),
     msub: msub,
@@ -102,78 +101,91 @@ function copySubscribedSlaves(toA: Slave[], fromA: Slave[]) {
     toA.push(s.clone())
   })
 }
-beforeAll((done) => {
+beforeAll(async () => {
   // Fix ModbusCache ModbusCache.prototype.submitGetHoldingRegisterRequest = submitGetHoldingRegisterRequest
   setConfigsDirsForTest()
   Config['config'] = {} as any
-  let readConfig: Config = new Config()
-  readConfig.readYamlAsync().then(() => {
-    fakeDiscovery = getFakeDiscovery()
-    initBussesForTest()
-    done()
-  })
+  const readConfig: Config = new Config()
+  await readConfig.readYamlAsync()
+  fakeDiscovery = getFakeDiscovery()
+  initBussesForTest()
 })
 
-test('poll', (done) => {
-  let fd = getFakeDiscovery()
+test('poll', async () => {
+  const fd = getFakeDiscovery()
   copySubscribedSlaves(fd.msub['subscribedSlaves'], fakeDiscovery.msub['subscribedSlaves'])
-  fd.mdl['poll']!(Bus.getBus(0)!).then(() => {
-    expect(fd.fake.isAsExpected).toBeTruthy()
-    expect(fd.mdl!['slavePollInfo'].size).toBeGreaterThan(0)
-    let c = fd.mdl!['slavePollInfo'].values().next()
-    expect(c.value!.count).toBeGreaterThan(0)
-    fd.fake = new FakeMqtt(fd.msub!, FakeModes.Poll2)
-    // second call should do nothing, because interval is too short
-    fd.conn['client'] = fd.fake as any as MqttClient
-    fd.fake.isAsExpected = true
-    let m = new Map<number, ItopicAndPayloads>()
-    m.set(1, topic4Deletion)
-    let sl = new Slave(1, { slaveid: 0 }, Config.getConfiguration().mqttbasetopic)
-    expect(fd.msub['subscribedSlaves'].length).toBeGreaterThan(3)
-    fd.msub['subscribedSlaves'].push(sl)
-    expect(fd.msub['subscribedSlaves'].length).toBeGreaterThan(3)
-    fd.mdl!['poll'](Bus.getBus(0)!).then(() => {
-      expect(fd.fake.isAsExpected).toBeTruthy()
-      let c = fd.mdl!['slavePollInfo'].values().next()
-      fd.mdl!['slavePollInfo'].set(1, { count: 10000, processing: false })
-      expect(c.value!.count).toBeGreaterThan(1)
-      //call discovery explicitely
-      // Expectation: It should not publish anything, because this has happened already
-      let bus = Bus.getBus(0)
-      fd.fake.isAsExpected = false
-      fd.fake.fakeMode = FakeModes.Discovery
-      let slave = bus?.getSlaveBySlaveId(1)
-      fd.mdl!['poll'](Bus.getBus(0)!).then(() => {
-        let ss = fd.msub['subscribedSlaves'].find((s) => Slave.compareSlaves(s, sl) == 0)
-        done()
-      })
-    })
-  })
+  await fd.mdl['poll']!(Bus.getBus(0)!)
+  expect(fd.fake.isAsExpected).toBeTruthy()
+  expect(fd.mdl!['slavePollInfo'].size).toBeGreaterThan(0)
+  let c = fd.mdl!['slavePollInfo'].values().next()
+  expect(c.value!.count).toBeGreaterThan(0)
+  fd.fake = new FakeMqtt(fd.msub!, FakeModes.Poll2)
+  // second call should do nothing, because interval is too short
+  fd.conn['client'] = fd.fake as any as MqttClient
+  fd.fake.isAsExpected = true
+  const m = new Map<number, ItopicAndPayloads>()
+  m.set(1, topic4Deletion)
+  const sl = new Slave(1, { slaveid: 0 }, Config.getConfiguration().mqttbasetopic)
+  expect(fd.msub['subscribedSlaves'].length).toBeGreaterThan(3)
+  fd.msub['subscribedSlaves'].push(sl)
+  expect(fd.msub['subscribedSlaves'].length).toBeGreaterThan(3)
+  await fd.mdl!['poll'](Bus.getBus(0)!)
+  expect(fd.fake.isAsExpected).toBeTruthy()
+  c = fd.mdl!['slavePollInfo'].values().next()
+  fd.mdl!['slavePollInfo'].set(1, { count: 10000, processing: false })
+  expect(c.value!.count).toBeGreaterThan(1)
+  //call discovery explicitly
+  const bus = Bus.getBus(0)
+  fd.fake.isAsExpected = false
+  fd.fake.fakeMode = FakeModes.Discovery
+  const slave = bus?.getSlaveBySlaveId(1)
+  await fd.mdl!['poll'](Bus.getBus(0)!)
+  const ss = fd.msub['subscribedSlaves'].find((s) => Slave.compareSlaves(s, sl) == 0)
 })
 
-test('poll with processing=true for all slaves', (done) => {
-  let fd = getFakeDiscovery()
+test('poll with processing=true for all slaves', async () => {
+  const fd = getFakeDiscovery()
   initBussesForTest()
   fd.mdl!['slavePollInfo'].set(1, { count: 0, processing: true })
   fd.mdl!['slavePollInfo'].set(2, { count: 0, processing: true })
   fd.mdl!['slavePollInfo'].set(3, { count: 0, processing: true })
   fd.fake.isAsExpected = false
-  fd.mdl!['poll']!(Bus.getBus(0)!).then(() => {
-    expect(fd.mdl!['slavePollInfo'].get(1)!.processing).toBeTruthy()
-    expect(fd.fake.isAsExpected).toBeFalsy()
-    done()
-  })
+  await fd.mdl!['poll']!(Bus.getBus(0)!)
+  expect(fd.mdl!['slavePollInfo'].get(1)!.processing).toBeTruthy()
+  expect(fd.fake.isAsExpected).toBeFalsy()
 })
 
-test('poll with processing= true for first Slave', (done) => {
-  let fd = getFakeDiscovery()
+test('poll with processing= true for first Slave', async () => {
+  const fd = getFakeDiscovery()
   fd.mdl!['slavePollInfo'].set(1, { count: 0, processing: true })
   fd.mdl!['slavePollInfo'].set(2, { count: 0, processing: false })
   fd.mdl!['slavePollInfo'].set(3, { count: 0, processing: false })
   fd.fake.isAsExpected = false
-  fd.mdl!['poll']!(Bus.getBus(0)!).then(() => {
-    expect(fd.mdl!['slavePollInfo'].get(1)!.processing).toBeTruthy()
-    expect(fd.fake.isAsExpected).toBeTruthy()
-    done()
-  })
+  await fd.mdl!['poll']!(Bus.getBus(0)!)
+  expect(fd.mdl!['slavePollInfo'].get(1)!.processing).toBeTruthy()
+  expect(fd.fake.isAsExpected).toBeTruthy()
+})
+
+test('poll counter resets at threshold and allows re-polling', async () => {
+  const fd = getFakeDiscovery()
+  copySubscribedSlaves(fd.msub['subscribedSlaves'], fakeDiscovery.msub['subscribedSlaves'])
+
+  // Initial poll at count 0
+  await fd.mdl['poll']!(Bus.getBus(0)!)
+  const pollInfo1 = fd.mdl!['slavePollInfo'].get(1)
+  expect(pollInfo1).toBeDefined()
+  expect(pollInfo1!.count).toBeGreaterThan(0)
+
+  // Simulate reaching the threshold (default is 50)
+  fd.mdl!['slavePollInfo'].set(1, { count: 50, processing: false })
+
+  fd.fake.isAsExpected = false
+  fd.fake.fakeMode = FakeModes.Poll
+
+  await fd.mdl['poll']!(Bus.getBus(0)!)
+  expect(fd.fake.isAsExpected).toBeTruthy()
+  const pollInfo2 = fd.mdl!['slavePollInfo'].get(1)
+  expect(pollInfo2).toBeDefined()
+  expect(pollInfo2!.count).toBeGreaterThan(0)
+  expect(pollInfo2!.count).toBeLessThan(50)
 })

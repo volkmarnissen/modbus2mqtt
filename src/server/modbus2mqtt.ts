@@ -1,19 +1,19 @@
-import { Config } from './config'
-import { HttpServer } from './httpserver'
-import { Bus } from './bus'
+import { Config } from './config.js'
+import { HttpServer } from './httpserver.js'
+import { Bus } from './bus.js'
 import { Command } from 'commander'
-import { LogLevelEnum, Logger, M2mGitHub, M2mSpecification } from '../specification'
+import { LogLevelEnum, Logger, M2mGitHub, M2mSpecification } from '../specification/index.js'
 import * as os from 'os'
 
 import Debug from 'debug'
 import { MqttDiscover } from './mqttdiscover.js'
-import { ConfigSpecification } from '../specification'
-import path, { dirname, join } from 'path'
-import { SpecificationStatus } from '../specification.shared'
+import { ConfigSpecification } from '../specification/index.js'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { SpecificationStatus } from '../shared/specification/index.js'
 import * as fs from 'fs'
-import { ConfigBus } from './configbus'
-import { CmdlineMigrate } from './CmdlineMigrate'
-const { argv } = require('node:process')
+import { ConfigBus } from './configbus.js'
+import { CmdlineMigrate } from './CmdlineMigrate.js'
 let httpServer: HttpServer | undefined = undefined
 
 process.on('unhandledRejection', (reason, p) => {
@@ -28,6 +28,7 @@ process.on('SIGINT', () => {
 const debug = Debug('modbus2mqtt')
 const debugAction = Debug('actions')
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface ProcessEnv {
       MODBUS_NOPOLL: string | undefined
@@ -44,20 +45,21 @@ export class Modbus2Mqtt {
       new ConfigSpecification().filterAllSpecifications((spec) => {
         if (spec.status == SpecificationStatus.contributed && spec.pullNumber != undefined) {
           M2mSpecification.startPolling(spec.filename, (e) => {
-            log.log(LogLevelEnum.error, 'Github:' + e.message)
+            const msg = e instanceof Error ? e.message : String(e)
+            log.log(LogLevelEnum.error, 'Github:' + msg)
           })
         }
       })
   }
   init() {
-    let cli = new Command()
+    const cli = new Command()
     cli.usage('[--ssl <ssl-dir>][--yaml <yaml-dir>][ --port <TCP port>] --term <exit code for SIGTERM>')
     cli.option('-s, --ssl <ssl-dir>', 'set directory for certificates')
     cli.option('-c, --config <config-dir>', 'set directory for add on configuration')
     cli.option('-d, --data <data-dir>', 'set directory for persistent data (public specifications)')
     cli.option('--term <exit code for SIGTERM>', 'sets exit code in case of SIGTERM')
     cli.parse(process.argv)
-    let options = cli.opts()
+    const options = cli.opts()
     if (options['data']) {
       Config.dataDir = options['data']
       ConfigSpecification.dataDir = options['data']
@@ -103,21 +105,25 @@ export class Modbus2Mqtt {
         )
         debug(Config.getConfiguration().mqttconnect.mqttserverurl)
         log.log(LogLevelEnum.info, 'Modbus2mqtt version: ' + Config.getConfiguration().appVersion)
-        // hard coded workaround
-        let angulardir = join(require.resolve('./mqttdiscover'), '../../angular/browser')
+        // Prefer configured frontend directory; fallback to Angular build output
+        let angulardir = Config.getConfiguration().frontendDir
+        if (!angulardir) {
+          // Fallback: derive from current module location to dist/angular/browser (ESM-safe)
+          const currentDir = dirname(fileURLToPath(import.meta.url))
+          angulardir = join(currentDir, '..', 'angular', 'browser')
+        }
         // Did not work in github workflow for testing
 
         if (!angulardir || !fs.existsSync(angulardir)) {
           log.log(LogLevelEnum.error, 'Unable to find angular start file ' + angulardir)
           process.exit(2)
         } else log.log(LogLevelEnum.info, 'angulardir is ' + angulardir)
-        let angulardirLang = path.parse(angulardir).dir
         debug('http root : ' + angulardir)
-        let gh = new M2mGitHub(
+        const gh = new M2mGitHub(
           Config.getConfiguration().githubPersonalToken ? Config.getConfiguration().githubPersonalToken! : null,
           ConfigSpecification.getPublicDir()
         )
-        let startServer = () => {
+        const startServer = () => {
           MqttDiscover.getInstance()
           ConfigBus.readBusses()
           Bus.readBussesFromConfig().then(() => {
@@ -158,7 +164,8 @@ export class Modbus2Mqtt {
                   })
                 })
                 .catch((e) => {
-                  log.log(LogLevelEnum.error, 'Start polling Contributions: ' + e.message)
+                  const msg = e instanceof Error ? e.message : String(e)
+                  log.log(LogLevelEnum.error, 'Start polling Contributions: ' + msg)
                 })
           })
         }
@@ -167,12 +174,13 @@ export class Modbus2Mqtt {
         gh.init().finally(startServer)
       })
       .catch((error) => {
-        log.log(LogLevelEnum.error, 'Unable to read configuration ' + error.message)
+        const msg = error instanceof Error ? error.message : String(error)
+        log.log(LogLevelEnum.error, 'Unable to read configuration ' + msg)
         process.exit(2)
       })
   }
 }
-let m = new Modbus2Mqtt()
+const m = new Modbus2Mqtt()
 m.init()
 
 //module.exports = {connectMqtt, init}

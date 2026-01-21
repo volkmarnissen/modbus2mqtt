@@ -1,11 +1,12 @@
 import ModbusRTU from 'modbus-serial'
+import type { ModbusRTULike } from 'modbus-serial'
 import Debug from 'debug'
-let baudrate: number = 4800
+const baudrate: number = 4800
 const debug = Debug('modbusanalysis')
 process.env['DEBUG'] = 'modbusanalysis'
 Debug.enable('modbusanalysis')
 let slave = 1
-let client = new ModbusRTU()
+let client: ModbusRTULike = new ModbusRTU()
 connect()
 
 // open connection to a serial port

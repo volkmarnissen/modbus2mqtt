@@ -1,10 +1,9 @@
 import { Request } from 'express'
 import * as multer from 'multer'
-import { Config, getSpecificationImageOrDocumentUrl } from './config'
-import { join } from 'path'
+import { getSpecificationImageOrDocumentUrl } from './config.js'
 import * as fs from 'fs'
-import { SpecificationFileUsage } from '../specification.shared'
-import { ConfigSpecification, filesUrlPrefix, Logger, LogLevelEnum } from '../specification'
+import { SpecificationFileUsage } from '../shared/specification/index.js'
+import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
 const log = new Logger('httpFileUpload')
 
 type DestinationCallback = (error: Error | null, destination: string) => void
@@ -24,12 +23,12 @@ export function getFilenameForUpload(filename: string) {
 }
 export const fileStorage = multer.diskStorage({
   destination: (request: GetRequestWithUploadParameter, _file: Express.Multer.File, callback: DestinationCallback): void => {
-    let fileLocation = ConfigSpecification.getLocalDir()
+    const fileLocation = ConfigSpecification.getLocalDir()
 
     if (fileLocation == undefined) {
       log.log(LogLevelEnum.error, 'Config.fileLocation is not defined. NO file upload possible')
-    } else if (request.query.specification !== null) {
-      let dir = getSpecificationImageOrDocumentUrl(fileLocation, getFilenameForUpload(request.query.specification!), '')
+    } else if (request.query.specification != null) {
+      const dir = getSpecificationImageOrDocumentUrl(fileLocation, getFilenameForUpload(request.query.specification!), '')
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
       callback(null, dir)
     } else callback(new Error('No parameter specification found'), fileLocation)

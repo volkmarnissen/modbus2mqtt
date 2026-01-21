@@ -1,6 +1,5 @@
-import { Converter } from './converter'
-import { Converters, Ientity, Ispecification, ModbusRegisterType } from '../specification.shared'
-import { ReadRegisterResult } from './converter'
+import { Converter } from './converter.js'
+import { Converters, Ientity, Ispecification, ModbusRegisterType } from '../shared/specification/index.js'
 
 export class BinaryConverter extends Converter {
   constructor(component?: Converters) {

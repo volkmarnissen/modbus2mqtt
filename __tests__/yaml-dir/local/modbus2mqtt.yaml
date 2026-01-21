@@ -1,4 +1,4 @@
-version: "0.1"
+version: '0.1'
 mqttbasetopic: modbus2mqtt
 mqttdiscoveryprefix: homeassistant
 mqttdiscoverylanguage: en
@@ -13,5 +13,5 @@ filelocation: __tests__/yaml-dir
 tcpBridgePort: 502
 mqttusehassio: false
 supervisor_host: supervisor
-password: "!secret password"
-username: "!secret username"
+password: '!secret password'
+username: '!secret username'

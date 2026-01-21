@@ -3,16 +3,16 @@ import { parse, stringify } from 'yaml'
 import * as fs from 'fs'
 import * as path from 'path'
 import { join } from 'path'
-import packageJson from '../../package.json'
+import packageJson from '../../package.json' with { type: 'json' }
 import stream from 'stream'
 import { Subject } from 'rxjs'
-import { getBaseFilename } from '../specification.shared'
-import { JwtPayload, sign, verify } from 'jsonwebtoken'
+import { getBaseFilename } from '../shared/specification/index.js'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
-import { LogLevelEnum, Logger, filesUrlPrefix } from '../specification'
-import { ImqttClient, AuthenticationErrors, Iconfiguration, IUserAuthenticationStatus } from '../server.shared'
+import { LogLevelEnum, Logger, filesUrlPrefix } from '../specification/index.js'
+import { ImqttClient, AuthenticationErrors, Iconfiguration, IUserAuthenticationStatus } from '../shared/server/index.js'
 import AdmZip from 'adm-zip'
-import { Bus } from './bus'
+import { Bus } from './bus.js'
 import { IClientOptions } from 'mqtt'
 const CONFIG_VERSION = '0.1'
 declare global {
@@ -70,8 +70,10 @@ export class Config {
           try {
             //const iat = Math.floor(Date.now() / 1000)
             //const exp = iat + Config.config.tokenExpiryTimeInMSec // seconds
-            const s = sign({ password: password }, Config.secret, {
-              expiresIn: (Config.tokenExpiryTime + 'ms') as any,
+            const s = jwt.sign({ password: password }, Config.secret, {
+              // jsonwebtoken expects seconds (number) or a time-string like '1d'.
+              // We store milliseconds, so convert to whole seconds.
+              expiresIn: Math.floor(Config.tokenExpiryTime / 1000),
               algorithm: 'HS256',
             })
             return s
@@ -110,17 +112,16 @@ export class Config {
     if (token == undefined) return MqttValidationResult.error
 
     try {
-      const payload = verify(token, Config.secret) as JwtPayload & { password: string }
+      const payload = jwt.verify(token, Config.secret) as JwtPayload & { password: string }
       if (bcrypt.compareSync(payload.password, Config.config.password!)) {
         return MqttValidationResult.OK
       }
       return MqttValidationResult.error
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      if (err && err.name && err.name === 'TokenExpiredError') {
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err && 'name' in err && (err as { name?: string }).name === 'TokenExpiredError') {
         return MqttValidationResult.tokenExpired
       }
-      log.log(LogLevelEnum.error, 'JWT validation failed: ' + err)
+      log.log(LogLevelEnum.error, 'JWT validation failed: ' + String(err))
       return MqttValidationResult.error
     }
   }
@@ -188,21 +189,19 @@ export class Config {
         debug('secretsfile ' + secretsfile + ' exists')
         try {
           fs.accessSync(secretsfile, fs.constants.W_OK)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-          if (err.message !== undefined) {
-            const msg = `Secrets file ${secretsfile} is not writable! (error: ${err.message})`
-            log.log(LogLevelEnum.error, msg)
-            throw new Error(msg)
-          }
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err)
+          const msg = `Secrets file ${secretsfile} is not writable! (error: ${message})`
+          log.log(LogLevelEnum.error, msg)
+          throw new Error(msg)
         }
       } else {
         // File doesn't exist, check if we can write to the directory
         try {
           fs.accessSync(secretsDir, fs.constants.W_OK)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-          const msg = `Secrets directory ${secretsDir} is not writable! (cwd: ${process.cwd()}, error: ${err.message})`
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err)
+          const msg = `Secrets directory ${secretsDir} is not writable! (cwd: ${process.cwd()}, error: ${message})`
           log.log(LogLevelEnum.error, msg)
           throw new Error(msg)
         }
@@ -291,7 +290,7 @@ export class Config {
         .catch((reason) => {
           clearTimeout(timer)
           log.log(LogLevelEnum.error, JSON.stringify(reason))
-          reject(reason)
+          reject(reason instanceof Error ? reason : new Error(String(reason)))
         })
     } catch (e: unknown) {
       if (e instanceof Error) log.log(LogLevelEnum.error, e.message)
@@ -357,8 +356,8 @@ export class Config {
             if (mqtt.data.ssl) Config.updateMqttTlsConfig(config)
             delete config.mqttconnect.ssl
             delete config.mqttconnect.protocol
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            delete (config.mqttconnect as any)['addon']
+
+            delete (config.mqttconnect as Record<string, unknown>)['addon']
             debugAddon('getMqttLoginFromHassio: Read MQTT login data from Hassio')
             config.mqttconnect.connectTimeout = DEFAULT_MQTT_CONNECT_TIMEOUT
             resolve(config.mqttconnect)

@@ -1,11 +1,10 @@
-import { Converter } from './converter'
-import { NumberConverter } from './numberConverter'
-import { TextConverter } from './textConverter'
-import { SelectConverter } from './selectConverter'
-import { ValueConverter } from './valueconverter'
-import { Ientity, Converters } from '../specification.shared'
-import { BinaryConverter } from './binaryConverter'
-import { ConfigSpecification } from './configspec'
+import { Converter } from './converter.js'
+import { NumberConverter } from './numberConverter.js'
+import { TextConverter } from './textConverter.js'
+import { SelectConverter } from './selectConverter.js'
+import { ValueConverter } from './valueconverter.js'
+import { Ientity, Converters } from '../shared/specification/index.js'
+import { BinaryConverter } from './binaryConverter.js'
 
 export class ConverterMap extends Map<Converters, Converter> {
   private static converterMap = new ConverterMap()
@@ -14,7 +13,7 @@ export class ConverterMap extends Map<Converters, Converter> {
   }
 
   static getConverters(): Converters[] {
-    let rc: Converters[] = []
+    const rc: Converters[] = []
     ConverterMap.getConverterMap().forEach((con, name) => {
       rc.push(name)
     })
@@ -26,7 +25,6 @@ export class ConverterMap extends Map<Converters, Converter> {
     if (entity.converter) cv = ConverterMap.getConverterMap().get(entity.converter)
     return cv
   }
-  //@ts-ignore
   private static _initialize = (() => {
     if (ConverterMap.converterMap.size == 0) {
       // read/write not a sensor

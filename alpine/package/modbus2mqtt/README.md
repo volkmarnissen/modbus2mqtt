@@ -16,16 +16,17 @@ Important: disabled `check()` phase
 
 In `APKBUILD` you will find:
 
-  options="!check"
+options="!check"
 
 Rationale:
+
 - Jest/Cypress tests run in CI separately.
 - CI validates both before package creation and after installing the generated `.apk`.
 - Running `check()` inside `abuild` would be redundant and possibly at the wrong time.
 
 How the keys and CI setup work
 
-1) Local preparation (developer machine)
+1. Local preparation (developer machine)
 
 - Export the abuild private key into the environment. The packaging script expects the key in the variable `PACKAGER_PRIVKEY` (this name is used by `abuild`). The public key will be automatically derived from the private key:
 
@@ -59,6 +60,7 @@ What the scripts do
   - reads `build/alpine.env` and builds the test image with `FROM alpine:${ALPINE_VERSION}`
   - installs the freshly built `.apk` and launches the service via s6-overlay
   - performs a healthcheck on `http://localhost:3000/`
+
 ```
 
 `build.sh` starts a temporary Alpine container, writes the keys to `/home/builder/.abuild`, runs `npm build` and `abuild -r` as the builder user, and copies the generated packages into `./packages`.
@@ -87,3 +89,4 @@ Notes and troubleshooting
 Contact
 
 If you have questions about the CI configuration or packaging problems, please open an issue or contact me directly.
+```

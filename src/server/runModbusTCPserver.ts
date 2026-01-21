@@ -1,19 +1,19 @@
 import { Command } from 'commander'
-import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
+import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
 import Debug from 'debug'
-import { Config } from './config'
+import { Config } from './config.js'
 import process from 'process'
-import { startModbusTCPserver } from './modbusTCPserver'
-const debug = Debug('modbusTCPserver')
+import { startModbusTCPserver } from './modbusTCPserver.js'
+const _debug = Debug('modbusTCPserver')
 const log = new Logger('modbusTCPserver')
 
-let cli = new Command()
+const cli = new Command()
 cli.usage('--config <config-dir> --data <data-dir> --busid <buis id number>')
 cli.option('-c, --config <config-dir>', 'set directory for add on configuration')
 cli.option('-d, --data <data-dir>', 'set directory for persistent data (public specifications)')
 cli.option('-b, --busid <bus id>', 'starts Modbus TCP server for the given yaml-dir and bus')
 cli.parse(process.argv)
-let options = cli.opts()
+const options = cli.opts()
 if (options['config']) {
   Config.configDir = options['config']
   ConfigSpecification.configDir = options['config']

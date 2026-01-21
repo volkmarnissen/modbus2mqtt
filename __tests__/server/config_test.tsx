@@ -1,21 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect, it, test, afterAll, beforeAll } from '@jest/globals'
+import { expect, it, test, afterAll, beforeAll } from 'vitest'
 import { Config, MqttValidationResult } from '../../src/server/config'
-import { getFileNameFromName } from '../../src/specification.shared'
+import { getFileNameFromName } from '../../src/shared/specification'
 import * as fs from 'fs'
 import { setConfigsDirsForTest } from './configsbase'
-import { AuthenticationErrors } from '../../src/server.shared'
+import { AuthenticationErrors } from '../../src/shared/server'
 import Debug from 'debug'
-import { ConfigTestHelper } from './testhelper'
+import { ConfigTestHelper, TempConfigDirHelper } from './testhelper'
 setConfigsDirsForTest()
 const debug = Debug('config_test')
 
 // Test Helper Instanz
 let configTestHelper: ConfigTestHelper
+let tempHelper: TempConfigDirHelper
 
 beforeAll(() => {
   return new Promise<void>((resolve, reject) => {
-    // Erst Test-Verzeichnisse setzen, dann ConfigTestHelper
+    // Suite-Isolation via Temp-Verzeichnisse, dann ConfigTestHelper
+    tempHelper = new TempConfigDirHelper('config_test')
+    tempHelper.setup()
     configTestHelper = new ConfigTestHelper('config-test')
     configTestHelper.setup()
     const config = new Config()
@@ -42,32 +44,36 @@ afterAll(() => {
   cfg.noAuthentication = false
   new Config().writeConfiguration(cfg)
   configTestHelper.restore()
+  if (tempHelper) tempHelper.cleanup()
 })
-test('register/login/validate', (done) => {
+test('register/login/validate', async () => {
   const cfg = Config.getConfiguration()
   Config.tokenExpiryTime = 2000
   expect((cfg as any).noentry).toBeUndefined()
   new Config().writeConfiguration(cfg)
-  Config.register('test', 'test123', false).then(() => {
-    Config.login('test', 'test123').then((token) => {
-      expect(Config.validateUserToken(token)).toBe(MqttValidationResult.OK)
-      setTimeout(() => {
-        expect(Config.validateUserToken(token)).toBe(MqttValidationResult.tokenExpired)
-        Config.login('test', 'test124').catch((reason) => {
-          expect(reason).toBe(AuthenticationErrors.InvalidUserPasswordCombination)
-          done()
+  await new Promise<void>((resolve, reject) => {
+    Config.register('test', 'test123', false)
+      .then(() => {
+        Config.login('test', 'test123').then((token) => {
+          expect(Config.validateUserToken(token)).toBe(MqttValidationResult.OK)
+          setTimeout(() => {
+            expect(Config.validateUserToken(token)).toBe(MqttValidationResult.tokenExpired)
+            Config.login('test', 'test124').catch((reason) => {
+              expect(reason).toBe(AuthenticationErrors.InvalidUserPasswordCombination)
+              resolve()
+            })
+          }, Config.tokenExpiryTime)
         })
-      }, Config.tokenExpiryTime)
-    })
+      })
+      .catch(reject)
   })
 })
-test('register/login/validate no Authentication', (done) => {
+test('register/login/validate no Authentication', async () => {
   const cfg = Config.getConfiguration()
   expect((cfg as any).noentry).toBeUndefined()
   new Config().writeConfiguration(cfg)
-  Config.register(undefined, undefined, true).then(() => {
+  await Config.register(undefined, undefined, true).then(() => {
     expect(Config.validateUserToken(undefined)).toBe(MqttValidationResult.OK)
-    done()
   })
 })
 it('getFileNameFromName remove non ascii characters', () => {
@@ -113,23 +119,20 @@ function executeHassioGetRequest<T>(_url: string, next: (_dev: T) => void, rejec
   else next({ data: mqttService } as T)
 }
 
-it('getMqttConnectOptions: read connection from hassio', (done) => {
+it('getMqttConnectOptions: read connection from hassio', async () => {
   const oldExecute = Config['executeHassioGetRequest']
   Config['executeHassioGetRequest'] = executeHassioGetRequest
   process.env.HASSIO_TOKEN = 'test'
   const cfg = new Config()
   Config['config'].mqttusehassio = true
-  cfg.getMqttConnectOptions().then((_mqttData) => {
+  await cfg.getMqttConnectOptions().then((_mqttData) => {
     expect(_mqttData.mqttserverurl).toBe('mqtt://core-mosquitto:1883')
     expect(_mqttData.username).toBe(mqttService.username)
     mockReject = true
-    cfg.getMqttConnectOptions().catch((reason) => {
+    return cfg.getMqttConnectOptions().catch((reason) => {
       expect(reason).toBe(mockedReason)
-      // Restore class
       process.env.HASSIO_TOKEN = ''
       Config['executeHassioGetRequest'] = oldExecute
-
-      done()
     })
   })
 })

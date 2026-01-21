@@ -1,20 +1,21 @@
 import ModbusRTU from 'modbus-serial'
+import type { ModbusRTULike } from 'modbus-serial'
 import Debug from 'debug'
-import { ReadRegisterResult } from 'modbus-serial/ModbusRTU'
+import { ReadRegisterResult } from './modbusTypes.js'
 import { Command } from 'commander'
 
 const debug = Debug('modbusreopen')
 let baudrate = 9600
-let cli = new Command()
+const cli = new Command()
 cli.usage('[--baudrate <baudrate>]')
 cli.option('-b, --baudrate <baudrate>', 'set baud rate^')
 cli.parse(process.argv)
-let options = cli.opts()
+const options = cli.opts()
 if (options['baudrate']) baudrate = parseInt(options['baudrate'])
 Debug.enable('modbusreopen')
-const client = new ModbusRTU()
+const client: ModbusRTULike = new ModbusRTU()
 console.log('exit')
-let b = Buffer.allocUnsafe(4)
+const b = Buffer.allocUnsafe(4)
 b.writeFloatLE(227.8)
 debug('writeFloatLE ' + JSON.stringify(b))
 b.writeFloatBE(227.8)

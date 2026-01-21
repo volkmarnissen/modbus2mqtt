@@ -26,7 +26,7 @@ describe('CmdlineMigrate', () => {
   })
 
   afterEach(() => {
-    // Verwende den TestHelper für cleanup
+    // Use test helper for cleanup
     testHelper.cleanup()
   })
 

@@ -3,9 +3,11 @@ import { IModbusResultWithDuration } from '../../src/server/bus'
 import { ModbusRTUQueue } from '../../src/server/modbusRTUqueue'
 import { ModbusRTUWorker } from '../../src/server/modbusRTUworker'
 import { IModbusAPI } from '../../src/server/modbusWorker'
-import { ModbusTasks } from '../../src/server.shared'
+import { ModbusTasks } from '../../src/shared/server'
 import * as fs from 'fs'
 import { Config } from '../../src/server/config'
+import { ConfigSpecification } from '../../src/specification'
+import { join } from 'path'
 
 /**
  * Universal Test Helper for file backup/restore
@@ -190,7 +192,7 @@ export class MigrationTestHelper {
     // Helper cleanup
     this.helper.cleanup()
 
-    // Temporäre Verzeichnisse löschen
+    // Remove temporary directories
     for (const dirPath of this.tempDirs) {
       if (fs.existsSync(dirPath)) {
         fs.rmSync(dirPath, { recursive: true, force: true })
@@ -242,7 +244,7 @@ export class FakeBus implements IModbusAPI {
   }
   readHoldingRegisters(slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
     return new Promise<IModbusResultWithDuration>((resolve) => {
-      let d: number[] = []
+      const d: number[] = []
       this.callCount = 1
       for (let idx = 0; idx < length; idx++) d.push(dataaddress)
       data++
@@ -253,7 +255,7 @@ export class FakeBus implements IModbusAPI {
     return new Promise<IModbusResultWithDuration>((resolve, reject) => {
       if (this.callCount > 0) {
         this.callCount = 0
-        let r: IModbusResultWithDuration = {
+        const r: IModbusResultWithDuration = {
           data: [1],
           duration: 100,
         }
@@ -264,33 +266,33 @@ export class FakeBus implements IModbusAPI {
           case 197:
             {
               this.callCount = 1
-              let e1: any = new Error('Error')
+              const e1: any = new Error('Error')
               e1.modbusCode = 1 // Illegal function address
               reject(e1)
             }
             break
           case 198:
             {
-              let e1: any = new Error('Error')
+              const e1: any = new Error('Error')
               e1.modbusCode = 1 // Illegal function code
               reject(e1)
             }
             break
           case 199:
-            let e1: any = new Error('CRC error')
+            const e1: any = new Error('CRC error')
             reject(e1)
             break
           case 202:
-            let e2: any = new Error('CRC error')
+            const e2: any = new Error('CRC error')
             reject(e2)
             break
           case 200:
-            let e = new Error('Error')
+            const e = new Error('Error')
             ;(e as any).errno = 'ETIMEDOUT'
             reject(e)
             break
           default:
-            let r: IModbusResultWithDuration = {
+            const r: IModbusResultWithDuration = {
               data: [1],
               duration: 100,
             }
@@ -323,12 +325,12 @@ export class ModbusRTUWorkerForTest extends ModbusRTUWorker {
     this.isRunningForTest = false
   }
   override onFinish(): void {
-    let fakeBus: FakeBus = this.modbusAPI as any
+    const fakeBus: FakeBus = this.modbusAPI as any
     expect(fakeBus.callCount).toBe(this.expectedAPIcallCount)
     expect((this.modbusAPI as FakeBus).reconnected).toBe(this.expectedReconnected)
     expect(fakeBus.wroteDataCount).toBe(this.expectedAPIwroteDataCount)
     if (this.expectedRequestCountSpecification > 0) {
-      let min = new Date().getMinutes()
+      const min = new Date().getMinutes()
       expect(this['cache'].get(1)!.requestCount[ModbusTasks.specification][min]).toBe(this.expectedRequestCountSpecification)
     }
     this.done()
@@ -336,4 +338,65 @@ export class ModbusRTUWorkerForTest extends ModbusRTUWorker {
 }
 export interface Itest {
   worker?: ModbusRTUWorkerForTest
+}
+
+/**
+ * Helper to create per-test temporary config/data directories and switch the app to use them.
+ * Prevents tests from modifying shared fixtures like waterleveltransmitter.yaml.
+ */
+export class TempConfigDirHelper {
+  private originalConfigDir: string
+  private originalDataDir: string
+  private originalSslDir: string
+  private tempRoot: string
+  private tempConfigDir: string
+  private tempDataDir: string
+
+  constructor(private name: string = 'temp') {
+    this.originalConfigDir = ConfigSpecification.configDir || Config.configDir
+    this.originalDataDir = ConfigSpecification.dataDir || Config.dataDir
+    this.originalSslDir = Config.sslDir
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    this.tempRoot = join('/tmp', `modbus2mqtt-${this.name}-${stamp}`)
+    this.tempConfigDir = join(this.tempRoot, 'config-dir')
+    this.tempDataDir = join(this.tempRoot, 'data-dir')
+  }
+
+  /** Recursively copy a directory */
+  private copyDirSync(src: string, dest: string): void {
+    fs.cpSync(src, dest, { recursive: true })
+  }
+
+  /** Set up temp dirs and switch Config/ConfigSpecification to use them */
+  setup(): void {
+    // Copy config-dir and data-dir if defined
+    if (this.originalConfigDir && this.originalConfigDir.length > 0) this.copyDirSync(this.originalConfigDir, this.tempConfigDir)
+    if (this.originalDataDir && this.originalDataDir.length > 0) this.copyDirSync(this.originalDataDir, this.tempDataDir)
+
+    // Point runtime to the temp directories
+    ConfigSpecification.configDir = this.tempConfigDir
+    ConfigSpecification.dataDir = this.tempDataDir
+    Config.configDir = this.tempConfigDir
+    Config.dataDir = this.tempDataDir
+    Config.sslDir = this.tempConfigDir
+  }
+
+  /** Restore original directories and remove temp dirs */
+  cleanup(): void {
+    // Restore paths
+    ConfigSpecification.configDir = this.originalConfigDir
+    ConfigSpecification.dataDir = this.originalDataDir
+    Config.configDir = this.originalConfigDir
+    Config.dataDir = this.originalDataDir
+    Config.sslDir = this.originalSslDir
+
+    // Remove temp root
+    if (fs.existsSync(this.tempRoot)) {
+      try {
+        fs.rmSync(this.tempRoot, { recursive: true, force: true })
+      } catch {
+        // ignore cleanup errors in tests
+      }
+    }
+  }
 }

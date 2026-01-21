@@ -17,7 +17,7 @@ entities:
     registerType: 3
     readonly: true
   - id: 2
-    mqttname: ""
+    mqttname: ''
     converter:
       name: number
       registerTypes:
@@ -39,6 +39,6 @@ i18n:
         text: Water Level Transmitter
       - textId: e1
         text: Water Level Transmitter
-version: "0.3"
+version: '0.3'
 testdata: {}
 nextEntityId: 2

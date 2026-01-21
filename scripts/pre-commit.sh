@@ -4,6 +4,89 @@
 umlaut_pattern='[äöüÄÖÜß]'
 german_words='und|der|die|das|nicht|bitte|änderung|anderung|änderungen|anderungen|übersetz|ubersetz|deutsch|deutsche|ich|wir|sie|dass|text|ä|ö|ü|ß'
 
+# --- Detect FULL mode early (before any skip logic) ---
+# FULL mode is active when any of these is true:
+#   1) PRECOMMIT_FULL env var is set
+#   2) .precommit-full file exists
+#   3) Script is invoked directly via scripts path
+FULL_MODE=0
+if [ -n "${PRECOMMIT_FULL:-}" ]; then
+  FULL_MODE=1
+elif [ -f ".precommit-full" ]; then
+  FULL_MODE=1
+else
+  case "$0" in
+    *"/scripts/pre-commit.sh")
+      FULL_MODE=1
+      ;;
+  esac
+fi
+
+# --- Simple skip toggle via file or env ---
+SKIP_FILE=".skip-precommit"
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+SKIP_FLAG=0
+
+# Skip entirely via environment variable (ignored in FULL mode)
+if [ "$FULL_MODE" -ne 1 ] && [ -n "${SKIP_PRECOMMIT:-}" ]; then
+  echo "[pre-commit] Skipping via SKIP_PRECOMMIT on branch '$BRANCH'." >&2
+  exit 0
+fi
+
+# Skip via repo file toggle (ignored in FULL mode)
+if [ "$FULL_MODE" -ne 1 ] && [ -f "$SKIP_FILE" ]; then
+  echo "[pre-commit] Skipping due to $SKIP_FILE file." >&2
+  SKIP_FLAG=1
+fi
+
+# --- Branch-based skip configuration ---
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+
+# Skip entirely via environment variable (ignored in FULL mode)
+if [ "$FULL_MODE" -ne 1 ] && [ -n "${SKIP_PRECOMMIT:-}" ]; then
+  echo "[pre-commit] Skipping via SKIP_PRECOMMIT on branch '$BRANCH'." >&2
+  exit 0
+fi
+
+# Skip via repo file toggle (ignored in FULL mode)
+if [ "$FULL_MODE" -ne 1 ] && [ -f ".skip-pre-commit" ]; then
+  echo "[pre-commit] Skipping due to .skip-pre-commit file." >&2
+  exit 0
+fi
+
+# Configure skip/only branches via git config:
+#   git config hooks.skipBranches "feature/* test/*"
+#   git config hooks.onlyBranches "main develop"
+SKIP_BRANCHES=$(git config --get hooks.skipBranches || echo "")
+ONLY_BRANCHES=$(git config --get hooks.onlyBranches || echo "")
+
+if [ "$FULL_MODE" -ne 1 ]; then
+  if [ -n "$SKIP_BRANCHES" ] && [ -n "$BRANCH" ]; then
+    for pat in $(echo "$SKIP_BRANCHES" | tr ',' ' '); do
+      # Basic glob match using bash [[ ]]
+      if [[ "$BRANCH" == $pat ]]; then
+        echo "[pre-commit] Skipping on branch '$BRANCH' (hooks.skipBranches match: '$pat')." >&2
+        exit 0
+      fi
+    done
+  fi
+fi
+
+if [ "$FULL_MODE" -ne 1 ]; then
+  if [ -n "$ONLY_BRANCHES" ] && [ -n "$BRANCH" ]; then
+    match=0
+    for pat in $(echo "$ONLY_BRANCHES" | tr ',' ' '); do
+      if [[ "$BRANCH" == $pat ]]; then
+        match=1
+        break
+      fi
+    done
+    if [ "$match" -ne 1 ]; then
+      echo "[pre-commit] Skipping on branch '$BRANCH' (not in hooks.onlyBranches)." >&2
+      exit 0
+    fi
+  fi
+fi
 
 # --- Determine changed files (works for pre-commit and CI workflow) ---
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
@@ -17,6 +100,17 @@ else
   fi
   # Local pre-commit: use staged files
   CHANGED_FILES=$(git diff --cached --name-only)
+fi
+
+# Ensure skip file is not committed
+if echo "$CHANGED_FILES" | grep -qx "$SKIP_FILE"; then
+  git restore --staged "$SKIP_FILE" 2>/dev/null || git reset -q "$SKIP_FILE" || true
+  echo "[pre-commit] Unstaged $SKIP_FILE to avoid committing it." >&2
+fi
+
+# If skip flag set, exit now (ignored in FULL mode)
+if [ "$FULL_MODE" -ne 1 ] && [ "$SKIP_FLAG" -eq 1 ]; then
+  exit 0
 fi
 
 # --- Functions ---
@@ -61,6 +155,10 @@ check_eslint() {
     ESLINT_ERRORS=0
     for file in $CHANGED_FILES; do
       case "$file" in
+        src/angular/*|angular/src/*)
+          # Skip Angular app files in hook (use angular's own lint/build)
+          continue
+          ;;
         *.js|*.ts|*.tsx|*.jsx)
           # echo "Running ESLint on $file..."
           if ! npx eslint --no-warn-ignored "$file"; then
@@ -96,8 +194,16 @@ check_prettier() {
 }
 
 check_forbidden_extensions() {
-  forbidden_exts="cjs cts js ts tsx"
+  # Only forbid CommonJS-specific extensions in this ESM project.
+  # TypeScript source (.ts/.tsx) and .js/.mjs are allowed here due to repo usage (tests, Cypress, scripts).
+  forbidden_exts="cjs cts"
   for file in $CHANGED_FILES; do
+    # Allow-list known config files that require CJS
+    case "$file" in
+      jest.config.cjs)
+        continue
+        ;;
+    esac
     ext="${file##*.}"
     for forbidden in $forbidden_exts; do
       if [ "$ext" = "$forbidden" ]; then
@@ -139,12 +245,45 @@ check_files_for_english() {
   fi
 }
 
+# Run full-project ESLint across src and tests
+run_eslint_full() {
+  if command -v npx >/dev/null 2>&1; then
+    echo "[pre-commit] Running full ESLint (src and __tests__) ..." >&2
+    # Keep Angular app excluded per existing project lint scripts
+    if ! npx eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'src/angular/**' --ignore-pattern 'angular/**' --format stylish src __tests__; then
+      echo -e "\033[31m[pre-commit] ERROR: ESLint failed for the repository.\033[0m" >&2
+      return 1
+    fi
+  fi
+  return 0
+}
+
+# Run full Jest test suite
+run_jest_full() {
+  if command -v npx >/dev/null 2>&1; then
+    echo "[pre-commit] Running full Jest test suite ..." >&2
+    # Avoid watch, run serially to be predictable in hooks
+    if ! npx jest --config jest.config.cjs --runInBand --detectOpenHandles --watchAll=false; then
+      echo -e "\033[31m[pre-commit] ERROR: Jest tests failed.\033[0m" >&2
+      return 1
+    fi
+  fi
+  return 0
+}
+
 # --- Run all checks ---
 FAILED=0
 check_package_json_version_name || FAILED=1
 check_apkbuild || FAILED=1
 check_eslint || FAILED=1
 check_prettier || FAILED=1
+# Optional full-project checks (controlled via env/file/call path)
+if [ "$FULL_MODE" -eq 1 ]; then
+  run_eslint_full || FAILED=1
+  run_jest_full || FAILED=1
+else
+  echo "[pre-commit] Full checks skipped (set PRECOMMIT_FULL=1 or .precommit-full to enable)." >&2
+fi
 check_forbidden_extensions || FAILED=1
 check_files_for_english || FAILED=1
 

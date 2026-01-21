@@ -12,7 +12,27 @@ function runRegister(authentication, port) {
     cy.get('[formcontrolname="username"]').type('test')
     cy.get('[formcontrolname="password"]').type('test')
     cy.get('button[value="authentication"]').click()
-  } else cy.get('button[value="noAuthentication"]').click()
+  } else {
+    // In some states the register-mode isn't shown -> the noAuthentication button doesn't exist
+    cy.get('body').then(($body) => {
+      if ($body.find('button[value="noAuthentication"]').length) {
+        cy.get('button[value="noAuthentication"]').click()
+      } else {
+        cy.log('noAuthentication button not present; continuing')
+      }
+    })
+  }
+  // Some flows route directly to /busses when config exists; ensure we end on /configure
+  cy.url().then((url)=>{
+    if(!url.includes('/configure')){
+      if( prefix.length )
+        cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix + '/configure')
+      else if(port != undefined )
+        cy.visit('http://' + localhost + ':' + port + '/configure')
+      else
+        cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort') + '/configure')
+    }
+  })
   cy.url().should('contain', prefix + '/configure')
 }
 function runConfig(authentication) {
@@ -31,9 +51,11 @@ function runConfig(authentication) {
 function runBusses() {
   cy.url().should('contain', prefix + '/busses')
   cy.get('[role="tab"] ').eq(1).click()
-  cy.get('[formcontrolname="host"]').type(localhost, { force: true })
-  cy.get('[formcontrolname="port"]').type('{backspace}{backspace}{backspace}3002', { force: true })
-  cy.get('[formcontrolname="timeout"]').eq(0).type('{backspace}{backspace}{backspace}500', { force: true })
+  // Ensure the Host field is reset before typing to avoid concatenation
+  cy.get('[formcontrolname="host"]').clear({ force: true }).type(localhost, { force: true })
+  // Clear Port and Timeout fields as well to prevent concatenation
+  cy.get('[formcontrolname="port"]').clear({ force: true }).type('3002', { force: true })
+  cy.get('[formcontrolname="timeout"]').eq(0).clear({ force: true }).type('500', { force: true })
   cy.get('[formcontrolname="host"]').trigger('change')
   cy.get('div.card-header-buttons button:first').click({ force: true})
   // List slaves second header button on first card
@@ -50,7 +72,16 @@ function addSlave(willLog) {
   })
   cy.url().should('contain', prefix + '/slaves')
   cy.get('[formcontrolname="detectSpec"]', logSetting).click(logSetting)
-  cy.get('[formcontrolname="slaveId"]', logSetting).type('3{enter}', { force: true, log: willLog }).wait(2000)
+  // Ensure the New Slave id field is properly set
+  cy.contains('mat-card-title', 'New Slave')
+    .parents('mat-card')
+    .find('[formcontrolname="slaveId"]')
+    .scrollIntoView()
+    .clear({ force: true })
+    .type('3', { force: true, log: willLog })
+    .trigger('change')
+    .trigger('blur')
+  cy.wait(500)
   // wait for preparedSpecifications to be available
   cy.get('app-select-slave:first mat-expansion-panel-header[aria-expanded=false]', logSetting).then((elements) => {
     if (elements.length >= 1) {

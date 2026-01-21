@@ -1,13 +1,13 @@
 import { FCallbackVal, IServiceVector, ServerTCP } from 'modbus-serial'
-import { IQueueEntry, ModbusRTUQueue } from './modbusRTUqueue'
-import { ImodbusAddress, ModbusTasks } from '../server.shared'
-import { ModbusRegisterType } from '../specification.shared'
-import { Logger, LogLevelEnum } from '../specification'
-import { Config } from './config'
+import { IQueueEntry, ModbusRTUQueue } from './modbusRTUqueue.js'
+import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
+import { ModbusRegisterType } from '../shared/specification/index.js'
+import { Logger, LogLevelEnum } from '../specification/index.js'
+import { Config } from './config.js'
 import Debug from 'debug'
 
 const log = new Logger('tcprtubridge')
-let debug = Debug('tcprtubridge')
+const debug = Debug('tcprtubridge')
 
 function queueRegister<T>(
   queue: ModbusRTUQueue,
@@ -19,19 +19,19 @@ function queueRegister<T>(
   length: number
 ): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    let a: ImodbusAddress = { address: addr, length: length, registerType: registerType, write: write }
+    const a: ImodbusAddress = { address: addr, length: length, registerType: registerType, write: write }
     queue.enqueue(
       unitID,
       a,
       (_qe: IQueueEntry, result?: number[]) => {
         try {
-          let v = onResolve(result)
+          const v = onResolve(result)
           resolve(v)
-        } catch (e: any) {
+        } catch (e: unknown) {
           reject(e)
         }
       },
-      (_qe: IQueueEntry, e: any) => {
+      (_qe: IQueueEntry, e: unknown) => {
         reject(e)
       },
       { useCache: false, task: ModbusTasks.tcpBridge, errorHandling: {} }
@@ -192,23 +192,23 @@ export class ModbusTcpRtuBridge {
     },
   }
   async startServer(port: number = ModbusTcpRtuBridge.getDefaultPort()): Promise<ServerTCP> {
-    let rc = new Promise<ServerTCP>((resolve, reject) => {
+    const rc = new Promise<ServerTCP>((resolve) => {
       this.serverTCP = new ServerTCP(this.vector, {
         host: '0.0.0.0',
         port: port,
       })
 
-      this.serverTCP.on('socketError', function (err: any) {
-        // Handle socket error if needed, can be ignored
-        log.log(LogLevelEnum.error, 'TCP bridge' + err!.message + ' (Continue w/o TCP bridge)')
+      this.serverTCP.on('socketError', function (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        log.log(LogLevelEnum.error, 'TCP bridge: ' + msg + ' (Continue w/o TCP bridge)')
       })
-      this.serverTCP.on('serverError', function (err) {
-        // Handle socket error if needed, can be ignored
-        log.log(LogLevelEnum.error, 'TCP bridge: ' + err!.message + ' (Continue w/o TCP bridge)')
+      this.serverTCP.on('serverError', function (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        log.log(LogLevelEnum.error, 'TCP bridge: ' + msg + ' (Continue w/o TCP bridge)')
       })
-      this.serverTCP.on('error', function (err) {
-        // Handle socket error if needed, can be ignored
-        log.log(LogLevelEnum.error, 'TCP bridge error: ' + err!.message + ' (Continue w/o TCP bridge)')
+      this.serverTCP.on('error', function (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        log.log(LogLevelEnum.error, 'TCP bridge error: ' + msg + ' (Continue w/o TCP bridge)')
       })
       this.serverTCP.on('initialized', () => {
         log.log(LogLevelEnum.info, 'TCP bridge: listening on modbus://0.0.0.0:' + port)

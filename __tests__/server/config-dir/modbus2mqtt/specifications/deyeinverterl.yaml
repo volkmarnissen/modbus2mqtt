@@ -6,7 +6,7 @@ entities:
     modbusAddress: 4
     registerType: 3
     readonly: 3
-    icon: ""
+    icon: ''
     converterParameters:
       multiplier: 0.1
       offset: 0
@@ -20,7 +20,7 @@ entities:
     modbusAddress: 2
     registerType: 3
     readonly: false
-    icon: ""
+    icon: ''
     converterParameters:
       options:
         - key: 1
@@ -47,7 +47,7 @@ i18n:
       - textId: e1
         text: test1
 identified: 1
-version: "0.2"
+version: '0.2'
 testData:
   holdingRegisters:
     - address: 4

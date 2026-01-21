@@ -5,6 +5,7 @@ This guide will help you quickly set up and use modbus2mqtt.
 ## Prerequisites
 
 Before you begin, make sure you have:
+
 - A Modbus device (RTU or TCP)
 - MQTT broker (e.g., Mosquitto)
 - For Modbus RTU: USB-to-RS485 adapter
@@ -14,6 +15,7 @@ Before you begin, make sure you have:
 ### 1. Access the Web Interface
 
 Open your browser and navigate to:
+
 ```
 http://localhost:3000
 ```
@@ -136,6 +138,7 @@ If you're using Home Assistant, modbus2mqtt automatically creates MQTT discovery
 ### Reading Data
 
 Data is automatically polled at the interval you configured. You can:
+
 - View current values in the Web UI
 - Subscribe to MQTT topics: `modbus2mqtt/<device>/<entity>`
 - Use Home Assistant entities
@@ -143,11 +146,13 @@ Data is automatically polled at the interval you configured. You can:
 ### Writing Data
 
 For writable entities:
+
 1. In the Web UI, click on the entity
 2. Enter the new value
 3. Click **Write**
 
 Or publish to MQTT:
+
 ```
 Topic: modbus2mqtt/<device>/<entity>/set
 Payload: <value>
@@ -189,6 +194,7 @@ Payload: <value>
 ### Serial Port Permission Denied (Linux)
 
 Add your user to the dialout group:
+
 ```bash
 sudo usermod -a -G dialout $USER
 ```

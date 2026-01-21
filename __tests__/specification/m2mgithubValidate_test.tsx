@@ -6,7 +6,7 @@ import * as fs from 'fs'
 import { configDir } from './configsbase'
 const debug = Debug('m2mgithubvalidate')
 
-let yamlDir = '__tests__/yamlDirValidate'
+const yamlDir = '__tests__/yamlDirValidate'
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -28,5 +28,5 @@ afterAll(() => {
 
 it.skip('validate test requires GITHUB_TOKEN', (done) => {
   expect(process.env.GITHUB_TOKEN).toBeDefined()
-  let github = new M2mGithubValidate(process.env.GITHUB_TOKEN as string)
+  const github = new M2mGithubValidate(process.env.GITHUB_TOKEN as string)
 }, 10000)

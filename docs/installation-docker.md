@@ -30,7 +30,7 @@ services:
     image: modbus2mqtt/server:latest
     container_name: modbus2mqtt
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./config:/config
     devices:
@@ -43,8 +43,8 @@ services:
     image: eclipse-mosquitto:latest
     container_name: mosquitto
     ports:
-      - "1883:1883"
-      - "9001:9001"
+      - '1883:1883'
+      - '9001:9001'
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
@@ -68,7 +68,6 @@ docker-compose up -d
 **Required**: `/config` for persistent configuration
 **Optional**: `/data` Contains public specifications.
 **Optional**: `/ssl` location for certificates and `security.txt`. A key file to be used for en/decrypt passwords. If this file is lost, the passwords and tokens must be reentered.
-
 
 ### Device Access
 
@@ -123,6 +122,7 @@ docker logs modbus2mqtt
 #### Container User Configuration
 
 The modbus2mqtt container runs with a dedicated user for security:
+
 - **User**: `modbus2mqtt` (UID: `1000`)
 - **Primary Group**: `dialout` (GID: `20`)
 - **Home**: `/var/lib/modbus2mqtt`
@@ -130,6 +130,7 @@ The modbus2mqtt container runs with a dedicated user for security:
 #### Setting Correct Permissions
 
 **Option 1: Host directory ownership (recommended)**
+
 ```bash
 # Create directories with correct ownership
 mkdir -p ./config ./data
@@ -144,6 +145,7 @@ docker run -d -p 3000:3000 -p 2222:22 -v ./config:/config -v ./data:/data modbus
 ```
 
 **Option 2: User mapping in Docker**
+
 ```bash
 docker run -d \
   --user 1000:20 \
@@ -153,13 +155,14 @@ docker run -d \
 ```
 
 **Option 3: Docker Compose with user mapping**
+
 ```yaml
 services:
   modbus2mqtt:
     image: modbus2mqtt/server:latest
-    user: "1000:20"
+    user: '1000:20'
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./config:/config
 ```
@@ -169,12 +172,14 @@ services:
 If you see `EACCES: permission denied` errors:
 
 1. **Check current ownership**:
+
    ```bash
    ls -la ./config ./data
    # Should show: drwxr-xr-x ... 1000 dialout
    ```
 
 2. **Fix ownership**:
+
    ```bash
    sudo chown -R 1000:20 ./config ./data
    chmod -R 755 ./config ./data
@@ -185,12 +190,14 @@ If you see `EACCES: permission denied` errors:
    docker exec -it modbus2mqtt id
    # Expected: uid=1000(modbus2mqtt) gid=20(dialout)
    ```
+
 ### Installing Patches or Older Versions
 
 Patches are available as npm packages.
 They can be installed in the addon.
 
 This is the procedure:
+
 - Make sure, the docker container is running:
 
 - Logon to the container using the following command
@@ -210,6 +217,7 @@ This is the procedure:
   ```
   exit
   ```
+
 ### Serial Device Permission Issues
 
 For Modbus RTU access, ensure the serial device has proper permissions:
@@ -235,6 +243,7 @@ The container supports SSH access for remote debugging and maintenance:
 #### Enable SSH with options.json
 
 Create `/data/options.json`:
+
 ```json
 {
   "ssh_port": 22,
@@ -243,6 +252,7 @@ Create `/data/options.json`:
 ```
 
 #### Docker setup with SSH
+
 ```bash
 docker run -d \
   -p 3000:3000 \
@@ -256,21 +266,23 @@ ssh -p 2222 root@localhost
 ```
 
 #### Docker Compose with SSH
+
 ```yaml
 services:
   modbus2mqtt:
     image: modbus2mqtt/server:latest
     ports:
-      - "3000:3000"
-      - "2222:22"  # SSH access
+      - '3000:3000'
+      - '2222:22' # SSH access
     volumes:
       - ./config:/config
-      - ./data:/data  # Required for SSH configuration
+      - ./data:/data # Required for SSH configuration
 ```
 
 ### Multi-Architecture Support
 
 The container supports multiple architectures:
+
 - `linux/amd64` (Intel/AMD 64-bit)
 - `linux/arm64` (ARM 64-bit, Raspberry Pi 4+)
 
@@ -279,6 +291,7 @@ Docker automatically pulls the correct architecture.
 ### Health Monitoring
 
 Check container health:
+
 ```bash
 # View health status
 docker inspect --format='{{.State.Health.Status}}' modbus2mqtt

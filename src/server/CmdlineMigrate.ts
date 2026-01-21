@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { Logger, LogLevelEnum } from '../specification/log'
+import { Logger, LogLevelEnum } from '../specification/log.js'
 
 const log = new Logger('CmdlineMigrate')
 
