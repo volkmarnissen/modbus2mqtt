@@ -1,4 +1,4 @@
 {
-    "jest.rootPath": "./dist",
-    "python.formatting.provider": "yapf"
+  "jest.rootPath": "./dist",
+  "python.formatting.provider": "yapf"
 }

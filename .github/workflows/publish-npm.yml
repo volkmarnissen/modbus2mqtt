@@ -90,7 +90,6 @@ jobs:
     uses: ./.github/workflows/release-assets.yml
     with:
       version: ${{ needs.npm_publish.outputs.version }}
-
 # Notes:
 # - For push to main, it will NOT bump version automatically; it uses the current package.json version.
 # - For manual runs, you can choose patch/minor/major and optionally create a GitHub Release.

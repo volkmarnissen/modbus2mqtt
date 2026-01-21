@@ -1,8 +1,8 @@
 import { FCallbackVal, IServiceVector, ServerTCP } from 'modbus-serial'
 import Debug from 'debug'
-import { ModbusRegisterType } from '../specification.shared'
-import { ConfigSpecification, IfileSpecification, LogLevelEnum, Logger, M2mGitHub, Migrator } from '../specification'
-import { IModbusConnection, ITCPConnection } from '../server.shared'
+import { ModbusRegisterType } from '../shared/specification/index.js'
+import { ConfigSpecification, IfileSpecification, LogLevelEnum, Logger, M2mGitHub, Migrator } from '../specification/index.js'
+import { IModbusConnection, ITCPConnection } from '../shared/server/index.js'
 import * as fs from 'fs'
 import { join } from 'path'
 import { parse } from 'yaml'
@@ -118,13 +118,13 @@ const vector: IServiceVector = {
       } else reject(new Error('Modbus error 2'))
     })
   },
-  setCoil: (addr: number, value: boolean, unitID: number, cb: FCallbackVal<number>): void => {
+  setCoil: (addr: number, value: boolean, unitID: number, cb: FCallbackVal<boolean>): void => {
     const v = values.coils.find((v) => v.slaveid == unitID && v.address == addr)
     if (v) {
       v.value = value
-      cb(null, value ? 1 : 0)
+      cb(null, value)
     } else {
-      cb(new Error('Modbus error 2'), 0)
+      cb(new Error('Modbus error 2'), false)
       return
     }
   },

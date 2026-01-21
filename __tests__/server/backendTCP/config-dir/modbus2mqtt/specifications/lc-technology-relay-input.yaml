@@ -184,7 +184,7 @@ filename: lc-technology-relay-input
 nextEntityId: 19
 model: Relay Input board
 manufacturer: Shenzen LC Technology
-version: "0.3"
+version: '0.3'
 testdata:
   coils:
     - address: 0

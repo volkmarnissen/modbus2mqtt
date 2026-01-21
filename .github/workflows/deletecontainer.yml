@@ -14,7 +14,7 @@ on:
         required: false
         type: number
         default: 4
-  
+
   workflow_call:
     inputs:
       package_name:

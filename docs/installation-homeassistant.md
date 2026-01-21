@@ -23,7 +23,7 @@ To install the Modbus2MQTT addon in Home Assistant, first add the repository:
 To log into the addon via SSH, it is recommended to use the official SSH & Web Terminal addon:
 
 1. Install the [SSH & Web Terminal](https://github.com/hassio-addons/addon-ssh) addon from the Add-on Store.
-See the previous chapter if this addon is not listed.
+   See the previous chapter if this addon is not listed.
 2. Configure a username and password or an SSH key pair.
 3. Start the SSH addon.
 4. Open an SSH connection to Home Assistant (e.g., with `ssh <user>@<homeassistant-ip>` or via the web terminal).
@@ -57,9 +57,8 @@ As with the Home Assistant installation, patches can be installed as npm package
    npm install -g modbus2mqtt@0.17.1
    ```
 4. Restart the container/addon if necessary for the changes to take effect.
-   ```docker stop <container id>``` and
-   ```docker start <container id>``` or any other command that restarts this container.
-   
+   `docker stop <container id>` and
+   `docker start <container id>` or any other command that restarts this container.
 
 ---
 

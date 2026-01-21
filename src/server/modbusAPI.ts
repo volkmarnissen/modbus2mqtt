@@ -6,19 +6,20 @@ import {
   ITCPConnection,
   IModbusConnection,
   ImodbusStatusForSlave,
-} from '../server.shared'
+} from '../shared/server/index.js'
 import { ImodbusValues, Logger, LogLevelEnum } from '../specification'
-import { ModbusRegisterType } from '../specification.shared'
+import { ModbusRegisterType } from '../shared/specification/index.js'
 import { Mutex } from 'async-mutex'
 import ModbusRTU from 'modbus-serial'
-import { ReadCoilResult, ReadRegisterResult } from 'modbus-serial/ModbusRTU'
-import { IModbusResultWithDuration } from './bus'
-import { Config } from './config'
-import { IexecuteOptions, ModbusRTUProcessor } from './modbusRTUprocessor'
-import { IModbusAPI } from './modbusWorker'
-import { submitGetHoldingRegisterRequest } from './submitRequestMock'
-import { ModbusRTUWorker } from './modbusRTUworker'
-import { IQueueOptions, ModbusRTUQueue } from './modbusRTUqueue'
+import type { ModbusRTULike } from 'modbus-serial'
+import { ReadCoilResult, ReadRegisterResult } from './modbusTypes.js'
+import { IModbusResultWithDuration } from './bus.js'
+import { Config } from './config.js'
+import { IexecuteOptions, ModbusRTUProcessor } from './modbusRTUprocessor.js'
+import { IModbusAPI } from './modbusWorker.js'
+import { submitGetHoldingRegisterRequest } from './submitRequestMock.js'
+import { ModbusRTUWorker } from './modbusRTUworker.js'
+import { IQueueOptions, ModbusRTUQueue } from './modbusRTUqueue.js'
 import Debug from 'debug'
 
 const log = new Logger('bus')
@@ -48,7 +49,7 @@ export interface IModbusConfiguration {
 }
 
 export class ModbusAPI implements IModbusAPI, IconsumerModbusAPI {
-  private modbusClient: ModbusRTU | undefined
+  private modbusClient: ModbusRTULike | undefined
   private modbusClientTimedOut: boolean = false
   private _modbusRTUWorker: ModbusRTUWorker
   constructor(
@@ -249,31 +250,16 @@ export class ModbusAPI implements IModbusAPI, IconsumerModbusAPI {
         const start = Date.now()
         this.modbusClient!.setID(slaveid)
         this.modbusClient!.setTimeout((this.modbusConfiguration.getModbusConnection() as IRTUConnection).timeout)
-        const dataB: boolean[] = []
-        data.forEach((d) => {
-          dataB.push(d == 1)
-        })
-        if (dataB.length === 1) {
-          //Using writeCoil for single value in case of situation that device does not support multiple at once like
-          // LC Technology relay/input boards
-          this.modbusClient!.writeCoil(dataaddress, dataB[0])
-            .then(() => {
-              this.modbusClientTimedOut = false
-              resolve()
-            })
-            .catch((e) => {
-              this.setModbusTimout(reject, e, start)
-            })
-        } else {
-          this.modbusClient!.writeCoils(dataaddress, dataB)
-            .then(() => {
-              this.modbusClientTimedOut = false
-              resolve()
-            })
-            .catch((e) => {
-              this.setModbusTimout(reject, e, start)
-            })
-        }
+        const dataNums: number[] = data.map((d) => (d === 1 ? 1 : 0))
+        // Always use writeCoils; for single value pass array of one element
+        this.modbusClient!.writeCoils(dataaddress, dataNums)
+          .then(() => {
+            this.modbusClientTimedOut = false
+            resolve()
+          })
+          .catch((e) => {
+            this.setModbusTimout(reject, e, start)
+          })
       }
     })
     return rc

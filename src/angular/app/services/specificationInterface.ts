@@ -1,4 +1,4 @@
-import { Ientity, Imessage, ImodbusData, ImodbusEntity, VariableTargetParameters } from '../../../specification.shared'
+import { Ientity, Imessage, ImodbusData, ImodbusEntity, VariableTargetParameters } from '../../shared/specification'
 import { Observable } from 'rxjs'
 export interface ImodbusEntityWithName extends ImodbusEntity {
   name?: string

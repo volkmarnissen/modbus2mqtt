@@ -2,7 +2,7 @@ import { Request } from 'express'
 import * as multer from 'multer'
 import { getSpecificationImageOrDocumentUrl } from './config'
 import * as fs from 'fs'
-import { SpecificationFileUsage } from '../specification.shared'
+import { SpecificationFileUsage } from '../shared/specification'
 import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
 const log = new Logger('httpFileUpload')
 
@@ -27,7 +27,7 @@ export const fileStorage = multer.diskStorage({
 
     if (fileLocation == undefined) {
       log.log(LogLevelEnum.error, 'Config.fileLocation is not defined. NO file upload possible')
-    } else if (request.query.specification !== null) {
+    } else if (request.query.specification != null) {
       const dir = getSpecificationImageOrDocumentUrl(fileLocation, getFilenameForUpload(request.query.specification!), '')
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
       callback(null, dir)

@@ -1,7 +1,6 @@
-import { IModbusResultWithDuration } from './bus'
-import { ModbusRTUQueue, IQueueEntry } from './modbusRTUqueue'
-import { ModbusRegisterType } from '../specification.shared'
-import ModbusRTU from 'modbus-serial'
+import { IModbusResultWithDuration } from './bus.js'
+import { ModbusRTUQueue, IQueueEntry } from './modbusRTUqueue.js'
+import { ModbusRegisterType } from '../shared/specification/index.js'
 
 type TModbusReadFunction = (slaveid: number, dataaddress: number, length: number) => Promise<IModbusResultWithDuration>
 type TModbusWriteFunction = (slaveid: number, dataaddress: number, data: number[]) => Promise<void>
@@ -19,7 +18,6 @@ export interface IModbusAPI {
 export class ModbusWorker {
   protected functionCodeReadMap: Map<ModbusRegisterType, TModbusReadFunction>
   protected functionCodeWriteMap: Map<ModbusRegisterType, TModbusWriteFunction>
-  private modbusClient: ModbusRTU | undefined
   constructor(
     protected modbusAPI: IModbusAPI,
     protected queue: ModbusRTUQueue

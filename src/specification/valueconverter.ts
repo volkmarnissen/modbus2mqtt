@@ -1,5 +1,5 @@
-import { Converter } from './converter'
-import { Converters, Ispecification, Ivalue, ModbusRegisterType } from '../specification.shared'
+import { Converter } from './converter.js'
+import { Converters, Ispecification, Ivalue, ModbusRegisterType } from '../shared/specification/index.js'
 
 export class ValueConverter extends Converter {
   override mqtt2modbus(_spec: Ispecification, _entityid: number, _value: string | number): number[] {

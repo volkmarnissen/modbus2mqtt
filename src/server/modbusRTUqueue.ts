@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { ImodbusAddress, ModbusErrorStates, ModbusTasks } from '../server.shared'
+import { ImodbusAddress, ModbusErrorStates, ModbusTasks } from '../shared/server/index.js'
 const EventNewEntry = 'newEntry'
 const EventCachedEntry = 'cachedEntry'
 export enum ModbusErrorActions {

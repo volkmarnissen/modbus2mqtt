@@ -10,6 +10,7 @@ Bridge between Modbus devices and MQTT with automatic Home Assistant discovery.
 modbus2mqtt enables seamless integration of Modbus devices (RTU/TCP) into your smart home system via MQTT. It features a user-friendly web interface, automatic Home Assistant discovery, and community-driven device specifications.
 
 **Key Features:**
+
 - Web-based configuration UI
 - Modbus RTU & TCP support
 - MQTT integration with Home Assistant discovery
@@ -22,12 +23,9 @@ modbus2mqtt enables seamless integration of Modbus devices (RTU/TCP) into your s
 
 Choose your preferred method:
 
-
 - **[Home Assistant Add-on](docs/installation-homeassistant.md)**
 - **[Docker](docs/installation-docker.md)** - Recommended for most users
 - **[Proxmox LXC](docs/installation-proxmox.md)** - Alpine Linux package for Proxmox containers
-
-
 
 ### Usage
 
@@ -47,6 +45,7 @@ For complete documentation, see the [docs/](docs/) directory.
 ## Contributing
 
 We welcome contributions! See the [Contributing Guide](docs/contributing.md) for details on:
+
 - Setting up your development environment ([Development Guide](docs/development.md))
 - Code style and testing requirements
 - Submitting pull requests

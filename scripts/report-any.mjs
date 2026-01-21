@@ -5,7 +5,7 @@ async function main() {
   const eslint = new ESLint({ cwd: process.cwd(), overrideConfig: { ignores: ['src/angular/**'] } })
 
   // Lint only src, exclude Angular subfolder explicitly
-  const results = await eslint.lintFiles(["src/**/*.{ts,tsx,js,jsx}"])
+  const results = await eslint.lintFiles(['src/**/*.{ts,tsx,js,jsx}'])
 
   const anyFindings = []
   for (const res of results) {

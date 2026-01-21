@@ -20,14 +20,12 @@
     "target": "ES2022",
     "module": "ES2022",
     "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "dom"
-    ]
+    "lib": ["ES2022", "dom"]
   },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "include": ["../src/angular/*","../src/*.shared/*"],
+  "include": ["../src/angular/**/*.ts", "../src/shared/**/*.ts"],
+  "exclude": ["../src/angular/**/*.spec.ts", "../src/angular/**/*.test.ts"]
 }

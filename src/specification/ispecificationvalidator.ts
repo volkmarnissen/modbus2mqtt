@@ -1,4 +1,4 @@
-import { Imessage } from '../specification.shared'
+import { Imessage } from '../shared/specification/index.js'
 export interface IvalidateIdentificationResult {
   specname: string
   referencedEntity?: number

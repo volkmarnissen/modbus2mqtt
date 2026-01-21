@@ -17,7 +17,7 @@
             "outputPath": "dist/angular",
             "localize": true,
             "index": "src/angular/index.html",
-            "polyfills": [ "@angular/localize/init"],
+            "polyfills": ["@angular/localize/init"],
             "tsConfig": "angular/tsconfig.angular.json",
             "assets": ["src/angular/assets/images", "src/angular/assets"],
             "styles": ["src/angular/styles.css"],
@@ -77,7 +77,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "polyfills": [ "@angular/localize/init"],
+            "polyfills": ["@angular/localize/init"],
             "tsConfig": "tsconfig.json",
             "assets": ["src/angular/assets/images/*", "src/assets"],
             "styles": ["src/angular/styles.css"],

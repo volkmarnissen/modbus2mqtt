@@ -1,8 +1,8 @@
-import { Slave, ImqttClient } from '../server.shared'
+import { Slave, ImqttClient } from '../shared/server/index.js'
 import { IClientOptions, MqttClient, connect } from 'mqtt'
 import { format } from 'util'
-import { Config } from './config'
-import { Logger, LogLevelEnum } from '../specification'
+import { Config } from './config.js'
+import { Logger, LogLevelEnum } from '../specification/index.js'
 import Debug from 'debug'
 // removed unused imports
 

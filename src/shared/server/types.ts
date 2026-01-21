@@ -1,4 +1,4 @@
-import { IdentifiedStates, IidentEntity, Ispecification, ModbusRegisterType, SpecificationStatus } from '../specification.shared'
+import { IdentifiedStates, IidentEntity, Ispecification, ModbusRegisterType, SpecificationStatus } from '../specification/index.js'
 import { IClientOptions } from 'mqtt'
 
 export enum HttpErrorsEnum {
@@ -67,6 +67,7 @@ export interface Iconfiguration {
   mqttcertFile?: string
   httpport: number
   rootUrl?: string
+  frontendDir?: string
   supervisor_host?: string
   debugComponents?: string
   tcpBridgePort?: number

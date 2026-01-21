@@ -188,6 +188,7 @@ Log out and back in for changes to take effect.
 ## Contributing
 
 Ready to contribute? Check out the [Contributing Guide](./contributing.md) for:
+
 - Code style guidelines
 - Pull request process
 - Testing requirements

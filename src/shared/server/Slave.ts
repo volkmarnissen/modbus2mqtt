@@ -1,5 +1,5 @@
-import { Ientity, IidentEntity, ImodbusEntity, ImodbusSpecification, Ispecification } from '../specification.shared'
-import { Islave, PollModes } from './types'
+import { Ientity, IidentEntity, ImodbusEntity, ImodbusSpecification, Ispecification } from '../specification/index.js'
+import { Islave, PollModes } from './types.js'
 export interface IEntityCommandTopics {
   entityId: number
   commandTopic: string

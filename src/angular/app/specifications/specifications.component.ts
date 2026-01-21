@@ -11,9 +11,9 @@ import {
   SpecificationFileUsage,
   SpecificationStatus,
   getSpecificationI18nName,
-} from '../../../specification.shared'
+} from '../../shared/specification'
 import { SpecificationServices } from '../services/specificationServices'
-import { Iconfiguration, IUserAuthenticationStatus } from '../../../server.shared'
+import { Iconfiguration, IUserAuthenticationStatus } from '../../shared/server'
 import { GalleryItem, ImageItem } from 'ng-gallery'
 import { MatIcon } from '@angular/material/icon'
 import { MatTooltip } from '@angular/material/tooltip'

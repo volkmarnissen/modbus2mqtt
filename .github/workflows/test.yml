@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       latest:
-        default: ""
+        default: ''
         type: string
       tag:
         required: true
@@ -15,7 +15,7 @@ on:
       specification_tag:
         required: true
         type: string
-  
+
   workflow_call:
     inputs:
       latest:
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-      contents: write    
+      contents: write
     steps:
       - name: Write Release Text
         run: |

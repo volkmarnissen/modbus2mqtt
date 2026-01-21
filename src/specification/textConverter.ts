@@ -1,5 +1,5 @@
-import { Converter } from './converter'
-import { Ivalue, Ientity, Ispecification, Converters, ModbusRegisterType, Itext } from '../specification.shared'
+import { Converter } from './converter.js'
+import { Ivalue, Ientity, Ispecification, Converters, ModbusRegisterType, Itext } from '../shared/specification/index.js'
 
 export class TextConverter extends Converter {
   constructor(component?: Converters) {

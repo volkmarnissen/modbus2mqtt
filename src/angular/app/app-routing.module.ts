@@ -6,7 +6,7 @@ import { SelectModbusComponent } from './select-modbus/select-modbus.component'
 import { SelectSlaveComponent } from './select-slave/select-slave.component'
 import { RootRoutingComponent } from './root-routing/root-routing.component'
 import { SpecificationsComponent } from './specifications/specifications.component'
-import { RoutingNames } from '../../server.shared'
+import { RoutingNames } from '../shared/server'
 export const APP_ROUTES: Routes = [
   { path: '', component: RootRoutingComponent, pathMatch: 'full' },
   { path: RoutingNames.login, component: LoginComponent },

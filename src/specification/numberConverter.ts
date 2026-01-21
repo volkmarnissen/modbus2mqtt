@@ -1,7 +1,7 @@
-import { Converters, ImodbusEntity, ModbusRegisterType } from '../specification.shared'
-import { Converter } from './converter'
-import { EnumNumberFormat, Inumber, Ispecification, Ientity } from '../specification.shared'
-import { M2mSpecification } from './m2mspecification'
+import { Converters, ImodbusEntity, ModbusRegisterType } from '../shared/specification/index.js'
+import { Converter } from './converter.js'
+import { EnumNumberFormat, Inumber, Ispecification, Ientity } from '../shared/specification/index.js'
+import { M2mSpecification } from './m2mspecification.js'
 
 export class NumberConverter extends Converter {
   constructor(component?: Converters) {

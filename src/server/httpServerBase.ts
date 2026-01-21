@@ -1,18 +1,20 @@
 import Debug from 'debug'
 import * as http from 'http'
 import { Application, NextFunction, Request } from 'express'
+import type { ParamsDictionary } from 'express-serve-static-core'
+import type { ParsedQs } from 'qs'
 import express from 'express'
 import * as bodyparser from 'body-parser'
-import { Config, MqttValidationResult } from './config'
-import { HttpErrorsEnum } from '../specification.shared'
+import { Config, MqttValidationResult } from './config.js'
+import { HttpErrorsEnum } from '../shared/specification'
 import { join, basename } from 'path'
 import { parse } from 'node-html-parser'
 import * as fs from 'fs'
 import { LogLevelEnum, Logger } from '../specification'
 
-import { apiUri } from '../server.shared'
+import { apiUri } from '../shared/server'
 import { AddressInfo } from 'net'
-import { MqttSubscriptions } from './mqttsubscriptions'
+import { MqttSubscriptions } from './mqttsubscriptions.js'
 
 interface IAddonInfo {
   slug: string
@@ -107,23 +109,50 @@ export class HttpServerBase {
     })
     if (this.statics.size > 0) this.languages = Array.from(this.statics.keys())
   }
-  get(url: apiUri, func: (req: express.Request, response: express.Response) => void): void {
+  get<
+    P extends ParamsDictionary = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery extends ParsedQs = ParsedQs,
+    Locals extends Record<string, unknown> = Record<string, unknown>,
+  >(
+    url: apiUri,
+    func: (req: express.Request<P, ResBody, ReqBody, ReqQuery, Locals>, response: express.Response<ResBody, Locals>) => void
+  ): void {
     debugUrl('start get' + url)
-    this.app.get(url, (req: express.Request, response: express.Response) => {
+    this.app.get<P, ResBody, ReqBody, ReqQuery, Locals>(url, (req, response) => {
       debug(req.method + ': ' + req.originalUrl)
       func(req, response)
     })
   }
-  post(url: apiUri, func: (req: express.Request, response: express.Response) => void): void {
+  post<
+    P extends ParamsDictionary = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery extends ParsedQs = ParsedQs,
+    Locals extends Record<string, unknown> = Record<string, unknown>,
+  >(
+    url: apiUri,
+    func: (req: express.Request<P, ResBody, ReqBody, ReqQuery, Locals>, response: express.Response<ResBody, Locals>) => void
+  ): void {
     debugUrl('start post' + url)
-    this.app.post(url, (req: express.Request, response: express.Response) => {
+    this.app.post<P, ResBody, ReqBody, ReqQuery, Locals>(url, (req, response) => {
       debug(req.method + ': ' + req.originalUrl)
       func(req, response)
     })
   }
-  delete(url: apiUri, func: (req: express.Request, response: express.Response) => void): void {
+  delete<
+    P extends ParamsDictionary = ParamsDictionary,
+    ResBody = unknown,
+    ReqBody = unknown,
+    ReqQuery extends ParsedQs = ParsedQs,
+    Locals extends Record<string, unknown> = Record<string, unknown>,
+  >(
+    url: apiUri,
+    func: (req: express.Request<P, ResBody, ReqBody, ReqQuery, Locals>, response: express.Response<ResBody, Locals>) => void
+  ): void {
     debugUrl('start delete' + url)
-    this.app.delete(url, (req: express.Request, response: express.Response) => {
+    this.app.delete<P, ResBody, ReqBody, ReqQuery, Locals>(url, (req, response) => {
       debug(req.method + ': ' + req.originalUrl)
       func(req, response)
     })

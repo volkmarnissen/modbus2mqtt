@@ -1,9 +1,9 @@
 import { Command } from 'commander'
 import { ConfigSpecification, Logger, LogLevelEnum } from '../specification'
 import Debug from 'debug'
-import { Config } from './config'
+import { Config } from './config.js'
 import process from 'process'
-import { startModbusTCPserver } from './modbusTCPserver'
+import { startModbusTCPserver } from './modbusTCPserver.js'
 const _debug = Debug('modbusTCPserver')
 const log = new Logger('modbusTCPserver')
 

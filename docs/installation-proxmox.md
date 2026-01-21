@@ -176,6 +176,7 @@ pct config <CTID>
 ```
 
 Alpine Linux is very lightweight and efficient. Typical resource usage:
+
 - Memory: 256-512 MB for modbus2mqtt
 - Storage: 2-4 GB (Alpine base is ~130 MB)
 
@@ -196,6 +197,7 @@ vzdump <CTID> --compress zstd --storage local
 ### Restore
 
 In Proxmox web interface:
+
 1. Go to **Storage** → **Backups**
 2. Select the backup
 3. Click **Restore**

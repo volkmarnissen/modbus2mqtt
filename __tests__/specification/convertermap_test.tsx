@@ -1,5 +1,5 @@
 import { ConverterMap } from '../../src/specification'
-import { Converters, EnumNumberFormat, Ientity, Ispecification, ModbusRegisterType } from '../../src/specification.shared'
+import { Converters, EnumNumberFormat, Ientity, Ispecification, ModbusRegisterType } from '../../src/shared/specification'
 import { ConfigSpecification } from '../../src/specification'
 import { it, expect } from '@jest/globals'
 

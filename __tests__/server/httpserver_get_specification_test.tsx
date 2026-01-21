@@ -1,10 +1,10 @@
 import { expect, it, beforeAll, afterAll } from '@jest/globals'
 import { startModbusTCPserver, stopModbusTCPServer } from '../../src/server/modbusTCPserver'
 
-import { HttpErrorsEnum, ImodbusSpecification } from '../../src/specification.shared'
+import { HttpErrorsEnum, ImodbusSpecification } from '../../src/shared/specification'
 import { FakeMqtt, FakeModes, setConfigsDirsBackendTCPForTest, initBussesForTest } from './configsbase'
 import supertest from 'supertest'
-import { apiUri } from '../../src/server.shared'
+import { apiUri } from '../../src/shared/server'
 import { HttpServer } from '../../src/server/httpserver'
 import { Config } from '../../src/server/config'
 import { ConfigBus } from '../../src/server/configbus'

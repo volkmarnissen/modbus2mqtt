@@ -208,7 +208,7 @@ i18n:
         text: Dimplex PCO5
 filename: dimplexpco5
 status: 2
-version: "0.1"
+version: '0.1'
 testdata:
   - address: 2100174
     value: 450

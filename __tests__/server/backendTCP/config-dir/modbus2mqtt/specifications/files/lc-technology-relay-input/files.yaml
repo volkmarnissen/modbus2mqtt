@@ -1,4 +1,4 @@
-version: "0.1"
+version: '0.1'
 files:
   - url: specifications/files/_new/modbus_rtu__ip_en.pdf
     fileLocation: 0
