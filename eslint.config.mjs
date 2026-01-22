@@ -62,7 +62,7 @@ export default [
     },
   },
   {
-    files: ['__tests__/**/*.ts', '__tests__/**/*.tsx', '__tests__/**/*.js'],
+    files: ['backend/tests/**/*.ts', 'backend/tests/**/*.tsx', 'backend/tests/**/*.js'],
     rules: {
       // Relax strict TS/Jest rules in tests to reduce noise
       'unused-imports/no-unused-imports': 'off',
