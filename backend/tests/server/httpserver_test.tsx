@@ -1,7 +1,5 @@
 import { expect, it, xit, test, jest, describe, beforeAll, afterAll } from '@jest/globals'
 import { parse } from 'yaml'
-import Debug from 'debug'
-import { HttpServer as HttpServer } from '../../../src/server/index.js'
 import {
   ImodbusEntity,
   ModbusRegisterType,
@@ -28,18 +26,16 @@ import {
 } from '../../src/shared/server/index.js'
 import { IfileSpecification, LogLevelEnum, Logger } from '../../src/specification/index.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
-import { Mutex } from 'async-mutex'
 import { join } from 'path'
-import { MqttDiscover } from '../../src/server/mqttdiscover.js'
 import { MqttClient } from 'mqtt'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
 import { ModbusAPI } from '../../src/server/modbusAPI.js'
 import { setConfigsDirsForTest } from './configsbase.js'
-import { ConfigTestHelper, TempConfigDirHelper } from './testhelper.js'
+import { TempConfigDirHelper } from './testhelper.js'
+import { HttpServer } from '../../src/server/index.js'
 const mockReject = false
-const debug = Debug('testhttpserver')
 const mqttService = {
   host: 'core-mosquitto',
   port: 1883,
@@ -57,8 +53,6 @@ function executeHassioGetRequest<T>(_url: string, next: (_dev: T) => void, rejec
 
 const log = new Logger('httpserverTest')
 Config['executeHassioGetRequest'] = executeHassioGetRequest
-const mWaterlevel = new Mutex()
-let testdir = ''
 const testPdf = 'test.pdf'
 const test1 = 'test2.jpg'
 
@@ -107,16 +101,7 @@ spec2.entities.push({
     entityId: 1,
   },
 })
-function mockedAuthorization(_param: any): Promise<any> {
-  return new Promise<any>((resolve) => {
-    resolve({ justForTesting: true })
-  })
-}
-function mockedHttp(_options: any, cb: (res: any) => any) {
-  cb({ statusCode: 200 })
-}
 let oldExecuteHassioGetRequest: any
-const lspec = ConfigSpecification.getLocalDir() + '/specifications/'
 
 // Test Helper Instanz
 let httpTestHelper: TempConfigDirHelper
@@ -125,7 +110,6 @@ const oldAuthenticate: (req: any, res: any, next: () => void) => void = HttpServ
 beforeAll(() => {
   return new Promise<void>((resolve, reject) => {
     setConfigsDirsForTest()
-    testdir = ConfigSpecification.getLocalDir() + '/specifications/files/waterleveltransmitter/'
     httpTestHelper = new TempConfigDirHelper('httpserver-test')
     httpTestHelper.setup()
     const cfg = new Config()
@@ -135,7 +119,6 @@ beforeAll(() => {
         ConfigBus.readBusses()
         const conn = new MqttConnector()
         const msub = new MqttSubscriptions(conn)
-        const md = new MqttDiscover(conn, msub)
 
         const fake = new FakeMqtt(msub, FakeModes.Poll)
         conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
@@ -230,7 +213,7 @@ xit('register,login validate fails on github', (done) => {
   let token = ''
   supertest(httpServer['app'])
     .get('/user/reqister?name=test&password=test123')
-    .then((_response) => {
+    .then(() => {
       supertest(httpServer['app'])
         .get('/user/login?name=test&password=test123')
         .expect(200)
@@ -254,24 +237,17 @@ xit('register,login validate fails on github', (done) => {
             })
           })
         })
-        .catch((_err) => {
+        .catch(() => {
           expect(false).toBeTruthy()
         })
     })
-    .catch((_err) => {
+    .catch(() => {
       expect(false).toBeTruthy()
     })
 })
 
 it('supervisor login', async () => {
   // This enables hassio validation
-  const res: any = {}
-  const req: any = {
-    url: '/api/Needs authorization',
-    header: () => {
-      return undefined
-    },
-  }
   process.env.HASSIO_TOKEN = 'test'
   const response = await supertest(httpServer['app']).get(apiUri.userAuthenticationStatus).expect(200)
   const status = response.body as any as IUserAuthenticationStatus
@@ -320,9 +296,7 @@ describe('http ADD/DELETE /busses', () => {
     initBussesForTest()
 
     const oldLength = Bus.getBusses().length
-    const mockStaticF = jest.fn((connection: IModbusConnection) =>
-      Promise.resolve(new Bus({ busId: 7, slaves: [], connectionData: {} as any }))
-    )
+    const mockStaticF = jest.fn(() => Promise.resolve(new Bus({ busId: 7, slaves: [], connectionData: {} as any })))
     const orig = Bus.addBus
     Bus.addBus = mockStaticF
     const postResponse = await supertest(httpServer['app'])
@@ -371,7 +345,6 @@ describe('http POST', () => {
   test('POST /specification: add new Specification rename device.specification', async () => {
     const conn = new MqttConnector()
     const msub = new MqttSubscriptions(conn)
-    const md = new MqttDiscover(conn, msub)
 
     const fake = new FakeMqtt(msub, FakeModes.Poll)
     conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
@@ -382,7 +355,6 @@ describe('http POST', () => {
 
     const spec1: ImodbusSpecification = Object.assign(spec)
 
-    const filename = ConfigSpecification.getLocalDir() + '/specifications/waterleveltransmitter.yaml'
     const p = ConfigSpecification['getSpecificationPath'](spec1)
     if (fs.existsSync(p)) fs.unlinkSync(p)
     const url = apiUri.specfication + '?busid=0&slaveid=2&originalFilename=waterleveltransmitter'
@@ -405,11 +377,6 @@ describe('http POST', () => {
     const ev = modbusAPI['_modbusRTUWorker']!['createEmptyIModbusValues']()
     ev.holdingRegisters.set(100, { error: new Error('failed!!!'), date: new Date() })
     modbusAPI['_modbusRTUWorker']!['cache'].set(2, ev)
-    const _resonse = await supertest(httpServer['app'])
-      .post(url)
-      .accept('application/json')
-      .send(spec1)
-      .expect(HttpErrorsEnum.OkCreated)
     const response = await supertest(httpServer['app'])
       .post(url)
       .accept('application/json')

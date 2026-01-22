@@ -2,5 +2,5 @@ import { vi, it, test, expect, describe, beforeAll, afterAll, beforeEach, afterE
 
 export { expect, describe, beforeAll, afterAll, beforeEach, afterEach, it, test }
 export const jest = vi
-export const xit = it.skip
-export const xtest = test.skip
+export const xit: any = it.skip
+export const xtest: any = test.skip

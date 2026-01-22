@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
 
 import { ApiService } from '../../services/api-service'
-import { HexFormaterDirective, HexFormaterPipe } from '../hexinputfield/hexinputfield'
+import { HexFormaterDirective } from '../hexinputfield/hexinputfield'
 
 import {
   AbstractControl,
@@ -275,18 +275,16 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   }
   deviceClassHasUoms(): boolean {
     if (!this.numberPropertiesFormGroup || !this.numberPropertiesFormGroup.get('deviceClass')) return false
-    let dc = this.numberPropertiesFormGroup.get('deviceClass')!.value
+    const dc = this.numberPropertiesFormGroup.get('deviceClass')!.value
     if (dc && dc.uom) return true
     return false
   }
   private isVariableType() {
-    let vt = this.variableFormGroup.get(variableTypeFormControlName)!.value
+    const vt = this.variableFormGroup.get(variableTypeFormControlName)!.value
     return vt && vt != 0 && Number.parseInt(vt.value) != 0
   }
   private enableEntityFieldsVariableType() {
-    let vt = this.variableFormGroup.get(variableTypeFormControlName)!.value
-
-    let disableVtFields: { form: AbstractControl; value: any }[] = [
+    const disableVtFields: { form: AbstractControl; value: any }[] = [
       { form: this.entityFormGroup.get('name')!, value: null },
       { form: this.entityFormGroup.get(mqttNameFormControlName)!, value: null },
       { form: this.entityFormGroup.get('icon')!, value: null },
@@ -312,8 +310,8 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   }
   private copyEntityToForm(entity: ImodbusEntityWithName) {
     if (!this.entityFormGroup) return
-    let converterFormControl = this.entityFormGroup.get('converter')!
-    let modbusAddressFormControl = this.entityFormGroup.get('modbusAddress')!
+    const converterFormControl = this.entityFormGroup.get('converter')!
+    const modbusAddressFormControl = this.entityFormGroup.get('modbusAddress')!
 
     if (this.disabled) {
       this.entityFormGroup.disable()
@@ -328,7 +326,6 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
       this.variableFormGroup.enable()
       this.selectPropertiesFormGroup.enable()
       this.entityFormGroup.get(mqttNameFormControlName)?.setErrors(null)
-      let entityFormGroup = this.entityFormGroup!
       this.enableEntityFieldsVariableType()
     }
     this.variableFormGroup
@@ -375,16 +372,16 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
     if (!entity.converterParameters) {
       entity.converterParameters = {}
     }
-    let converterParameters = entity.converterParameters
+    const converterParameters = entity.converterParameters
     switch (this.getParameterTypeFromConverterFormControl()) {
       case 'Inumber':
         this.allFormGroups.setControl('properties', this.numberPropertiesFormGroup)
 
-        let np = converterParameters as Inumber
+        const np = converterParameters as Inumber
         this.numberPropertiesFormGroup.get('multiplier')!.setValue(np.multiplier ? np.multiplier : 1)
         this.numberPropertiesFormGroup.get('offset')!.setValue(np.offset ? np.offset : 0)
         this.numberPropertiesFormGroup.get('decimals')!.setValue(np.decimals != undefined ? np.decimals : -1)
-        let dc = this.getDeviceClass(np.device_class)
+        const dc = this.getDeviceClass(np.device_class)
         this.numberPropertiesFormGroup.get('deviceClass')!.setValue(dc ? dc : null)
         np.uom = this.findUom(dc, np.uom)
         this.numberPropertiesFormGroup.get('uom')!.setValue(np.uom ? np.uom : null)
@@ -405,7 +402,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
         break
       case 'Itext':
         this.allFormGroups.setControl('properties', this.stringPropertiesFormGroup)
-        let nt = converterParameters as Itext
+        const nt = converterParameters as Itext
         this.stringPropertiesFormGroup.get('stringlength')!.setValue(nt.stringlength ? nt.stringlength : 10)
         this.stringPropertiesFormGroup.get('identExpr')!.setValue(nt.identification ? nt.identification : null)
         this.stringPropertiesFormGroup.get('textSwapBytes')!.setValue(nt.swapBytes !== undefined ? nt.swapBytes : false)
@@ -417,7 +414,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
           case 'button':
           case 'binary_sensor':
             // default options for binary sensor
-            let nb = converterParameters as Iselect
+            const nb = converterParameters as Iselect
             nb.options = [
               { key: 0, name: 'ON' },
               { key: 1, name: 'OFF' },
@@ -431,7 +428,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   }
 
   getParameterTypeFromConverterFormControl(): string | undefined {
-    let converterFormControl = this.entityFormGroup.get('converter')!
+    const converterFormControl = this.entityFormGroup.get('converter')!
     return getParameterType(converterFormControl.value)
   }
 
@@ -449,8 +446,8 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
     switch (this.getParameterTypeFromConverterFormControl()) {
       case 'Iselect':
         if (!this.backupEntity) return true
-        let eo = JSON.stringify((this.entity.converterParameters as Iselect).options)
-        let bo = JSON.stringify((this.backupEntity.converterParameters as Iselect).options)
+        const eo = JSON.stringify((this.entity.converterParameters as Iselect).options)
+        const bo = JSON.stringify((this.backupEntity.converterParameters as Iselect).options)
         return eo != bo
 
       case 'Itext':
@@ -473,7 +470,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   }
   onVariableEntityValueChange() {
     if (this.specificationMethods) this.specificationMethods.setEntitiesTouched()
-    let variableType = this.variableFormGroup.get(variableTypeFormControlName)!.value
+    const variableType = this.variableFormGroup.get(variableTypeFormControlName)!.value
     if (variableType)
       this.entity.variableConfiguration = {
         targetParameter: variableType,
@@ -506,7 +503,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
         this.entity.name = this.entityFormGroup.get(nameFormControlName)!.value
       }
 
-      let mqttname: string | undefined | null = this.entityFormGroup.get(mqttNameFormControlName)!.value
+      const mqttname: string | undefined | null = this.entityFormGroup.get(mqttNameFormControlName)!.value
       if (mqttname && mqttname.length > 0) this.entity.mqttname = mqttname.toLowerCase()
       else if (this.entity.name) this.entity.mqttname = getFileNameFromName(this.entity.name)
 
@@ -522,8 +519,8 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   onModbusAddressChange() {
     if (!this.entity || !this.specificationMethods) return
     this.specificationMethods.setEntitiesTouched()
-    let modbusAddressFormControl = this.entityFormGroup.get('modbusAddress')!
-    let converterFormControl = this.entityFormGroup.get('converter')!
+    const modbusAddressFormControl = this.entityFormGroup.get('modbusAddress')!
+    const converterFormControl = this.entityFormGroup.get('converter')!
 
     if (
       (modbusAddressFormControl.value != null && modbusAddressFormControl.value !== this.entity.modbusAddress) ||
@@ -579,7 +576,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
     this.readFromModbus()
   }
   updateReadonly() {
-    let category = this.entityFormGroup.get('entityCategory')!.value
+    const category = this.entityFormGroup.get('entityCategory')!.value
     switch (category) {
       case 'diagnostic':
         this.entityFormGroup.get('readonly')!.setValue(true)
@@ -605,7 +602,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
       case 'Inumber':
         this.allFormGroups.setControl('properties', this.numberPropertiesFormGroup)
         this.entity.converterParameters = {}
-        let enumber: Inumber = this.entity.converterParameters as Inumber
+        const enumber: Inumber = this.entity.converterParameters as Inumber
         if (this.numberPropertiesFormGroup.get('multiplier')!.value != null)
           enumber.multiplier = this.numberPropertiesFormGroup.get('multiplier')!.value
         else enumber.multiplier = 1
@@ -618,10 +615,10 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
         else enumber.decimals = 2
         if (this.numberPropertiesFormGroup.get('numberFormat')!.value != null)
           enumber.numberFormat = this.numberPropertiesFormGroup.get('numberFormat')!.value
-        let min = this.numberPropertiesFormGroup.get('min')!.value
-        let max = this.numberPropertiesFormGroup.get('max')!.value
+        const min = this.numberPropertiesFormGroup.get('min')!.value
+        const max = this.numberPropertiesFormGroup.get('max')!.value
         if (!this.entity.readonly) {
-          let val = this.numberPropertiesFormGroup.get('step')!.value
+          const val = this.numberPropertiesFormGroup.get('step')!.value
           if (val) enumber.step = Number.parseFloat(val)
         }
         if (min !== null && max !== null) {
@@ -642,10 +639,10 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
         if (this.numberPropertiesFormGroup.get('stateClass')!.value != null)
           enumber.state_class = this.numberPropertiesFormGroup.get('stateClass')!.value
         // If there is a device class with a set of uoms, make sure, the uom is in the set
-        let dc = EntityComponent.deviceClassesSensor.find((dc) => dc.name == enumber.device_class)
-        let uomField =
+        const dc = EntityComponent.deviceClassesSensor.find((dc) => dc.name == enumber.device_class)
+        const uomField =
           this.numberPropertiesFormGroup.get('uom')!.value != null ? this.numberPropertiesFormGroup.get('uom')!.value : undefined
-        let uom = this.findUom(dc, uomField)
+        const uom = this.findUom(dc, uomField)
         if (uom) {
           enumber.uom = uom
           this.numberPropertiesFormGroup.get('uom')!.setValue(uom ? uom : null)
@@ -655,7 +652,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
       case 'Itext':
         this.allFormGroups.setControl('properties', this.stringPropertiesFormGroup)
         this.entity.converterParameters = {}
-        let strlenFormControl = this.stringPropertiesFormGroup.get('stringlength')
+        const strlenFormControl = this.stringPropertiesFormGroup.get('stringlength')
         if (strlenFormControl && strlenFormControl.value != null)
           (this.entity.converterParameters as any).stringlength = strlenFormControl.value
         if (this.stringPropertiesFormGroup.get('identExpr')! !== null) {
@@ -682,7 +679,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   canSaveEntity(): boolean {
     if (!this.entity) return false
 
-    let entityFormGroup = this.entityFormGroup!
+    const entityFormGroup = this.entityFormGroup!
     let parameterValid = false
     switch (this.getParameterTypeFromConverterFormControl()) {
       case 'Inumber':
@@ -729,7 +726,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   }
 
   private isUniqueEntityName(cmparray: Iname[], inp: FormControl<string | null>, list?: FormControl<Iname[] | null>) {
-    let found = cmparray.find((val) => {
+    const found = cmparray.find((val) => {
       return (
         val.name === inp.value &&
         (list === null ||
@@ -742,15 +739,6 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
     })
     if (found) return false
     return true
-  }
-  private createUniqueNameValidator(
-    inp: FormControl<string | null>,
-    fn: () => Iname[],
-    list?: FormControl<Iname[] | null>
-  ): ValidatorFn {
-    return (_control: AbstractControl): ValidationErrors | null => {
-      return !this.isUniqueEntityName(fn(), inp, list) ? { unique: true } : null
-    }
   }
 
   private uniqueNameValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
@@ -777,7 +765,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
 
   private entityMqttNameValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     if (this.variableFormGroup && this.entity && this.specificationMethods) {
-      let found = this.specificationMethods.getMqttNames(this.entity.id).find((mqttname) => mqttname && mqttname == control.value)
+      const found = this.specificationMethods.getMqttNames(this.entity.id).find((mqttname) => mqttname && mqttname == control.value)
       if (found) {
         return { unique: control.value }
       }
@@ -800,7 +788,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
 
   variableEntityValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     if (!this.variableFormGroup) return null
-    let vt = this.variableFormGroup.get(variableTypeFormControlName)!
+    const vt = this.variableFormGroup.get(variableTypeFormControlName)!
 
     // variables for devices don't need entity
     if (isDeviceVariable(vt.value)) return null
@@ -876,9 +864,8 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   }
   getEntityLabel(): string {
     if (!this.entity.name && this.isVariableType() && this.specificationMethods) {
-      let type = this.variableTypes.find((e) => e.id == this.entity.variableConfiguration!.targetParameter)
       if (!isDeviceVariable(this.entity.variableConfiguration!.targetParameter)) {
-        let e = this.specificationMethods
+        const e = this.specificationMethods
           .getNonVariableNumberEntities()
           .find((e) => e.id == this.entity.variableConfiguration!.entityId)
         return e ? '=>' + e.name : ''
@@ -894,7 +881,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   getVariableTypeOrEntityNameLabel(): string {
     if (this.entity.name) return this.entity.name
     else if (this.isVariableType()) {
-      let type = this.variableTypes.find((e) => e.id == this.entity.variableConfiguration!.targetParameter)
+      const type = this.variableTypes.find((e) => e.id == this.entity.variableConfiguration!.targetParameter)
       return type ? type.name : ''
     }
     return ''
@@ -903,15 +890,14 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   addOption() {
     if (this.canAddOption() && this.specificationMethods) {
       this.specificationMethods.setEntitiesTouched()
-      let selectPropertiesForm = this.selectPropertiesFormGroup
+      const selectPropertiesForm = this.selectPropertiesFormGroup
       if (this.selectPropertiesFormGroup.valid && this.entity) {
         if ((this.entity.converterParameters as Iselect).options == undefined)
           (this.entity.converterParameters as Iselect).options = []
 
-        let modbusValue: number | undefined
-        modbusValue = selectPropertiesForm.get(optionModbusFormControlName)!.value
+        const modbusValue: number | undefined = selectPropertiesForm.get(optionModbusFormControlName)!.value
         if (modbusValue != undefined && modbusValue != null) {
-          let idx = (this.entity.converterParameters as Iselect).options!.findIndex((o) => o.key > modbusValue!)
+          const idx = (this.entity.converterParameters as Iselect).options!.findIndex((o) => o.key > modbusValue!)
           if (idx >= 0)
             (this.entity.converterParameters as Iselect).options!.splice(idx, 0, {
               key: modbusValue,
@@ -945,7 +931,7 @@ export class EntityComponent extends SessionStorage implements AfterViewInit, On
   deleteOption(option: IselectOption) {
     this.specificationMethods && this.specificationMethods.setEntitiesTouched()
     // delete name
-    let idx = this.getCurrentOptions().findIndex((opt) => opt.key == option.key)
+    const idx = this.getCurrentOptions().findIndex((opt) => opt.key == option.key)
     if (idx >= 0) this.getCurrentOptions().splice(idx, 1)
     if (this.entity) {
       if (this.entity.modbusValue[0] == option.key) this.readFromModbus()

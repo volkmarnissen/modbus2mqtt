@@ -13,6 +13,7 @@ export class BinaryConverter extends Converter {
   override mqtt2modbus(_spec: Ispecification, _entityid: number, value: number | string): number[] {
     return value == 'ON' ? [1] : [0]
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   override getParameterType(_entity: Ientity): string | undefined {
     return 'Ibinary'
   }

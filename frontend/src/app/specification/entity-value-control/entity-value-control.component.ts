@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core'
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { ImodbusData, Inumber, Iselect, IselectOption, editableConverters } from '../../../shared/specification'
+import { ImodbusData, Inumber, Iselect, IselectOption } from '../../../shared/specification'
 import { Observable, Subscription } from 'rxjs'
 import { ISpecificationMethods, ImodbusEntityWithName } from '../../services/specificationInterface'
 import { MatSlideToggle } from '@angular/material/slide-toggle'
@@ -64,7 +64,7 @@ export class EntityValueControlComponent implements OnInit, OnDestroy, OnChanges
   }
   onButton() {
     if (this.toggleFormControl.value && this.entity) {
-      let val = this.toggleFormControl.value ? 'ON' : 'OFF'
+      const val = this.toggleFormControl.value ? 'ON' : 'OFF'
       this.specificationMethods &&
         this.specificationMethods.postModbusWriteMqtt(this.entity, val).subscribe((newValue) => {
           this.toggleFormControl.setValue(newValue == 'ON')
@@ -73,13 +73,13 @@ export class EntityValueControlComponent implements OnInit, OnDestroy, OnChanges
   }
   onOptionChange() {
     if (this.entity) {
-      let option: IselectOption | undefined = (this.entity.converterParameters as Iselect).options!.find(
+      const option: IselectOption | undefined = (this.entity.converterParameters as Iselect).options!.find(
         (o) => o.key == this.optionsFormControl.value
       )
       if (option && this.entity)
         this.specificationMethods &&
           this.specificationMethods.postModbusWriteMqtt(this.entity, option.name).subscribe((newValue) => {
-            let option: IselectOption | undefined = (this.entity!.converterParameters as Iselect).options!.find(
+            const option: IselectOption | undefined = (this.entity!.converterParameters as Iselect).options!.find(
               (o) => o.name == newValue
             )
             if (option) this.optionsFormControl.setValue(option.key)
@@ -100,13 +100,13 @@ export class EntityValueControlComponent implements OnInit, OnDestroy, OnChanges
   getMqttValue(): string | number {
     return this.entity && this.entity.mqttValue != undefined ? this.entity.mqttValue : ''
   }
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(_changes: SimpleChanges): void {
     this.entity2Form()
   }
 
   entity2Form() {
     if (this.entity) {
-      let s = this.entity.name
+      const s = this.entity.name
       this.entityName = s ? s : ''
       let fc: FormControl | undefined = undefined
       switch (this.entity.converter) {
@@ -119,7 +119,7 @@ export class EntityValueControlComponent implements OnInit, OnDestroy, OnChanges
             )
           }
 
-          let num = this.entity.converterParameters as Inumber
+          const num = this.entity.converterParameters as Inumber
           if (num != undefined) {
             if (num.step) this.step = num.step
             fc = this.numberFormControl
@@ -171,7 +171,7 @@ export class EntityValueControlComponent implements OnInit, OnDestroy, OnChanges
 
   getOptions(): IselectOption[] {
     if (this.entity) {
-      let options = (this.entity.converterParameters as Iselect).options
+      const options = (this.entity.converterParameters as Iselect).options
       if (options) return options
     }
     return []

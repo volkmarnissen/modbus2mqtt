@@ -1,69 +1,19 @@
 import { Config } from '../../src/server/config.js'
-import { ImodbusEntity, ModbusRegisterType } from '../../src/shared/specification/index.js'
 import { ItopicAndPayloads, MqttDiscover } from '../../src/server/mqttdiscover.js'
 import { MqttClient } from 'mqtt'
 import { FakeModes, FakeMqtt, initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
 import { Bus } from '../../src/server/bus.js'
-import Debug from 'debug'
 import { expect, test, beforeAll } from 'vitest'
-import { Islave, Slave } from '../../src/shared/server/index.js'
+import { Slave } from '../../src/shared/server/index.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'
 import { MqttPoller } from '../../src/server/mqttpoller.js'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
-const debug = Debug('mqttdiscover_test')
 
 const topic4Deletion = {
   topic: 'homeassistant/sensor/1s0/e1/topic4Deletion',
   payload: '',
   entityid: 1,
-}
-class MdFakeMqtt extends FakeMqtt {
-  public override publish(topic: string, message: Buffer): void {
-    if (topic.endsWith('/availabitlity/')) {
-      debug('publish ' + topic + '\n' + message)
-    } else if (topic.endsWith('/state/')) {
-      // a state topic
-      switch (this.fakeMode) {
-        case FakeModes.Poll:
-          expect(message.length).not.toBe(0)
-          this.isAsExpected = true
-          break
-      }
-    }
-    debug('publish: ' + topic + '\n' + message)
-  }
-}
-
-let slave: Islave
-const selectTestId = 3
-const numberTestId = 4
-const selectTestWritableId = 5
-let msub1: MqttSubscriptions
-const selectTest: ImodbusEntity = {
-  id: selectTestWritableId,
-  mqttname: 'selecttestWr',
-  modbusAddress: 7,
-  registerType: ModbusRegisterType.HoldingRegister,
-  readonly: true,
-  converter: 'select',
-  modbusValue: [],
-  mqttValue: '300',
-  identified: 1,
-  converterParameters: { optionModbusValues: [1, 2, 3] },
-}
-
-const selectTestWritable: ImodbusEntity = {
-  id: selectTestId,
-  mqttname: 'selecttest',
-  modbusAddress: 1,
-  registerType: ModbusRegisterType.HoldingRegister,
-  readonly: false,
-  converter: 'select',
-  modbusValue: [],
-  mqttValue: '300',
-  identified: 1,
-  converterParameters: { optionModbusValues: [1, 2, 3] },
 }
 
 interface IfakeDiscovery {
@@ -135,12 +85,9 @@ test('poll', async () => {
   fd.mdl!['slavePollInfo'].set(1, { count: 10000, processing: false })
   expect(c.value!.count).toBeGreaterThan(1)
   //call discovery explicitly
-  const bus = Bus.getBus(0)
   fd.fake.isAsExpected = false
   fd.fake.fakeMode = FakeModes.Discovery
-  const slave = bus?.getSlaveBySlaveId(1)
   await fd.mdl!['poll'](Bus.getBus(0)!)
-  const ss = fd.msub['subscribedSlaves'].find((s) => Slave.compareSlaves(s, sl) == 0)
 })
 
 test('poll with processing=true for all slaves', async () => {

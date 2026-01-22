@@ -88,7 +88,7 @@ export class NumberConverter extends Converter {
     }
     throw new Error('entityid not found in entities')
   }
-  override getParameterType(_entity: Ientity): string | undefined {
+  override getParameterType(_entity: Ientity /* eslint-disable-line @typescript-eslint/no-unused-vars */): string | undefined {
     return 'Inumber'
   }
   override getModbusLength(entity: Ientity): number {

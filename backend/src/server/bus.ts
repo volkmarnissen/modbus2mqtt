@@ -24,6 +24,7 @@ import { ConfigSpecification } from '../specification/index.js'
 import { ModbusTcpRtuBridge } from './tcprtubridge.js'
 import { MqttPoller } from './mqttpoller.js'
 import { MqttConnector } from './mqttconnector.js'
+import { Config } from './config.js'
 import { IconsumerModbusAPI, IModbusConfiguration, ModbusAPI } from './modbusAPI.js'
 const debug = Debug('bus')
 const log = new Logger('bus')
@@ -275,9 +276,11 @@ export class Bus implements IModbusConfiguration {
       // no result in cache, read from modbus
       // will be called once (per slave)
       const usbPort = (this.properties.connectionData as IRTUConnection).serialport
-      if (usbPort && !fs.existsSync(usbPort)) {
-        reject(new Error('RTU is configured, but device is not available'))
-        return
+      if (!Config.getConfiguration().fakeModbus) {
+        if (usbPort && !fs.existsSync(usbPort)) {
+          reject(new Error('RTU is configured, but device is not available'))
+          return
+        }
       }
       this.modbusAPI
         .readModbusRegister(slaveid, addresses, {

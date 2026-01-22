@@ -84,6 +84,7 @@ export class SelectConverter extends Converter {
     log.log(LogLevelEnum.error, msg)
     return []
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   override getParameterType(_entity: Ientity): string | undefined {
     switch (this.component) {
       case 'binary':

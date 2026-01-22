@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-disabled-tests */
 import { Config } from '../../src/server/config.js'
 import {
   ImodbusEntity,
@@ -20,11 +21,6 @@ import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
 import { TempConfigDirHelper } from './testhelper.js'
 const debug = Debug('mqttdiscover_test')
 
-const topic4Deletion = {
-  topic: 'homeassistant/sensor/1s0/e1/topic4Deletion',
-  payload: '',
-  entityid: 1,
-}
 class MdFakeMqtt extends FakeMqtt {
   public override publish(topic: string, message: Buffer): void {
     if (topic.endsWith('/availabitlity/')) {
@@ -46,7 +42,6 @@ let oldLog: any
 let slave: Islave
 let spec: ImodbusSpecification
 const selectTestId = 3
-const numberTestId = 4
 const selectTestWritableId = 5
 let msub1: MqttSubscriptions
 const selectTest: ImodbusEntity = {
@@ -83,15 +78,17 @@ beforeAll(async () => {
 
   const conn = new MqttConnector()
   msub1 = new MqttSubscriptions(conn)
+  // Ensure ConfigBus events are subscribed before busses/slaves are loaded
+  // so that subscribedSlaves gets populated during init.
+  new MqttDiscover(conn, msub1)
   // trigger subscription to ConfigBus Events
-  const md = new MqttDiscover(conn, msub1)
   setConfigsDirsForTest()
   mqttDiscoverTestHelper = new TempConfigDirHelper('httpserver-test')
   mqttDiscoverTestHelper.setup()
   initBussesForTest()
   const fake = new FakeMqtt(msub1, FakeModes.Poll)
   conn['client'] = fake as any as MqttClient
-  conn['connectMqtt'] = function (undefined) {
+  conn['connectMqtt'] = function () {
     conn['onConnect'](conn['client']!)
   }
 
@@ -164,20 +161,6 @@ afterAll(() => {
   mqttDiscoverTestHelper.cleanup()
 })
 
-const numberTest: ImodbusEntity = {
-  id: numberTestId,
-  mqttname: 'mqtt',
-  modbusAddress: 2,
-  registerType: ModbusRegisterType.HoldingRegister,
-  readonly: true,
-  converter: 'number',
-  modbusValue: [],
-  mqttValue: '300',
-  identified: 1,
-  converterParameters: { multiplier: 1, offset: 0, uom: 'kW' },
-}
-
-const tps: ItopicAndPayloads[] = []
 // function spyMqttOnMessage(ev: string, _cb: Function): MqttClient {
 //   if (ev === 'message') {
 //     for (let tp of tps) {
@@ -193,7 +176,7 @@ test('Discover', async () => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
 
   Config['config'].mqttusehassio = false
-  await new Config().getMqttConnectOptions().then((options) => {
+  await new Config().getMqttConnectOptions().then(() => {
     const s = structuredClone(spec)
     s.entities.push(selectTestWritable)
 
@@ -234,10 +217,8 @@ test('Discover', async () => {
 
 // });
 test.skip('validateConnection success', () => {
-  const options = Config.getConfiguration().mqttconnect
-
   const md = new MqttConnector()
-  md.validateConnection(undefined, (valid, message) => {
+  md.validateConnection(undefined, (valid) => {
     expect(valid).toBeTruthy()
   })
 })
@@ -247,7 +228,7 @@ test.skip('validateConnection invalid port', () => {
   options.mqttserverurl = 'mqtt://localhost:999'
   options.connectTimeout = 200
   const md = new MqttConnector()
-  md.validateConnection(undefined, (valid, message) => {
+  md.validateConnection(undefined, (valid) => {
     expect(valid).toBeFalsy()
   })
 })
@@ -286,7 +267,6 @@ test('onMessage TriggerPollTopic from this app', async () => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
   const conn = new MqttConnector()
   const sub = new MqttSubscriptions(conn)
-  const mdl = new MqttDiscover(conn, sub)
   const fake = new MdFakeMqtt(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
@@ -324,7 +304,6 @@ test.skip('onMessage SendEntityCommandTopic from this app', async () => {
   const conn = new MqttConnector()
   const sub = new MqttSubscriptions(conn)
   copySubscribedSlaves(sub['subscribedSlaves'], msub1['subscribedSlaves'])
-  const mdl = new MqttDiscover(conn, sub)
   const fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
@@ -375,7 +354,6 @@ test.skip('onMessage SendCommandTopic from this app', async () => {
   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)
   const conn = new MqttConnector()
   const sub = new MqttSubscriptions(conn)
-  const mdl = new MqttDiscover(conn, sub)
   const fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
@@ -384,7 +362,7 @@ test.skip('onMessage SendCommandTopic from this app', async () => {
   const writeEntityMqttMock = vi.fn().mockImplementation(() => Promise.resolve())
   Modbus.writeEntityMqtt = writeEntityMqttMock as any
 
-  conn['connectMqtt'] = function (undefined) {
+  conn['connectMqtt'] = function () {
     conn['onConnect'](conn['client']!)
   }
   const bus = Bus.getBus(0)
@@ -427,7 +405,6 @@ test.skip('onMessage SendCommand with modbusValues', async () => {
   const conn = new MqttConnector()
   const sub = new MqttSubscriptions(conn)
   copySubscribedSlaves(sub['subscribedSlaves'], msub1['subscribedSlaves'])
-  const mdl = new MqttDiscover(conn, sub)
   const fake = new FakeMqttSendCommandTopic(sub, FakeModes.Poll)
   conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(fake as any as MqttClient)
@@ -436,7 +413,7 @@ test.skip('onMessage SendCommand with modbusValues', async () => {
   const writeEntityModbusMock = vi.fn().mockImplementation(() => Promise.resolve())
   Modbus.writeEntityModbus = writeEntityModbusMock as any
 
-  conn['connectMqtt'] = function (undefined) {
+  conn['connectMqtt'] = function () {
     conn['onConnect'](conn['client']!)
   }
   const bus = Bus.getBus(0)
@@ -456,68 +433,6 @@ test.skip('onMessage SendCommand with modbusValues', async () => {
       expect(false).toBeTruthy()
     })
 })
-class FakeMqttAddSlaveTopic extends FakeMqtt {
-  private discoveryIsPublished: boolean = false
-  private stateIsPublished: boolean = false
-  public override publish(topic: string, message: Buffer): void {
-    if (topic.startsWith('homeassistant')) {
-      expect(message.length).not.toBe(0)
-      this.discoveryIsPublished = true
-    }
-    if (topic.endsWith('/state/')) {
-      expect(message.length).not.toBe(0)
-      this.stateIsPublished = true
-      if (this.stateIsPublished && this.discoveryIsPublished) this.isAsExpected = true
-    }
-    debug('publish: ' + topic + '\n' + message)
-  }
-}
-
-class FakeMqttDeleteSlaveTopic extends FakeMqtt {
-  private discoveryIsUnPublished: boolean = false
-  private unsubscribed: boolean = false
-
-  public override publish(topic: string, message: Buffer): void {
-    if (topic.startsWith('homeassistant')) {
-      expect(message.length).toBe(0)
-      this.discoveryIsUnPublished = true
-    }
-    if (this.unsubscribed && this.discoveryIsUnPublished) this.isAsExpected = true
-  }
-  public override unsubscribe(topic: string | string[]): void {
-    if ((topic as string).startsWith('wl2')) {
-      this.unsubscribed = true
-      if (this.unsubscribed && this.discoveryIsUnPublished) this.isAsExpected = true
-    }
-  }
-}
-class FakeMqttDeleteEntitySlave extends FakeMqtt {
-  private discoveryIsUnPublished: boolean = false
-  //  private unsubscribed: boolean = false
-
-  public override publish(topic: string, message: Buffer): void {
-    if (topic.startsWith('homeassistant')) {
-      if (message.length == 0) this.discoveryIsUnPublished = true
-    }
-    this.isAsExpected = this.discoveryIsUnPublished
-  }
-}
-class FakeMqttAddEntitySlave extends FakeMqtt {
-  private discoveryIsPublished: number = 0
-  private unsubscribed: boolean = false
-
-  public override publish(topic: string, message: Buffer): void {
-    if (topic.startsWith('homeassistant')) {
-      expect(message.length).not.toBe(0)
-      this.discoveryIsPublished++
-    }
-    this.isAsExpected = !this.unsubscribed && this.discoveryIsPublished == 2
-  }
-  public override unsubscribe(topic: string | string[]): void {
-    this.unsubscribed = true
-    this.isAsExpected = !this.unsubscribed && this.discoveryIsPublished == 2
-  }
-}
 
 // test('onAddSlave/onUpdateSlave/onDeleteSlave', (done) => {
 //   expect(msub1['subscribedSlaves'].length).toBeGreaterThan(3)

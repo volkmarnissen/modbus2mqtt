@@ -7,7 +7,8 @@ export interface ReadRegisterResult {
 // Base class for all converters
 export abstract class Converter {
   constructor(protected component: Converters) {}
-  getModbusLength(_entity: Ientity): number {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getModbusLength(_dummy: Ientity): number {
     return 1
   }
 
@@ -25,6 +26,7 @@ export abstract class Converter {
   }
 
   abstract getModbusRegisterTypes(): ModbusRegisterType[]
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getParameterType(_entity: Ientity): string | undefined {
     return undefined
   }

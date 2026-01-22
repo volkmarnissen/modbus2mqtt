@@ -71,7 +71,7 @@ export class FakeMqtt {
     endFunc()
     debug('end')
   }
-  public on(event: 'message', cb: () => {}) {}
+  public on(_event: 'message', _cb: () => {} /* eslint-disable-line @typescript-eslint/no-unused-vars */) {}
 }
 
 export function initBussesForTest() {

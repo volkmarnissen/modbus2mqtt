@@ -1,5 +1,4 @@
 import { expect, it, test, jest, beforeAll } from '@jest/globals'
-import Debug from 'debug'
 import { HttpServer as HttpServer } from '../../src/server/httpserver.js'
 import { Config } from '../../src/server/config.js'
 import supertest from 'supertest'
@@ -15,7 +14,6 @@ import { initBussesForTest } from './configsbase.js'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
 import { setConfigsDirsForTest } from './configsbase.js'
 const mockReject = false
-const debug = Debug('testhttpserver')
 const mqttService = {
   host: 'core-mosquitto',
   port: 1883,
@@ -38,18 +36,8 @@ Config['executeHassioGetRequest'] = executeHassioGetRequest
 
 let httpServer: HttpServer
 
-function mockedAuthorization(_param: any): Promise<any> {
-  return new Promise<any>((resolve) => {
-    resolve({ justForTesting: true })
-  })
-}
-function mockedHttp(_options: any, cb: (res: any) => any) {
-  cb({ statusCode: 200 })
-}
-let oldExecuteHassioGetRequest: any
-const oldAuthenticate: (req: any, res: any, next: () => void) => void = HttpServer.prototype.authenticate
 beforeAll(() => {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve) => {
     setConfigsDirsForTest()
     const cfg = new Config()
     cfg.readYamlAsync().then(() => {
@@ -65,7 +53,6 @@ beforeAll(() => {
 
       httpServer.setModbusCacheAvailable()
       httpServer.init()
-      oldExecuteHassioGetRequest = Config['executeHassioGetRequest']
       resolve()
     })
   })
@@ -73,7 +60,7 @@ beforeAll(() => {
 
 class MockMqttSubsctription {
   slave: Slave = new Slave(0, Bus.getBus(0)!.getSlaveBySlaveId(1)!, Config.getConfiguration().mqttbasetopic)
-  getSlave(url: string): Slave | undefined {
+  getSlave(): Slave | undefined {
     return this.slave
   }
   readModbus(slave: Slave): Observable<ImodbusSpecification> | undefined {
@@ -119,7 +106,7 @@ it('GET state topic', (done) => {
       expect(response.text.indexOf('waterleveltransmitter')).not.toBe(-1)
       done()
     })
-    .catch((e) => {
+    .catch(() => {
       log.log(LogLevelEnum.error, 'error')
       expect(1).toBeFalsy()
     })

@@ -7,7 +7,9 @@
     "start": "ng serve",
     "start:3005": "ng serve --configuration 3005",
     "build": "ng build --configuration production",
-    "build:dev": "ng build --configuration development"
+    "build:dev": "ng build --configuration development",
+    "lint": "sh -c 'cd .. && eslint frontend --ext .ts,.tsx --max-warnings=0'",
+    "lint:fix": "sh -c 'cd .. && eslint frontend --ext .ts,.tsx --fix'"
   },
   "dependencies": {
     "@angular/cdk": "^20.2.11",

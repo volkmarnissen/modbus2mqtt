@@ -131,7 +131,7 @@ const vector: IServiceVector = {
 }
 export class ModbusServer {
   serverTCP: ServerTCP | undefined
-  startServerForTest(_port: number) {
+  startServerForTest() {
     dimplexHolding.forEach((nv) => {
       values.holdingRegisters.push({
         slaveid: Dimplexslaveid,

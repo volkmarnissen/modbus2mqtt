@@ -23,7 +23,7 @@
             "styles": ["src/styles.css"],
             "scripts": [],
             "preserveSymlinks": true,
-            "allowedCommonJsDependencies": ["../shared"],
+            "allowedCommonJsDependencies": [],
             "browser": "src/main.ts"
           },
           "configurations": {

@@ -10,7 +10,7 @@ export default [
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs', 'vitest.config.ts'],
+    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs', 'vitest.config.ts', '**/vitest.config.ts'],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       jest,
@@ -58,6 +58,23 @@ export default [
         typescript: {
           project: ['tsconfig.eslint.json', 'frontend/tsconfig.angular.json'],
         },
+      },
+    },
+  },
+  {
+    files: ['frontend/src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+      'no-case-declarations': 'off',
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        sourceType: 'module',
+        project: ['frontend/tsconfig.angular.json'],
       },
     },
   },

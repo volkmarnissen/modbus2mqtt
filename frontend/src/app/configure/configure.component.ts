@@ -131,11 +131,11 @@ export class ConfigureComponent implements OnInit {
     })
   }
   form2Config(form: AbstractControl, config: Iconfiguration) {
-    let mqttserverurl = form.get('mqttserverurl')
-    let mqttuser = form.get('mqttuser')
-    let mqttpassword = form.get('mqttpassword')
-    let mqttkeyfile = form.get('mqttkeyfile')
-    let mqttcafile = form.get('mqttcafile')
+    const mqttserverurl = form.get('mqttserverurl')
+    const mqttuser = form.get('mqttuser')
+    const mqttpassword = form.get('mqttpassword')
+    const mqttkeyfile = form.get('mqttkeyfile')
+    const mqttcafile = form.get('mqttcafile')
     // Save changes to Config and Device
     if (config && mqttserverurl && mqttuser && mqttpassword && mqttserverurl.value) {
       {
@@ -187,10 +187,10 @@ export class ConfigureComponent implements OnInit {
     return this.configureMqttFormGroup.valid
   }
   mqttValidate(): void {
-    let config: Iconfiguration = {} as unknown as Iconfiguration
+    const config: Iconfiguration = {} as unknown as Iconfiguration
     this.form2Config(this.configureMqttFormGroup, config)
     this.entityApiService.postValidateMqtt(config).subscribe((result) => {
-      let hassio = this.authStatus != undefined && this.authStatus.hassiotoken
+      const hassio = this.authStatus != undefined && this.authStatus.hassiotoken
       if (result && result.valid) {
         this.mqttConnectIcon = 'cast_connected'
         this.mqttConnectClass = 'greenIcon'

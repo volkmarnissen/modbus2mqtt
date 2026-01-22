@@ -14,8 +14,8 @@ export class AuthGuardService {
     public router: Router
   ) {}
   private getForwardUrl(defaultRoute: string) {
-    let url = this.router.parseUrl(this.router.url)
-    let forwardUrl = url.queryParamMap.get('toUrl')
+    const url = this.router.parseUrl(this.router.url)
+    const forwardUrl = url.queryParamMap.get('toUrl')
     if (!forwardUrl) return defaultRoute
     return forwardUrl
   }
@@ -47,7 +47,7 @@ export class AuthGuardService {
           this.router.navigate(['register'])
           return false
         } else {
-          let token = new SessionStorage().getAuthToken()
+          const token = new SessionStorage().getAuthToken()
           if (!token || userAuthStatus.authTokenExpired) {
             this.router.navigate(['login'], {
               queryParams: { toUrl: this.getForwardUrl('/') },

@@ -195,7 +195,6 @@ it.skip('closeContribution need github access', (done) => {
   const tspec = structuredClone(spec)
   ConfigSpecification['specifications'].push(tspec)
 
-  const mspec = new M2mSpecification(tspec)
   new ConfigSpecification().writeSpecificationFromFileSpec(tspec, tspec.filename, undefined)
   tspec.pullNumber = 81
   M2mSpecification.closeContribution(tspec)
@@ -226,7 +225,7 @@ class TestM2mSpecification {
     { merged: false, closed: true },
   ]
   private static idx = 0
-  static closeContribution(spec: IfileSpecification): Promise<IpullRequest> {
+  static closeContribution(): Promise<IpullRequest> {
     return new Promise<IpullRequest>((resolve, reject) => {
       if (TestM2mSpecification.idx >= TestM2mSpecification.rcs.length) reject(new Error('not enough test data provided'))
       resolve({
@@ -256,7 +255,7 @@ it('startPolling', (done) => {
   TestM2mSpecification.pollOriginal = M2mSpecification['poll']
   M2mSpecification['pollingTimeout'] = 100
   M2mSpecification['poll'] = TestM2mSpecification.poll
-  let o = M2mSpecification.startPolling(specP.filename, (e) => {
+  let o = M2mSpecification.startPolling(specP.filename, () => {
     expect(true).toBeFalsy()
   })
   let callCount = 0
@@ -282,7 +281,7 @@ it('startPolling', (done) => {
       //expect(m['ghPollIntervalIndexCount']).toBe(2)
       //expect(m['ghPollIntervalIndex']).toBe(0)
       expectedCallCount = 11
-      o = M2mSpecification.startPolling(specP.filename, (e) => {
+      o = M2mSpecification.startPolling(specP.filename, () => {
         expect(true).toBeFalsy()
       })
       o?.subscribe({

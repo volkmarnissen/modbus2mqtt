@@ -64,12 +64,13 @@ export class M2mGitHub {
             repo: exports.githubPublicNames.modbus2mqttRepo,
             ref: 'heads/' + branch,
           })
-          .then((_branches) => {
+          .then(() => {
             resolve(true)
           })
-          .catch((e) => {
-            debug('get Branch' + e.message)
-            if (e.status == 404) resolve(false)
+          .catch((e: unknown) => {
+            if (e instanceof Error) debug('get Branch' + e.message)
+            const status = typeof e === 'object' && e && 'status' in e ? (e as { status?: number }).status : undefined
+            if (status != undefined && status == 404) resolve(false)
             else reject(e)
           })
     })
@@ -133,7 +134,7 @@ export class M2mGitHub {
               this.octokit!.request(`POST /repos/${this.ownOwner}/${githubPublicNames.modbus2mqttRepo}/merge-upstream`, {
                 branch: githubPublicNames.modbus2mqttBranch,
               })
-                .then((_r) => {
+                .then(() => {
                   resolve(true)
                 })
                 .catch((e: StepError) => {

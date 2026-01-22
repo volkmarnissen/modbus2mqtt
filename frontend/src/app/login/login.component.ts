@@ -63,7 +63,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    let posRegister = this.router.url.indexOf('register')
+    const posRegister = this.router.url.indexOf('register')
     // If the url part of the URL and not the parameter contains register, we are in register mode
     this.isRegisterMode = posRegister >= 0
   }
@@ -76,10 +76,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
     })
   }
   onSubmit(event: SubmitEvent) {
-    let username = this.form.get('username')!.value
-    let password = this.form.get('password')!.value
+    const username = this.form.get('username')!.value
+    const password = this.form.get('password')!.value
     if (this.isRegisterMode) {
-      let noAuthentication = (event.submitter as HTMLButtonElement).value == 'noAuthentication'
+      const noAuthentication = (event.submitter as HTMLButtonElement).value == 'noAuthentication'
       if (!noAuthentication && !username) alert('Please enter a username')
       else if (!noAuthentication && !password) alert('Please enter a password')
       else

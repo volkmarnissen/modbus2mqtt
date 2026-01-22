@@ -45,7 +45,7 @@ function testWait(github: M2mGitHub, done: any) {
             title,
             content
           )
-          .then((_sha) => {
+          .then(() => {
             debug('Commit created successfully')
             github
               .createPullrequest(title, content, 'waterleveltransmitter')

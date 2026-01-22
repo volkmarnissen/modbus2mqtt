@@ -48,8 +48,8 @@
     },
 
     {
-      "name": "Run Server",
-      "preLaunchTask": "npm: build.dev",
+      "name": "Run Modbus2mqtt Server",
+      "preLaunchTask": "npm: build",
       "timeout": 10000,
       "program": "${workspaceFolder}/dist/server/modbus2mqtt.js",
       "args": ["-s", "ssl", "-c", "../config-dir", "-d", "../data-dir"],

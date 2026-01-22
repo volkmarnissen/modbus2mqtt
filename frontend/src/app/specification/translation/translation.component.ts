@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core'
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { Observable, Subscription } from 'rxjs'
 import {
   IUpdatei18nText,
@@ -12,10 +12,9 @@ import {
   validateTranslation,
 } from '../../../shared/specification'
 import { ApiService } from '../../services/api-service'
-import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { AbstractControl, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ISpecificationMethods } from '../../services/specificationInterface'
 import { HttpErrorResponse } from '@angular/common/http'
-import { Router } from '@angular/router'
 import { I18nService } from '../../services/i18n.service'
 import { CdkTextareaAutosize } from '@angular/cdk/text-field'
 import { MatInput } from '@angular/material/input'
@@ -24,9 +23,6 @@ import { MatButton } from '@angular/material/button'
 import { MatSlideToggle } from '@angular/material/slide-toggle'
 import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion'
 import { NgIf, NgClass, NgFor } from '@angular/common'
-
-const originalLanguageFormGroupName = 'originalLanguage'
-const translationLanguageFormGroupName = 'translationLanguage'
 
 @Component({
   selector: 'app-translation',
@@ -71,11 +67,7 @@ export class TranslationComponent implements OnInit, OnDestroy {
   translatedLanguages: string[] = []
   translationFormGroupInitialized: boolean = false
   googleTranslateWindow: Window | null = null
-  constructor(
-    private entityApiService: ApiService,
-    private fb: FormBuilder,
-    private router: Router
-  ) {}
+  constructor(private entityApiService: ApiService) {}
 
   translationFormGroup: FormGroup = new FormGroup({})
   originalLanguage: string = 'en'
@@ -95,8 +87,8 @@ export class TranslationComponent implements OnInit, OnDestroy {
         else return
 
         if (this.mqttdiscoverylanguage != 'en') {
-          let dql = this.currentSpecification.i18n.find((langStruct) => langStruct.lang == this.mqttdiscoverylanguage)
-          let en = this.currentSpecification.i18n.find((langStruct) => langStruct.lang == 'en')
+          const dql = this.currentSpecification.i18n.find((langStruct) => langStruct.lang == this.mqttdiscoverylanguage)
+          const en = this.currentSpecification.i18n.find((langStruct) => langStruct.lang == 'en')
           if (en) this.languageToggle = dql != undefined
           else this.languageToggle = true
         }
@@ -109,8 +101,8 @@ export class TranslationComponent implements OnInit, OnDestroy {
   }
   private addOrUpdateControl(textId: string) {
     if (this.currentSpecification == undefined) return
-    let text = getSpecificationI18nText(this.currentSpecification, this.translationLanguage, textId, true)
-    let control = this.translationFormGroup.get(textId)
+    const text = getSpecificationI18nText(this.currentSpecification, this.translationLanguage, textId, true)
+    const control = this.translationFormGroup.get(textId)
 
     if (!control) this.translationFormGroup.setControl(textId, new FormControl<string | null>(text, Validators.required))
     else control.setValue(text)
@@ -126,10 +118,10 @@ export class TranslationComponent implements OnInit, OnDestroy {
     this.addOrUpdateControl('name')
 
     this.fillLanguages()
-    for (let key of this.getAllKeys()) {
+    for (const key of this.getAllKeys()) {
       try {
         this.addOrUpdateControl(key)
-        let oKeys = this.getOptionKeys(key)
+        const oKeys = this.getOptionKeys(key)
         oKeys.forEach((optionKey) => {
           this.addOrUpdateControl(optionKey)
         })
@@ -137,7 +129,9 @@ export class TranslationComponent implements OnInit, OnDestroy {
           // 'field' is a string
           if (field.startsWith(key) && field != key && !oKeys.includes(field)) this.translationFormGroup.removeControl(field)
         }
-      } catch (e) {}
+      } catch (_e) {
+        void _e
+      }
       this.translationFormGroup.updateValueAndValidity()
 
       this.translationFormGroupInitialized = true
@@ -150,7 +144,7 @@ export class TranslationComponent implements OnInit, OnDestroy {
   showTranslation(): boolean {
     // en should always be availabe. The discovery language is al
     if (!this.currentSpecification || null == this.currentSpecification.i18n.find((l) => l.lang == 'en')) return true
-    let msgs: Imessage[] = []
+    const msgs: Imessage[] = []
 
     // If the discovery language is not available, the translation dialog should be visible.
     if (null == this.currentSpecification.i18n.find((l) => l.lang == this.mqttdiscoverylanguage)) return true
@@ -180,9 +174,9 @@ export class TranslationComponent implements OnInit, OnDestroy {
     return getSpecificationI18nText(this.currentSpecification, this.originalLanguage, key, true)!
   }
   changeText(key: string): void {
-    let textFc = this.translationFormGroup.get(key)
+    const textFc = this.translationFormGroup.get(key)
     if (textFc && this.currentSpecification) {
-      let text = textFc.value
+      const text = textFc.value
       setSpecificationI18nText(this.currentSpecification, this.translationLanguage, key, text)
       this.translationFormGroup.updateValueAndValidity()
       this.updateI18n.emit({ key: key, i18n: this.currentSpecification.i18n })
@@ -193,7 +187,7 @@ export class TranslationComponent implements OnInit, OnDestroy {
     return getSpecificationI18nText(this.currentSpecification, this.translationLanguage, key, true)
   }
   getAllKeys(): string[] {
-    let rc: string[] = []
+    const rc: string[] = []
     if (this.currentSpecification)
       this.currentSpecification.entities.forEach((ent) => {
         if (!ent.variableConfiguration || ent.variableConfiguration.targetParameter <= VariableTargetParameters.deviceIdentifiers)
@@ -213,9 +207,9 @@ export class TranslationComponent implements OnInit, OnDestroy {
   }
   translatedValuesPasted(event: Event) {
     if (event && event.target) {
-      let text: string | null = (event.target as HTMLTextAreaElement).value
+      const text: string | null = (event.target as HTMLTextAreaElement).value
       if (text) {
-        let texts: string[] = text.split('\n')
+        const texts: string[] = text.split('\n')
         this.copyTranslations2Form(texts)
         ;(event.target as HTMLTextAreaElement).value = ''
       }
@@ -226,7 +220,7 @@ export class TranslationComponent implements OnInit, OnDestroy {
     return this.ids.length > 0
   }
   copyTranslations2Form(texts: string[]) {
-    let ids = structuredClone(this.ids)
+    const ids = structuredClone(this.ids)
     let text: string | undefined = texts.pop()
     let id: string | undefined = ids.pop()
     while (text && id) {
@@ -244,10 +238,9 @@ export class TranslationComponent implements OnInit, OnDestroy {
     this.textBuffer = []
 
     if (this.currentSpecification && this.currentSpecification.i18n) {
-      let lang = this.currentSpecification.i18n.find((l) => l.lang == this.originalLanguage)
-      let translatedLang = this.currentSpecification.i18n.find((l) => l.lang == this.translationLanguage)
+      const lang = this.currentSpecification.i18n.find((l) => l.lang == this.originalLanguage)
+      const translatedLang = this.currentSpecification.i18n.find((l) => l.lang == this.translationLanguage)
 
-      let ids: string[] = []
       if (lang && lang.texts) {
         lang.texts.forEach((t) => {
           if (translatedLang == null || null == translatedLang.texts.find((text) => text.textId == t.textId)) {
@@ -267,23 +260,23 @@ export class TranslationComponent implements OnInit, OnDestroy {
           .subscribe(this.copyTranslations2Form)
       } else {
         if (this.textBuffer.length) {
-          let url = `https://translate.google.com/?sl=${this.originalLanguage}&hl=${this.translationLanguage}&text=${this.textBuffer.join('%0A')}`
+          const url = `https://translate.google.com/?sl=${this.originalLanguage}&hl=${this.translationLanguage}&text=${this.textBuffer.join('%0A')}`
           this.googleTranslateWindow = window.open(url, 'modbus2mqttTranslation')
         }
       }
   }
   getOptionKeys(entityKey: string): string[] {
-    let entityId: number = parseInt(entityKey.substring(1))
-    let rc: string[] = []
+    const entityId: number = parseInt(entityKey.substring(1))
+    const rc: string[] = []
     if (this.currentSpecification) {
-      let ent = this.currentSpecification.entities.find((ent) => ent.id == entityId)
+      const ent = this.currentSpecification.entities.find((ent) => ent.id == entityId)
       if (ent && getParameterType(ent.converter) == 'Iselect') {
-        let opt = (ent.converterParameters as Iselect).options
-        let optm = (ent.converterParameters as Iselect).optionModbusValues
+        const opt = (ent.converterParameters as Iselect).options
+        const optm = (ent.converterParameters as Iselect).optionModbusValues
         if (opt && opt.length) opt.forEach((opt) => rc.push('e' + ent!.id + 'o.' + opt.key))
         if (optm && optm.length)
           optm.forEach((opt) => {
-            let oname = 'e' + ent!.id + 'o.' + opt
+            const oname = 'e' + ent!.id + 'o.' + opt
             if (!rc.includes(oname)) rc.push(oname)
           })
       }

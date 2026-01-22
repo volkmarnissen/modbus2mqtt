@@ -1,18 +1,9 @@
-import { NgFor, NgIf, NgTemplateOutlet } from '@angular/common'
+import { NgFor, NgTemplateOutlet } from '@angular/common'
 import { Component, Input, OnInit } from '@angular/core'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MatIconButton } from '@angular/material/button'
-import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
-import { MatOption } from '@angular/material/core'
-import { MatFormField, MatLabel } from '@angular/material/form-field'
-import { MatIcon, MatIconModule } from '@angular/material/icon'
-import { MatInput } from '@angular/material/input'
-import { MatSelect } from '@angular/material/select'
-import { MatTabGroup, MatTab } from '@angular/material/tabs'
-import { MatTooltip } from '@angular/material/tooltip'
-import { Iconfiguration, ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
+import { MatIconModule } from '@angular/material/icon'
+import { ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
 import { ApiService } from '../services/api-service'
-import { MatExpansionModule, MatExpansionPanel, MatExpansionPanelHeader } from '@angular/material/expansion'
+import { MatExpansionModule } from '@angular/material/expansion'
 import { ModbusRegisterType } from '../../shared/specification'
 const oneMinuteInMs = 60 * 1000
 @Component({
@@ -72,9 +63,9 @@ export class ModbusErrorComponent implements OnInit {
     return this.currentDate
   }
   getMinAgo(mins: number): Date {
-    let date = new Date(this.getCurrentDate())
+    const date = new Date(this.getCurrentDate())
 
-    let dt = new Date(
+    const dt = new Date(
       date.getFullYear(),
       date.getMonth(),
       date.getDate(),
@@ -114,7 +105,6 @@ export class ModbusErrorComponent implements OnInit {
   }
   filterNewerThan(inValue: ImodbusErrorsForSlave[], compareDate: Date): ImodbusErrorsForSlave[] {
     if (inValue == undefined || inValue.length == 0) return []
-    let last: ImodbusErrorsForSlave = inValue[0]
     return inValue.filter((e) => e.date > compareDate.getTime())
   }
   filterTask(inValue: ImodbusErrorsForSlave[], compareTask: ModbusTasks): ImodbusErrorsForSlave[] {
@@ -127,18 +117,18 @@ export class ModbusErrorComponent implements OnInit {
   }
   getErrorStates(inValue: ImodbusErrorsForSlave[]): ModbusErrorStates[] {
     if (inValue == undefined || inValue.length == 0) return []
-    let states: ModbusErrorStates[] = []
+    const states: ModbusErrorStates[] = []
     inValue.forEach((e) => {
       if (!states.includes(e.state)) states.push(e.state)
     })
     return states
   }
   getErrors(inValue: ImodbusErrorsForSlave[]): string[] {
-    let rc: {
+    const rc: {
       registerType: ModbusRegisterType
       addresses: { address: number; count: number }[]
     }[] = []
-    let previous: ImodbusErrorsForSlave = {
+    const previous: ImodbusErrorsForSlave = {
       address: { address: -1, registerType: ModbusRegisterType.AnalogInputs },
       task: ModbusTasks.initialConnect,
       state: ModbusErrorStates.noerror,
@@ -147,9 +137,9 @@ export class ModbusErrorComponent implements OnInit {
     if (inValue != undefined)
       inValue.forEach((v) => {
         if (v.address.address != previous.address.address || v.address.registerType != previous.address.registerType) {
-          let foundRgType = rc.find((rcv) => v.address.registerType == rcv.registerType)
+          const foundRgType = rc.find((rcv) => v.address.registerType == rcv.registerType)
           if (foundRgType) {
-            let foundAddr = foundRgType.addresses.find((a) => v.address.address == a.address)
+            const foundAddr = foundRgType.addresses.find((a) => v.address.address == a.address)
             if (foundAddr) foundAddr.count++
             else
               foundRgType.addresses.push({
@@ -163,10 +153,10 @@ export class ModbusErrorComponent implements OnInit {
             })
         }
       })
-    let rcs: string[] = []
+    const rcs: string[] = []
     rc.forEach((v) => {
       let r: string = this.getRegisterTypeName(v.registerType) + ': ['
-      let addr: string[] = []
+      const addr: string[] = []
       v.addresses.forEach((a) => {
         addr.push(a.address + ': ' + a.count)
       })
@@ -177,9 +167,9 @@ export class ModbusErrorComponent implements OnInit {
   }
   getSinceTimeString(errorList: ImodbusErrorsForSlave[]): string {
     if (errorList == undefined) return 'XX'
-    let delta = this.getCurrentDate() - errorList[errorList.length - 1].date
-    let minutes = Math.floor(delta / oneMinuteInMs)
-    let seconds = Math.floor((delta / 1000) % 60)
+    const delta = this.getCurrentDate() - errorList[errorList.length - 1].date
+    const minutes = Math.floor(delta / oneMinuteInMs)
+    const seconds = Math.floor((delta / 1000) % 60)
     if (delta > oneMinuteInMs) return '' + minutes + ':' + seconds + ' minutes ago'
     else return '' + seconds + ' seconds ago'
   }

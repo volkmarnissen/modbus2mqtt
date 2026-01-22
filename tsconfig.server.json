@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./backend/tsconfig.json",
+  "compilerOptions": {
+    // Backend tsconfig handles outDir relative to backend (../dist)
+    // Keep strict and other options from backend
+  },
+  "include": [
+    "backend/src"
+  ],
+  "exclude": [
+    "backend/tests",
+    "backend/__tests__",
+    "dist",
+    "frontend"
+  ]
+}

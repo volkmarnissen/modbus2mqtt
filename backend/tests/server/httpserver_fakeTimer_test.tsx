@@ -2,7 +2,6 @@ import { expect, it, beforeAll, afterAll } from '@jest/globals'
 import { HttpServer as HttpServer } from '../../src/server/httpserver.js'
 import { Config } from '../../src/server/config.js'
 import supertest from 'supertest'
-import fs from 'fs'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { join } from 'path'
 import AdmZip from 'adm-zip'
@@ -15,7 +14,7 @@ let httpServer: HttpServer
 
 const oldAuthenticate: (req: any, res: any, next: () => void) => void = HttpServer.prototype.authenticate
 beforeAll(() => {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve) => {
     const cfg = new Config()
     cfg.readYamlAsync().then(() => {
       ConfigBus.readBusses()
@@ -24,7 +23,6 @@ beforeAll(() => {
       }
       httpServer = new HttpServer(join(Config.configDir, 'angular'))
 
-      const rc = httpServer.init()
       resolve()
     })
   })
@@ -33,26 +31,6 @@ afterAll(() => {
   HttpServer.prototype.authenticate = oldAuthenticate
 })
 
-const doneRead: any = undefined
-function binaryParser(res: any, callback: (_error: null, data: any) => void) {
-  res.setEncoding('binary')
-  res.chunks = []
-  res.on('data', function (chunk: Buffer) {
-    res.chunks.push(chunk)
-  })
-  res.on('end', function () {
-    fs.open('target.zip', 'w', function (error, fd) {
-      const buffer = Buffer.concat(res.chunks)
-      // read its contents into buffer
-      fs.writeSync(fd, buffer, 0, buffer.length)
-      fs.close(fd)
-      const zip = new AdmZip('target.zip')
-      const e = zip.getEntries()
-    })
-    doneRead()
-    //  callback(null, Buffer.concat(res.chunks));
-  })
-}
 it('GET download/local', (done) => {
   supertest(httpServer['app'])
     .get('/download/local')
@@ -61,13 +39,13 @@ it('GET download/local', (done) => {
     .then((response) => {
       const buffer = response.body as any as Buffer
       const zip = new AdmZip(buffer)
-      zip.getEntries().forEach((e) => {
+      zip.getEntries().forEach((e: unknown) => {
         expect(e.entryName.indexOf('secrets.yaml')).toBeLessThan(0)
       })
       done()
     })
-    .catch((_e: any) => {
-      expect(true).toBeFalsy()
-      done()
+    .catch((e: any) => {
+      // Propagate error to the test runner to avoid unhandled rejections
+      done(e)
     })
 })

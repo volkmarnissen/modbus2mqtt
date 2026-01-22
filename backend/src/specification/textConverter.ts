@@ -39,6 +39,7 @@ export class TextConverter extends Converter {
     }
     return rc
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   override getParameterType(_entity: Ientity): string | undefined {
     return 'Itext'
   }

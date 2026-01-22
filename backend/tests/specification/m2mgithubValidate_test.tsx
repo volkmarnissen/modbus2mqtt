@@ -1,10 +1,8 @@
 import Debug from 'debug'
-import { M2mGithubValidate } from '../../src/specification/m2mGithubValidate.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { it, expect, beforeAll, afterAll } from '@jest/globals'
 import * as fs from 'fs'
 import { configDir } from './configsbase.js'
-const debug = Debug('m2mgithubvalidate')
 
 const yamlDir = '__tests__/yamlDirValidate'
 declare global {
@@ -26,7 +24,6 @@ afterAll(() => {
   fs.rmSync(yamlDir, { recursive: true, force: true })
 })
 
-it.skip('validate test requires GITHUB_TOKEN', (done) => {
+it.skip('validate test requires GITHUB_TOKEN', () => {
   expect(process.env.GITHUB_TOKEN).toBeDefined()
-  const github = new M2mGithubValidate(process.env.GITHUB_TOKEN as string)
 }, 10000)

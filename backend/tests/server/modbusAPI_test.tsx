@@ -4,7 +4,7 @@ import { Config } from '../../src/server/config.js'
 import { Bus } from '../../src/server/bus.js'
 import { initBussesForTest, setConfigsDirsForTest, singleMutex } from './configsbase.js'
 import { ModbusServer, XYslaveid } from '../../src/server/modbusTCPserver.js'
-import { IdentifiedStates, ImodbusEntity, ImodbusSpecification } from '../../src/shared/specification/index.js'
+import { IdentifiedStates } from '../../src/shared/specification/index.js'
 import {
   ConfigSpecification,
   emptyModbusValues,
@@ -16,7 +16,6 @@ import { ModbusAPI } from '../../src/server/modbusAPI.js'
 import { TempConfigDirHelper } from './testhelper.js'
 
 const debug = Debug('bustest')
-const testPort = 8888
 setConfigsDirsForTest()
 
 let tempHelper: TempConfigDirHelper
@@ -75,7 +74,7 @@ function testRead(
                 expect(value!.data![0]).toBe(value1)
                 expect(value!.data![1]).toBe(value2)
                 fc.bind(modbusAPI)(XYslaveid, address2, 2)
-                  .then((_value) => {
+                  .then(() => {
                     // Unexpected success: close cleanly first, then fail the test
                     modbusAPI['closeRTU']('test', () => {
                       tcpServer.stopServer(resolve)
@@ -143,6 +142,8 @@ function testWrite(
                   })
               })
               .catch((e) => {
+                // Ensure at least one assertion if the first write fails unexpectedly
+                expect(e).toBeDefined()
                 modbusAPI['closeRTU']('test', () => {
                   tcpServer.stopServer(resolve)
                 })
@@ -181,6 +182,7 @@ function readModbusRegisterFake(): Promise<ImodbusValues> {
 }
 it('Bus getSpecsForDevice', async () => {
   prepareIdentification()
+  Config.setFakeModbus(true)
   if (Config.getConfiguration().fakeModbus) debug(LogLevelEnum.info, 'Fakemodbus')
   const bus = Bus.getBus(0)
   // Ensure bus has a ModbusAPI instance we can stub
@@ -213,7 +215,7 @@ it('Bus getSpecsForDevice', async () => {
 
 it('Modbus getAvailableSpecs with specific slaveId no results 0-3', async () => {
   prepareIdentification()
-  Config['config'].fakeModbus = true
+  Config.setFakeModbus(true)
   if (Config.getConfiguration().fakeModbus) debug('Fakemodbus')
   const ispec = await Bus.getBus(0)!.getAvailableSpecs(1, false, 'en')
   expect(ispec).toBeDefined()
@@ -221,50 +223,26 @@ it('Modbus getAvailableSpecs with specific slaveId no results 0-3', async () => 
   Config['config'].fakeModbus = true
 })
 describe('ServerTCP based', () => {
-  it('read Discrete Inputs success, Illegal Address', (done) => {
+  it('read Discrete Inputs success, Illegal Address', async () => {
     expect.hasAssertions()
-    singleMutex.acquire().then((release) => {
-      testRead(1, 4, 1, 1, ModbusAPI.prototype.readDiscreteInputs).then(() => {
-        release()
-      })
-    })
+    await singleMutex.runExclusive(() => testRead(1, 4, 1, 1, ModbusAPI.prototype.readDiscreteInputs))
   })
   it('read HoldingRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
-    singleMutex.acquire().then((release) => {
-      testRead(0x0101, 0x0109, 1, 1, ModbusAPI.prototype.readHoldingRegisters).then(() => {
-        debug('done')
-        release()
-      })
-    })
+    await singleMutex.runExclusive(() => testRead(0x0101, 0x0109, 1, 1, ModbusAPI.prototype.readHoldingRegisters))
   })
   it('read readInputRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
-    singleMutex.acquire().then((release) => {
-      testRead(1, 2, 195, 500, ModbusAPI.prototype.readInputRegisters).then(() => {
-        release()
-      })
-    })
+    await singleMutex.runExclusive(() => testRead(1, 2, 195, 500, ModbusAPI.prototype.readInputRegisters))
   })
   it('writeHoldingRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
-    singleMutex.acquire().then((release) => {
-      testWrite(1, 2, 10, ModbusAPI.prototype.writeHoldingRegisters).then(() => {
-        release()
-      })
-    })
+    await singleMutex.runExclusive(() => testWrite(1, 2, 10, ModbusAPI.prototype.writeHoldingRegisters))
   })
   it('writeCoils success, Illegal Address', async () => {
     expect.hasAssertions()
-    singleMutex.acquire().then((release) => {
-      testWrite(1, 4, 0, ModbusAPI.prototype.writeCoils).then(() => {
-        release()
-      })
-    })
+    await singleMutex.runExclusive(() => testWrite(1, 4, 0, ModbusAPI.prototype.writeCoils))
   })
 
-  const specNoError: ImodbusSpecification = {
-    entities: [{ id: 1, identified: IdentifiedStates.identified } as ImodbusEntity],
-    identified: IdentifiedStates.identified,
-  } as ImodbusSpecification
+  // no-op
 })

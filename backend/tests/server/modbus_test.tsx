@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-disabled-tests */
 import { Bus } from '../../src/server/bus.js'
 import { Config } from '../../src/server/config.js'
 import {
@@ -17,7 +18,7 @@ import { getReadRegisterResult } from '../../src/server/submitRequestMock.js'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
 import { Islave, ModbusTasks } from '../../src/shared/server/index.js'
 import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification/index.js'
-import { expect, it, describe, beforeEach, vi, beforeAll } from 'vitest'
+import { expect, it, describe, beforeEach, beforeAll } from 'vitest'
 import Debug from 'debug'
 import { ConfigBus } from '../../src/server/configbus.js'
 setConfigsDirsForTest()
@@ -160,7 +161,7 @@ describe('Modbus read', () => {
     try {
       const arg0 = await mr.readEntityFromModbus(Bus.getBus(0)!.getModbusAPI(), 1, spec, 1)
       expect(arg0!.identified).toBe(IdentifiedStates.unknown)
-    } catch (_e) {
+    } catch {
       expect(false).toBeTruthy()
     }
   })
@@ -316,12 +317,6 @@ it.skip('Modbus modbusDataToSpec spec.identified = identified', () => {
   Config['config'].fakeModbus = true
 })
 
-function writeRegisters(slaveid: number, _startaddress: number, registerType: ModbusRegisterType): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    debug('write Registers')
-    resolve()
-  })
-}
 it('Modbus writeEntityMqtt', async () => {
   // TODO Fix test ModbusCache.prototype.writeRegisters = writeRegisters
   const readConfig: Config = new Config()

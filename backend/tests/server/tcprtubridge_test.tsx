@@ -9,7 +9,7 @@ import { Mutex } from 'async-mutex'
 it('getCoil', () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
-  bridge['vector']!.getCoil!(1, 2, (err, value) => {
+  bridge['vector']!.getCoil!(1, 2, () => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
     expect(queue.getEntries()[0].slaveId).toBe(2)
@@ -20,7 +20,7 @@ it('getCoil', () => {
 it('getDiscreteInput', () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
-  bridge['vector']!.getDiscreteInput!(1, 2, (err, value) => {
+  bridge['vector']!.getDiscreteInput!(1, 2, () => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
     expect(queue.getEntries()[0].slaveId).toBe(2)
@@ -31,7 +31,7 @@ it('getDiscreteInput', () => {
 it('setCoil', () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
-  bridge['vector']!.setCoil!(1, true, 2, (err) => {
+  bridge['vector']!.setCoil!(1, true, 2, () => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
     expect(queue.getEntries()[0].slaveId).toBe(2)
@@ -43,7 +43,7 @@ it('setCoil', () => {
 it('setRegister', () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
-  bridge['vector']!.setRegister!(1, 27, 2, (err) => {
+  bridge['vector']!.setRegister!(1, 27, 2, () => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
     expect(queue.getEntries()[0].slaveId).toBe(2)
@@ -55,7 +55,7 @@ it('setRegister', () => {
 it('getHoldingRegister', () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
-  bridge['vector']!.getHoldingRegister!(1, 2, (err, value) => {
+  bridge['vector']!.getHoldingRegister!(1, 2, () => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
     expect(queue.getEntries()[0].slaveId).toBe(2)
@@ -67,7 +67,7 @@ it('getHoldingRegister', () => {
 it('getInputRegister', () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
-  bridge['vector']!.getInputRegister!(1, 2, (err, value) => {
+  bridge['vector']!.getInputRegister!(1, 2, () => {
     expect(queue.getLength()).toBe(1)
     expect(queue.getEntries()[0].address.address).toBe(1)
     expect(queue.getEntries()[0].slaveId).toBe(2)
@@ -139,7 +139,6 @@ describe('live tests', () => {
   })
   it('live readHoldingRegisters', (done) => {
     liveMutext.runExclusive(() => {
-      // submit a request
       client
         .readHoldingRegisters(2, 4)
         .then((value) => {
@@ -147,13 +146,13 @@ describe('live tests', () => {
           done()
         })
         .catch((e) => {
-          expect(false).toBeTruthy()
+          done(e)
         })
     })
   })
+
   it('live readDiscreteInputs', (done) => {
     liveMutext.runExclusive(() => {
-      // submit a request
       client
         .readDiscreteInputs(2, 4)
         .then((value) => {
@@ -161,23 +160,23 @@ describe('live tests', () => {
           done()
         })
         .catch((e) => {
-          expect(false).toBeTruthy()
+          done(e)
         })
     })
   })
-  it('live writeHoldingRegister', (done) => {
+
+  it('live writeRegisters', (done) => {
     liveMutext.runExclusive(() => {
-      // submit a request
       testWorker.expectedAPIcallCount = 1
       testWorker.expectedAPIwroteDataCount = 1
       testWorker['done'] = done
       client
-        .writeRegister(2, 1)
+        .writeRegisters(2, [1])
         .then(() => {
-          console.log('We are back')
+          // resolution handled by testWorker via done
         })
         .catch((e) => {
-          expect(false).toBeTruthy()
+          done(e)
         })
     })
   })

@@ -1,4 +1,5 @@
 import { it, expect, beforeEach, afterEach } from 'vitest'
+/* eslint-disable vitest/no-disabled-tests */
 import { ConfigSpecification } from '../../src/specification/index.js'
 import * as fs from 'fs'
 import { join } from 'path'
@@ -12,8 +13,6 @@ import {
   getSpecificationI18nName,
   newSpecification,
 } from '../../src/shared/specification/index.js'
-import { IModbusResultOrError } from '../../src/specification/index.js'
-import { ImodbusValues } from '../../src/specification/index.js'
 import { SpecificationTestHelper, TempConfigDirHelper } from '../server/testhelper.js'
 
 ConfigSpecification['configDir'] = configDir
@@ -39,13 +38,6 @@ afterEach(() => {
   if (tempHelper) tempHelper.cleanup()
 })
 
-const testdata: ImodbusValues = {
-  coils: new Map<number, IModbusResultOrError>(),
-  discreteInputs: new Map<number, IModbusResultOrError>(),
-  holdingRegisters: new Map<number, IModbusResultOrError>(),
-  analogInputs: new Map<number, IModbusResultOrError>(),
-}
-
 it('check device type status', () => {
   const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
   const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
@@ -54,7 +46,6 @@ it('check device type status', () => {
   fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pwtl1)
   const pdy = join(publicSpecdir, 'deyeinverter.yaml')
   fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pdy)
-  const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
 
   fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
 
@@ -148,7 +139,7 @@ it('add new specification, add files, set filename', async () => {
   expect(g!.files.find((f) => f.url.endsWith('/_new/test.jpg'))).not.toBeNull()
   expect(g!.files.find((f) => f.url.endsWith('/_new/test.pdf'))).not.toBeNull()
   expect(g).not.toBeNull()
-  await cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img).then((files) => {
+  await cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img).then(() => {
     mspec.filename = 'addspectest'
     let wasCalled = false
 
@@ -301,9 +292,8 @@ it('contribution cloned', () => {
 })
 
 it.skip('importSpecificationZip existing Specification', () => {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve) => {
     const zipFile = 'spec.zip'
-    const cs = new ConfigSpecification()
     const s = fs.createWriteStream(zipFile)
     ConfigSpecification.createZipFromSpecification('waterleveltransmitter', s)
     const errors = ConfigSpecification.importSpecificationZip(zipFile)
@@ -321,7 +311,7 @@ function removeLocal(specPath: string, specFilesPath: string) {
   }
 }
 it('importSpecificationZip ', () => {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve) => {
     const filename = 'eastronsdm720-m'
     const zipFile = join(ConfigSpecification.configDir, filename + '.zip')
     const specPath = ConfigSpecification['getSpecificationPath']({ filename: filename } as IbaseSpecification)
@@ -329,9 +319,7 @@ it('importSpecificationZip ', () => {
 
     removeLocal(specPath, specFilesPath)
 
-    const cs = new ConfigSpecification()
     // Create the specification locally to be able to create the zip file in the next step
-    const errors = ConfigSpecification.importSpecificationZip(zipFile)
 
     const s = fs.createWriteStream(zipFile)
     s.on('end', () => {
@@ -351,6 +339,18 @@ it('importSpecificationZip ', () => {
       removeLocal(specPath, specFilesPath)
       resolve()
     })
+
+    // Ensure public spec + files exist in temp data dir for zip creation
+    const publicFilesPath = ConfigSpecification['getPublicFilesPath'](filename)
+    const publicSpecPath = ConfigSpecification['getPublicSpecificationPath']({ filename } as IbaseSpecification)
+    fs.mkdirSync(publicFilesPath, { recursive: true })
+    fs.mkdirSync(join(publicSpecPath, '..'), { recursive: true })
+    try {
+      fs.writeFileSync(join(publicFilesPath, 'files.yaml'), 'files:\n', { encoding: 'utf8' })
+    } catch {}
+    try {
+      fs.writeFileSync(publicSpecPath, `filename: ${filename}\nentities: []\n`, { encoding: 'utf8' })
+    } catch {}
 
     ConfigSpecification.createZipFromSpecification(filename, s)
     // s.on( finish will be called after createZipFromSpecification

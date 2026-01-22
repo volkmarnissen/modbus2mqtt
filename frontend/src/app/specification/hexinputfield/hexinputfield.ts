@@ -22,7 +22,7 @@ export class HexFormaterDirective implements OnInit {
 
   static convertHexInput(value: string): number | undefined {
     if (value == '') return undefined
-    var nv = value.startsWith('0x') || value.startsWith('0X') ? parseInt(value.substring(2), 16) : parseInt(value)
+    const nv = value.startsWith('0x') || value.startsWith('0X') ? parseInt(value.substring(2), 16) : parseInt(value)
     if (Number.isNaN(nv)) return undefined
     return nv
   }
@@ -38,7 +38,7 @@ export class HexFormaterDirective implements OnInit {
   @HostListener('focus', ['$event.target.value'])
   @HostListener('blur', ['$event.target.value'])
   onFocus(value: string) {
-    var numValue = HexFormaterDirective.convertHexInput(value)
+    const numValue = HexFormaterDirective.convertHexInput(value)
     if (numValue != undefined) this.el.value = HexFormaterDirective.convertNumberToInput(numValue, this.displayHex) as string
   }
 }

@@ -12,7 +12,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms'
 import { Clipboard } from '@angular/cdk/clipboard'
-import { MatSelectionList, MatSelectionListChange } from '@angular/material/list'
+import { MatSelectionList } from '@angular/material/list'
 import { ApiService } from '../services/api-service'
 import { MatTableDataSource } from '@angular/material/table'
 import { IBus, IModbusConnection, IRTUConnection, ITCPConnection, getBusName, getConnectionName } from '../../shared/server'
@@ -132,8 +132,8 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   }
   copyBus2Form(idx: number) {
     if (this.busses.data.length > idx && this.busses.data[idx] != null) {
-      let bus = this.busses.data[idx]
-      let isRtu = (bus.connectionData as IRTUConnection).serialport != undefined
+      const bus = this.busses.data[idx]
+      const isRtu = (bus.connectionData as IRTUConnection).serialport != undefined
       let fg = this.createConnectionDataFormGroup()
       if (this.bussesFormArray.at(idx) != undefined) fg = this.bussesFormArray.at(idx) as FormGroup
       else {
@@ -141,35 +141,35 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
         this.modbusIsRtu.push(isRtu)
       }
       if (isRtu) {
-        let serialport = (bus.connectionData as IRTUConnection).serialport
-        let baudRate = (bus.connectionData as IRTUConnection).baudrate
-        let timeout = (bus.connectionData as IRTUConnection).timeout
-        let tcpBridge = (bus.connectionData as IRTUConnection).tcpBridge
+        const serialport = (bus.connectionData as IRTUConnection).serialport
+        const baudRate = (bus.connectionData as IRTUConnection).baudrate
+        const timeout = (bus.connectionData as IRTUConnection).timeout
+        const tcpBridge = (bus.connectionData as IRTUConnection).tcpBridge
 
-        let sd = this.getBusFormGroup(idx).get(['rtu', 'serial']) as FormControl<string>
+        const sd = this.getBusFormGroup(idx).get(['rtu', 'serial']) as FormControl<string>
         sd.setValue(serialport)
 
-        let br = fg.get(['rtu', 'selectBaudRate'])
+        const br = fg.get(['rtu', 'selectBaudRate'])
         if (br) br.setValue(baudRate)
-        let to = fg.get(['rtu', 'timeout'])
+        const to = fg.get(['rtu', 'timeout'])
         if (to) to.setValue(timeout)
-        let tbp = fg.get(['rtu', 'tcpBridge'])
+        const tbp = fg.get(['rtu', 'tcpBridge'])
         if (tbp) tbp.setValue(tcpBridge)
       } else {
-        let host = (bus.connectionData as ITCPConnection).host
-        let port = (bus.connectionData as ITCPConnection).port
-        let timeout = (bus.connectionData as ITCPConnection).timeout
-        let sd = fg.get(['tcp', 'host'])
+        const host = (bus.connectionData as ITCPConnection).host
+        const port = (bus.connectionData as ITCPConnection).port
+        const timeout = (bus.connectionData as ITCPConnection).timeout
+        const sd = fg.get(['tcp', 'host'])
         if (sd) sd.setValue(host)
-        let br = fg.get(['tcp', 'port'])
+        const br = fg.get(['tcp', 'port'])
         if (br) br.setValue(port)
-        let to = fg.get(['tcp', 'timeout'])
+        const to = fg.get(['tcp', 'timeout'])
         if (to) to.setValue(timeout)
       }
     }
   }
   getBusFormGroup(index: number): FormGroup {
-    let fg = (this.configureModbusFormGroup.get('bussesFormArray') as FormArray).at(index) as FormGroup
+    const fg = (this.configureModbusFormGroup.get('bussesFormArray') as FormArray).at(index) as FormGroup
     if (fg == undefined) return this.createConnectionDataFormGroup()
     return fg
   }
@@ -178,14 +178,14 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
     this.copyBus2Form(idx)
   }
   needsSaving(idx: number): boolean {
-    let fg = this.bussesFormArray.at(idx)
+    const fg = this.bussesFormArray.at(idx)
     return fg == undefined || fg.touched
   }
   saveBus(idx: number): Promise<number> {
     return new Promise<number>((resolve) => {
-      let connection = this.copyForm2Connection(idx)
+      const connection = this.copyForm2Connection(idx)
 
-      let busid: number | undefined = null != this.busses.data[idx] ? this.busses.data[idx].busId : undefined
+      const busid: number | undefined = null != this.busses.data[idx] ? this.busses.data[idx].busId : undefined
 
       this.entityApiService.postBus(connection, busid).subscribe((b) => {
         if (busid == undefined) {
@@ -204,8 +204,10 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
     let host: FormControl | null = null
     let port: FormControl | null = null
     let serial: FormControl | null = null
-    let fg: FormGroup = this.bussesFormArray.at(idx)! as FormGroup
-    let connectionData: IModbusConnection = this.busses.data[idx] ? this.busses.data[idx].connectionData : ({} as IModbusConnection)
+    const fg: FormGroup = this.bussesFormArray.at(idx)! as FormGroup
+    const connectionData: IModbusConnection = this.busses.data[idx]
+      ? this.busses.data[idx].connectionData
+      : ({} as IModbusConnection)
     if (fg) {
       if (this.modbusIsRtu[idx]) {
         if (
@@ -218,7 +220,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
           ;(connectionData as IRTUConnection).timeout = timeout.value
         }
         // Optional BridgePort
-        let tcpBridge = fg.get(['rtu', 'tcpBridge'])
+        const tcpBridge = fg.get(['rtu', 'tcpBridge'])
         if (null != tcpBridge) (connectionData as IRTUConnection).tcpBridge = tcpBridge.value
 
         delete (connectionData as any).host
@@ -245,11 +247,11 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   }
   getSerialDevices(_bus: IBus | null): string[] {
     // Remove serialport names, which are already configured
-    let devices = structuredClone(this.serialDevices)
+    const devices = structuredClone(this.serialDevices)
     let didx
     for (didx = 0; didx < devices.length; ) {
-      let sd = devices[didx]
-      let idx = this.busses.data.findIndex(
+      const sd = devices[didx]
+      const idx = this.busses.data.findIndex(
         (b) =>
           b != null &&
           (b.connectionData as IRTUConnection).serialport &&
@@ -275,7 +277,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
     return this.serialDevices.length > 0 && (!control.value || control.value.length == 0) ? { 'not empty': control.value } : null
   }
   createConnectionDataFormGroup(): FormGroup {
-    let fg = this._formBuilder.group({
+    const fg = this._formBuilder.group({
       selectedBusTab: this._formBuilder.control(0),
       rtu: this._formBuilder.group({
         serial: [null, this.serialValidator],
@@ -295,14 +297,14 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
     return this.configureModbusFormGroup.get('rtu')!.hasError(error)
   }
   addEnabled(idx: number) {
-    let fg = this.bussesFormArray.at(idx)
+    const fg = this.bussesFormArray.at(idx)
     if (fg)
       if (this.isRTU(idx)) return fg.get('rtu')!.valid
       else return fg.get('tcp')!.valid
     return false
   }
   copy2Serial(idx: number, event: MatSelectChange) {
-    let fg = this.getBusFormGroup(idx)
+    const fg = this.getBusFormGroup(idx)
     fg.get('serial')!.setValue(event.value)
   }
 
@@ -330,14 +332,14 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   }
 
   getSerialFormControl(idx: number): FormControl<string> {
-    let busFormGroup = this.getBusFormGroup(idx)
+    const busFormGroup = this.getBusFormGroup(idx)
     let s: FormControl<string> = busFormGroup.get(['rtu', 'serial'])! as FormControl<string>
     if (s == null) s = busFormGroup.get(['rtu', 'serialDeviceSelection'])! as FormControl<string>
     return s
   }
 
   getConnectionTitle(idx: number): string {
-    let busFormGroup = this.getBusFormGroup(idx)
+    const busFormGroup = this.getBusFormGroup(idx)
     this.busses.data
     let s: FormControl<string> | undefined = undefined
     if (this.modbusIsRtu[idx]) s = this.getSerialFormControl(idx)

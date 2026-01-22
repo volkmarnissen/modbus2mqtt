@@ -5,13 +5,12 @@ import { Router } from '@angular/router'
 import { Observable, Subject, catchError, first, forkJoin, map } from 'rxjs'
 import {
   IbaseSpecification,
-  IimageAndDocumentUrl,
   Imessage,
   ImodbusSpecification,
   SpecificationFileUsage,
   SpecificationStatus,
   getSpecificationI18nName,
-} from '../../shared/specification'
+} from '../../shared/specification/index'
 import { SpecificationServices } from '../services/specificationServices'
 import { Iconfiguration, IUserAuthenticationStatus } from '../../shared/server'
 import { GalleryItem, ImageItem } from 'ng-gallery'
@@ -22,8 +21,6 @@ import { MatButton, MatIconButton } from '@angular/material/button'
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
 import { SessionStorage } from '../services/SessionStorage'
 import { InfoboxComponent } from '../infobox/infobox.component'
-import { BrowserModule } from '@angular/platform-browser'
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 
 interface ImodbusSpecificationWithMessages extends ImodbusSpecification {
   messages: Imessage[]
@@ -59,24 +56,24 @@ export class SpecificationsComponent implements OnInit {
     private apiService: ApiService,
     private fb: FormBuilder,
     private router: Router
-  ) {}
+  ) { }
   contributing: boolean = false
   fillSpecifications(specs: ImodbusSpecification[]) {
     if (!this.config) return
-    let a: any = {}
+    const a: any = {}
     this.galleryItems = new Map<string, GalleryItem[]>()
 
     specs.forEach((spec) => {
       // Specifications Component doesn't change a Specification
       // for validation of identification, it's better to use the Filespecification
       // This happens in getForSpecificationValidation
-      let ox = this.apiService.getForSpecificationValidation(spec.filename, this.config!.mqttdiscoverylanguage)
+      const ox = this.apiService.getForSpecificationValidation(spec.filename, this.config!.mqttdiscoverylanguage)
       a[spec.filename] = ox
       this.generateImageGalleryItems(spec)
     })
     forkJoin(a).subscribe((o: any) => {
       Object.entries(o).forEach(([key, value]) => {
-        let s: any = specs.find((spec) => spec.filename == key)
+        const s: any = specs.find((spec) => spec.filename == key)
         if (s) (s as ImodbusSpecificationWithMessages).messages = value as any
       })
       this.specifications = specs as ImodbusSpecificationWithMessages[]
@@ -135,9 +132,9 @@ export class SpecificationsComponent implements OnInit {
   }
 
   canContribute(spec: ImodbusSpecification): Observable<boolean> {
-    let rc = ![SpecificationStatus.published, SpecificationStatus.contributed].includes(spec.status)
+    const rc = ![SpecificationStatus.published, SpecificationStatus.contributed].includes(spec.status)
     if (!rc || !this.config) {
-      let s = new Subject<boolean>()
+      const s = new Subject<boolean>()
       setTimeout(() => {
         s.next(false)
       }, 1)
@@ -171,7 +168,7 @@ export class SpecificationsComponent implements OnInit {
     })
   }
   generateImageGalleryItems(spec: ImodbusSpecification): void {
-    let rc: GalleryItem[] = []
+    const rc: GalleryItem[] = []
     spec.files.forEach((img) => {
       if (img.usage == SpecificationFileUsage.img) {
         rc.push(new ImageItem({ src: img.url, thumb: img.url }))
@@ -180,12 +177,12 @@ export class SpecificationsComponent implements OnInit {
     this.galleryItems.set(spec.filename, rc)
   }
   getImage(fn: string) {
-    let d = this.galleryItems.get(fn)
+    const d = this.galleryItems.get(fn)
     if (d && d.length > 0 && d[0].data && d[0].data.src) return d[0].data.src as string
     return ''
   }
   onZipDropped(files: FileList) {
-    var fd = new FormData()
+    const fd = new FormData()
     Array.prototype.forEach.call(files, (element: File) => {
       fd.append('zips', element, element.name)
     })
@@ -199,9 +196,9 @@ export class SpecificationsComponent implements OnInit {
     if (input && (input as HTMLInputElement).files !== null) this.onZipDropped((input as HTMLInputElement).files!)
   }
   generateDownloadLink(what: string): string {
-    let url = 'download/' + what
+    const url = 'download/' + what
     if (!this.authStatus || this.authStatus.hassiotoken == undefined) {
-      let authToken = new SessionStorage().getAuthToken()
+      const authToken = new SessionStorage().getAuthToken()
       if (authToken) return authToken + '/' + url
     }
     return url

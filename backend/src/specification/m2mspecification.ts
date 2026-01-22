@@ -117,7 +117,7 @@ export class M2mSpecification implements IspecificationValidator {
         switch (spec.status) {
           case SpecificationStatus.added: {
             title = 'Add specification '
-            message = this.generateAddedContributionMessage(note)
+            message = this.generateAddedContributionMessage()
             break
           }
           case SpecificationStatus.cloned: {
@@ -179,7 +179,7 @@ export class M2mSpecification implements IspecificationValidator {
     })
   }
 
-  private generateAddedContributionMessage(_note: string | undefined): string {
+  private generateAddedContributionMessage(): string {
     // First contribution:
     // Name of Specification(en)
     const spec = this.settings as ImodbusSpecification

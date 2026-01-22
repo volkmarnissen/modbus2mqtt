@@ -1,7 +1,7 @@
 import { expect, it } from '@jest/globals'
 import { ModbusRegisterType } from '../../src/shared/specification/index.js'
 import { ModbusRTUProcessor } from '../../src/server/modbusRTUprocessor.js'
-import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
+import { ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
 import { ImodbusAddress, ModbusTasks } from '../../src/shared/server/index.js'
 function addAddresses(addresses: Set<ImodbusAddress>, registerType: ModbusRegisterType, startAddress: number, endAddress: number) {
   for (let idx = startAddress; idx < endAddress; idx++)
@@ -33,19 +33,6 @@ it('prepare', () => {
   expect(preparedAddresses.addresses[2].registerType).toBe(ModbusRegisterType.HoldingRegister)
 })
 
-function prepareQueue(): IQueueEntry {
-  const qe: IQueueEntry = {
-    slaveId: 1,
-    address: { address: 1, length: 2, registerType: ModbusRegisterType.HoldingRegister },
-    onError(qe, e) {
-      return ModbusErrorActions.notHandled
-    },
-    onResolve(result) {},
-    options: { task: ModbusTasks.deviceDetection, errorHandling: { retry: true } },
-  }
-  return qe
-}
-
 it('execute', (done) => {
   const addresses = new Set<ImodbusAddress>()
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 0, 4)
@@ -69,10 +56,9 @@ it('execute', (done) => {
   })
   // Wait for queue to be ready
   setTimeout(() => {
-    const length = queue.getLength()
     const entries = queue.getEntries()
     queue.clear()
-    entries.forEach((qe, idx) => {
+    entries.forEach((qe) => {
       if (qe.address.registerType == ModbusRegisterType.Coils) qe.onResolve(qe, [1, 1, 0, 0])
       else if (qe.address.address == 0 && qe.address.length != undefined && qe.address.length > 1) {
         const e: any = new Error('Timeout')

@@ -143,7 +143,13 @@ export interface Ientity extends IidentEntity {
   entityCategory?: string
   converterParameters?: ConverterParameter
 }
-export function getParameterType(converter: Converters | null | undefined): string | undefined {
+export function getParameterType(entity: Ientity): string | undefined
+export function getParameterType(converter: Converters | null | undefined): string | undefined
+export function getParameterType(arg: Ientity | Converters | null | undefined): string | undefined {
+  const converter: Converters | null | undefined =
+    typeof arg === 'object' && arg !== null && 'converter' in arg
+      ? (arg as Ientity).converter
+      : (arg as Converters | null | undefined)
   if (converter)
     switch (converter) {
       case 'text':
@@ -155,7 +161,7 @@ export function getParameterType(converter: Converters | null | undefined): stri
       case 'value':
         return 'Ivalue'
       case 'binary':
-        return ''
+        return 'Ibinary_sensor'
       default:
     }
   return undefined
@@ -221,7 +227,7 @@ export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntit
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface Array<T> {
+  interface Array<unknown> {
     errormessage: string
   }
 }
@@ -428,7 +434,7 @@ export function getSpecificationI18nEntityOptionId(
   return [0]
 }
 
-export function getCurrentLanguage(_ins: string) {
+export function getCurrentLanguage(): string {
   return navigator.language.replace(/-.*/g, '')
 }
 export function getFileNameFromName(name: string): string | undefined {

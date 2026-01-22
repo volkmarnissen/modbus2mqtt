@@ -220,29 +220,29 @@ export class FakeBus implements IModbusAPI {
   getCacheId(): string {
     return '1'
   }
-  reconnectRTU(task: string) {
+  reconnectRTU(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.reconnected = true
       resolve()
     })
   }
 
-  writeHoldingRegisters(slaveid: number, dataaddress: number, data: number[]): Promise<void> {
+  writeHoldingRegisters(_slaveid: number, _dataaddress: number, data: number[]): Promise<void> {
     return new Promise<void>((resolve) => {
       this.wroteDataCount++
       expect(data[0]).toBeGreaterThanOrEqual(200)
       resolve()
     })
   }
-  writeCoils(slaveid: number, dataaddress: number, data: number[]): Promise<void> {
+  writeCoils(): Promise<void> {
     return new Promise<void>((_resolve, reject) => {
       reject(new Error('Error'))
     })
   }
-  defaultRC = (resolve: (result: IModbusResultWithDuration) => void, reject: (e: any) => void) => {
+  defaultRC = (resolve: (result: IModbusResultWithDuration) => void) => {
     resolve({ data: [0], duration: 199 })
   }
-  readHoldingRegisters(slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
+  readHoldingRegisters(_slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
     return new Promise<IModbusResultWithDuration>((resolve) => {
       const d: number[] = []
       this.callCount = 1
@@ -251,7 +251,7 @@ export class FakeBus implements IModbusAPI {
       resolve({ data: d, duration: data })
     })
   }
-  readCoils(slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
+  readCoils(_slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
     return new Promise<IModbusResultWithDuration>((resolve, reject) => {
       if (this.callCount > 0) {
         this.callCount = 0
@@ -302,10 +302,12 @@ export class FakeBus implements IModbusAPI {
       }
     })
   }
-  readDiscreteInputs(slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  readDiscreteInputs(_slaveid: number, _dataaddress: number, _length: number): Promise<IModbusResultWithDuration> {
     return new Promise<IModbusResultWithDuration>(this.defaultRC)
   }
-  readInputRegisters(slaveid: number, dataaddress: number, length: number): Promise<IModbusResultWithDuration> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  readInputRegisters(_slaveid: number, _dataaddress: number, _length: number): Promise<IModbusResultWithDuration> {
     return new Promise<IModbusResultWithDuration>(this.defaultRC)
   }
 }

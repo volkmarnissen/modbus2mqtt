@@ -165,7 +165,7 @@ export class I18nService {
   static specificationTextsToTranslation(spec: ImodbusSpecification, language: string, entity?: ImodbusEntity) {
     spec.entities.forEach((e) => {
       if ((e as any).name) setSpecificationI18nEntityName(spec, language, e.id, (e as any).name)
-      let opt = (e.converterParameters as Iselect).options
+      const opt = (e.converterParameters as Iselect).options
       if (opt && opt.length > 0 && (!entity || e.id == entity.id)) {
         ;(e.converterParameters as Iselect).optionModbusValues = []
         ;(e.converterParameters as Iselect).options!.forEach((option) => {
@@ -178,12 +178,12 @@ export class I18nService {
   }
   static specificationTextsFromTranslation(spec: ImodbusSpecification, language: string, entity?: ImodbusEntity) {
     spec.entities.forEach((e) => {
-      let name = getSpecificationI18nEntityName(spec, language, e.id, true)
+      const name = getSpecificationI18nEntityName(spec, language, e.id, true)
       if (name) (e as any).name = name
       if ((e.converterParameters as Iselect).optionModbusValues && (!entity || e.id == entity.id)) {
         ;(e.converterParameters as Iselect).options = []
         ;(e.converterParameters as Iselect).optionModbusValues!.forEach((option) => {
-          let name = getSpecificationI18nEntityOptionName(spec, language, e.id, option!, true)
+          const name = getSpecificationI18nEntityOptionName(spec, language, e.id, option!, true)
           if (name)
             (e.converterParameters as Iselect).options!.push({
               key: option,
@@ -193,15 +193,15 @@ export class I18nService {
       }
     })
   }
-  static updateSpecificationI18n(key: string, spec: ImodbusSpecification, language: string, entity?: ImodbusEntity) {
+  static updateSpecificationI18n(key: string, spec: ImodbusSpecification, language: string, _entity?: ImodbusEntity) {
     if (key.startsWith('e')) {
-      let entityId = parseInt(key.substring(1))
-      let ent = spec.entities.find((e) => e.id == entityId)
+      const entityId = parseInt(key.substring(1))
+      const ent = spec.entities.find((e) => e.id == entityId)
       if (ent == null) return
-      let oIdx = key.indexOf('o.')
+      const oIdx = key.indexOf('o.')
       if (oIdx > 0) {
-        let optionId = parseInt(key.substring(oIdx + 2))
-        let option = getSpecificationI18nEntityOptionName(spec, language, ent.id, optionId, true)
+        const optionId = parseInt(key.substring(oIdx + 2))
+        const option = getSpecificationI18nEntityOptionName(spec, language, ent.id, optionId, true)
         if ((ent.converterParameters as Iselect).options == undefined) {
           ;(ent.converterParameters as Iselect).options = []
         }
@@ -211,17 +211,17 @@ export class I18nService {
             name: option,
           })
       } else {
-        let name = getSpecificationI18nEntityName(spec, language, entityId, true)
+        const name = getSpecificationI18nEntityName(spec, language, entityId, true)
 
         if (name) {
           ;(ent as any).name = name
           // trigger update of entites
-          let ents = structuredClone(spec.entities)
+          const ents = structuredClone(spec.entities)
           spec.entities = ents
         }
       }
     } else if (key == 'name') {
-      let name = getSpecificationI18nName(spec, language)
+      const name = getSpecificationI18nName(spec, language)
       if (name) (spec as any).name = name
     }
   }

@@ -57,14 +57,14 @@ export class InfoboxComponent implements OnInit, OnDestroy {
             this.currentDisplay = ''
 
             // Remove outdated messages
-            let now = Date.now()
+            const now = Date.now()
             // The messages are ordered by lifetime (oldest first)
             // The valid messages are at the end
             // Just remove the first entries until an entry has a lifetime longer  than now
             while (this.messages.length && this.messages[0].endOfLive < now) {
               this.messages.shift()
             }
-            var cnt = this.messages.find((m) => m.endOfLive - now > animationDuration)
+            const cnt = this.messages.find((m) => m.endOfLive - now > animationDuration)
             if (!cnt) this.newAnimationState = 'close'
             else this.newAnimationState = 'open'
 

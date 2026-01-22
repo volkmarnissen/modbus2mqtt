@@ -56,7 +56,7 @@ function read() {
     client.setID(slaveid)
     client
       .readDiscreteInputs(1, 2)
-      .then((_data) => {
+      .then(() => {
         debug('success slave ' + slaveid)
         return read()
       })

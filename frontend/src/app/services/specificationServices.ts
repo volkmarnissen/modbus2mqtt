@@ -1,7 +1,6 @@
 import {
   IbaseSpecification,
   Imessage,
-  ImodbusSpecification,
   MessageTypes,
   SpecificationStatus,
   getSpecificationI18nEntityName,
@@ -14,7 +13,7 @@ export class SpecificationServices {
     private mqttdiscoverylanguage: string,
     private apiService: ApiService
   ) {}
-  getValidationMessages(specfilename: string, forContribution: boolean): Observable<Imessage[]> {
+  getValidationMessages(specfilename: string, _forContribution: boolean): Observable<Imessage[]> {
     if (!specfilename) throw new Error('spec is undefined')
 
     return this.apiService.getForSpecificationValidation(specfilename, this.mqttdiscoverylanguage)
@@ -39,12 +38,14 @@ export class SpecificationServices {
         return $localize`A translation is missing` + ': ' + message.additionalInformation
       case MessageTypes.noEntity:
         return $localize`No entity defined for this specification`
-      case MessageTypes.noDocumentation:
-        return $localize`No documentation file or URL`
       case MessageTypes.noImage:
         return $localize`No image file or URL`
-      case MessageTypes.nonUniqueName:
+      case MessageTypes.nonUniqueName: {
+        const info = message.additionalInformation
+        if (info && typeof info === 'string' && info.trim().length > 0)
+          return $localize` The name is already available in public ` + ': ' + info
         return $localize`Specification name is not unique`
+      }
       case MessageTypes.identifiedByOthers: {
         let specNames = ''
         const info = message.additionalInformation
@@ -52,8 +53,6 @@ export class SpecificationServices {
         else if (typeof info === 'string') specNames = info
         return $localize`Test data of this specification matches to the following other public specifications ${specNames}`
       }
-      case MessageTypes.nonUniqueName:
-        return $localize` The name is already available in public ` + ': ' + message.additionalInformation
       case MessageTypes.notIdentified:
         return $localize` The specification can not be identified with it's test data`
     }

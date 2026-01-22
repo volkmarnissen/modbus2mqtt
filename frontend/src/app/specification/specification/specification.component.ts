@@ -1,26 +1,7 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewEncapsulation,
-} from '@angular/core'
-import {
-  AbstractControl,
-  AsyncValidatorFn,
-  FormBuilder,
-  FormGroup,
-  ValidationErrors,
-  Validators,
-  FormsModule,
-  ReactiveFormsModule,
-  FormControl,
-} from '@angular/forms'
+import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core'
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ApiService } from '../../services/api-service'
-import { Observable, Subject, Subscription, catchError, first, map, startWith } from 'rxjs'
+import { Observable, Subject, Subscription, map } from 'rxjs'
 import {
   ImodbusSpecification,
   IbaseSpecification,
@@ -133,8 +114,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
     private entityApiService: ApiService,
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private router: Router
   ) {
     super()
     this.enterSpecNameFormGroup = this.fb.group({
@@ -201,10 +181,10 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
       },
       postModbusEntity: (changedEntity: ImodbusEntityWithName): Observable<ImodbusData> => {
         if (this.currentSpecification && this.config && this.busId != undefined && this.slaveid != undefined) {
-          let lSpec: ImodbusSpecification = structuredClone(this.currentSpecification)
-          let entity: ImodbusEntityWithName = structuredClone(changedEntity)
+          const lSpec: ImodbusSpecification = structuredClone(this.currentSpecification)
+          const entity: ImodbusEntityWithName = structuredClone(changedEntity)
           I18nService.specificationTextsToTranslation(lSpec, this.getMqttDiscoveryLanguage(), entity)
-          let idx = lSpec.entities.findIndex((e) => e.id == entity.id)
+          const idx = lSpec.entities.findIndex((e) => e.id == entity.id)
           if (idx >= 0) lSpec.entities[idx] = entity
           else lSpec.entities.push(entity)
           return this.entityApiService
@@ -226,8 +206,8 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
       postModbusWriteMqtt: (entity, value) => {
         if (this.busId == undefined || this.slaveid == undefined || !this.currentSpecification || !this.config)
           throw new Error('undefined parameter') // should not happen
-        let s = structuredClone(this.currentSpecification!)
-        let idx = s.entities.findIndex((e) => e.id == entity.id)
+        const s = structuredClone(this.currentSpecification!)
+        const idx = s.entities.findIndex((e) => e.id == entity.id)
         if (idx >= 0) s.entities[idx] = entity
         else s.entities.push(entity)
         return this.entityApiService
@@ -240,21 +220,21 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
           )
       },
       getNonVariableNumberEntities: () => {
-        let rc: { id: number; name: string }[] = []
+        const rc: { id: number; name: string }[] = []
         if (this.currentSpecification)
           this.currentSpecification.entities.forEach((e) => {
             if (
               (e.variableConfiguration == undefined || e.variableConfiguration.targetParameter == null) &&
               getParameterType(e.converter) == 'Inumber'
             ) {
-              let d = (e as ImodbusEntityWithName).name
+              const d = (e as ImodbusEntityWithName).name
               rc.push({ id: e.id, name: d ? d : '' })
             }
           })
         return rc
       },
       getMqttNames: (entityId) => {
-        let rc: string[] = []
+        const rc: string[] = []
         if (this.currentSpecification)
           this.currentSpecification.entities.forEach((ent) => {
             if (ent.mqttname && ent.mqttname && ent.id != entityId) rc.push(ent.mqttname)
@@ -299,15 +279,15 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
           if (!this.currentSpecification.nextEntityId || maxId + 1 > this.currentSpecification.nextEntityId)
             this.currentSpecification.nextEntityId = maxId + 1
 
-          let newEntity = structuredClone(addedEntity)
+          const newEntity = structuredClone(addedEntity)
 
           newEntity.id = this.currentSpecification.nextEntityId++
 
           if (addedEntity.id >= 0) {
-            let index = this.currentSpecification.entities.findIndex((e) => e.id == addedEntity.id)
+            const index = this.currentSpecification.entities.findIndex((e) => e.id == addedEntity.id)
             newEntity.mqttname = undefined
             newEntity.name = undefined
-            let insertAfterIndex = index < this.currentSpecification.entities.length ? index + 1 : index
+            const insertAfterIndex = index < this.currentSpecification.entities.length ? index + 1 : index
             this.currentSpecification.entities.splice(insertAfterIndex, 0, newEntity)
             this.entities = this.currentSpecification.entities
           } else {
@@ -320,7 +300,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
       },
       deleteEntity: (entityId: number): void => {
         if (this.currentSpecification) {
-          let idx = this.currentSpecification.entities.findIndex((e) => e.id == entityId)
+          const idx = this.currentSpecification.entities.findIndex((e) => e.id == entityId)
           if (idx >= 0) {
             this.entitiesTouched = true
             this.currentSpecification.entities.splice(idx, 1)
@@ -370,8 +350,8 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
   }
 
   setFilename() {
-    let filename = getFileNameFromName(this.enterSpecNameFormGroup.get('name')?.value)
-    let fForm = this.enterSpecNameFormGroup.get('filename')!
+    const filename = getFileNameFromName(this.enterSpecNameFormGroup.get('name')?.value)
+    const fForm = this.enterSpecNameFormGroup.get('filename')!
     if (
       this.currentSpecification &&
       [SpecificationStatus.added, SpecificationStatus.new].indexOf(this.currentSpecification.status) >= 0 &&
@@ -405,7 +385,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
       )
     }
     this.setValidationMessages()
-    let e = structuredClone(this.currentSpecification.entities)
+    const e = structuredClone(this.currentSpecification.entities)
     I18nService.specificationTextsToTranslation(this.currentSpecification, this.getMqttDiscoveryLanguage())
     this.currentSpecification.entities = e
     this.entities = e
@@ -442,7 +422,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
     if (!$event || !this.currentSpecification) return
     I18nService.updateSpecificationI18n($event.key, this.currentSpecification!, this.getMqttDiscoveryLanguage())
     if ($event.key == 'name') {
-      let specName = getSpecificationI18nName(this.currentSpecification, this.getMqttDiscoveryLanguage(), true)
+      const specName = getSpecificationI18nName(this.currentSpecification, this.getMqttDiscoveryLanguage(), true)
       if (specName) this.enterSpecNameFormGroup.get('name')!.setValue(specName)
     }
 
@@ -457,7 +437,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
       this.entities &&
       this.validateSpecification(this.currentSpecification)
     ) {
-      let es = structuredClone(this.entities)
+      const es = structuredClone(this.entities)
       es.forEach((e) => {
         if (e.name) setSpecificationI18nEntityName(this.currentSpecification!, this.getMqttDiscoveryLanguage(), e.id, e.name)
         delete (e as any).name
@@ -514,7 +494,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
     return this.currentSpecification!
   }
   validateSpecification(spec: ImodbusSpecification, msgs: string[] | undefined = undefined): boolean {
-    let buffer: string[] = []
+    const buffer: string[] = []
     if (msgs) msgs = []
     else msgs = buffer
     if (!spec.filename || spec.filename.length == 0) msgs.push('No filename for specification')
@@ -527,7 +507,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
   ngOnInit(): void {
     this.entityApiService.getConfiguration().subscribe((config) => {
       this.config = config
-      var dispHexFg = this.displayHexFormGroup.get('displayHex')
+      const dispHexFg = this.displayHexFormGroup.get('displayHex')
       this.displayHex = this.config.displayHex ? this.config.displayHex : false
       if (dispHexFg) dispHexFg.setValue(this.config.displayHex)
       this.specServices = new SpecificationServices(this.getMqttDiscoveryLanguage(), this.entityApiService)
@@ -601,40 +581,6 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
     return getBaseFilename(url.url)
   }
 
-  private asyncValidateUniqueFilename: AsyncValidatorFn = (control: AbstractControl): Observable<ValidationErrors | null> => {
-    let successSubject = new Subject<ValidationErrors | null>()
-    if (control == null || control.value == null)
-      return new Subject<ValidationErrors | null>().pipe(startWith([{ invalid: control.value }]), first())
-
-    if (this.originalSpecification && control.value == this.originalSpecification.filename)
-      return new Subject<ValidationErrors | null>().pipe(startWith(null), first())
-    return this.entityApiService.getSpecification(control.value).pipe(
-      map((spec) => {
-        if (spec) return { unique: spec }
-        else return null
-      }),
-      catchError(() => {
-        return new Subject<ValidationErrors | null>().pipe(startWith(null), first())
-      })
-    )
-  }
-  private asyncValidateUniqueName: AsyncValidatorFn = (control: AbstractControl): Observable<ValidationErrors | null> => {
-    let successSubject = new Subject<ValidationErrors | null>()
-    if (control == null || control.value == null)
-      return new Subject<ValidationErrors | null>().pipe(startWith([{ invalid: control.value }]), first())
-
-    if (this.originalSpecification && control.value == this.originalSpecification.filename)
-      return new Subject<ValidationErrors | null>().pipe(startWith(null), first())
-    return this.entityApiService.getSpecification(control.value).pipe(
-      map((spec) => {
-        if (spec) return { unique: spec }
-        else return null
-      }),
-      catchError(() => {
-        return new Subject<ValidationErrors | null>().pipe(startWith(null), first())
-      })
-    )
-  }
   getStatusIcon(status: SpecificationStatus | null): string {
     return SpecificationServices.getStatusIcon(status)
   }

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core'
+import { Injectable } from '@angular/core'
 import { HttpClient, HttpErrorResponse } from '@angular/common/http'
 import { Observable, Subject } from 'rxjs'
 import { catchError, first, map } from 'rxjs/operators'
@@ -28,7 +28,6 @@ import {
   IidentificationSpecification,
   IModbusConnection,
 } from '../../shared/server'
-import { APP_BASE_HREF } from '@angular/common'
 
 @Injectable({
   providedIn: 'root',
@@ -67,7 +66,7 @@ export class ApiService {
   getSpecification(specification: string | undefined = undefined): Observable<Ispecification> {
     if (!specification) throw new Error('spec is a required parameter')
 
-    let f: string = this.getFullUri(apiUri.specfication) + `?spec=${specification}`
+    const f: string = this.getFullUri(apiUri.specfication) + `?spec=${specification}`
     return this.httpClient.get<Ispecification>(f) // No error Handling!!!
   }
 
@@ -91,7 +90,7 @@ export class ApiService {
   }
   getConverters(): Observable<Converters[]> {
     if (this.converterCache != undefined) {
-      let sub = new Subject<Converters[]>()
+      const sub = new Subject<Converters[]>()
       sub.pipe(first())
       setTimeout(() => {
         sub.next(this.converterCache!)
@@ -99,7 +98,7 @@ export class ApiService {
       return sub
     }
 
-    let url = this.getFullUri(apiUri.converters)
+    const url = this.getFullUri(apiUri.converters)
     return this.httpClient.get<Converters[]>(url).pipe(
       map((cnv) => {
         this.converterCache = cnv as Converters[]
@@ -112,7 +111,7 @@ export class ApiService {
     )
   }
   postValidateMqtt(config: Iconfiguration): Observable<{ valid: boolean; message: string }> {
-    let url = this.getFullUri(apiUri.validateMqtt)
+    const url = this.getFullUri(apiUri.validateMqtt)
     return this.httpClient.post<{ valid: boolean; message: string }>(url, config).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -121,7 +120,7 @@ export class ApiService {
     )
   }
   getSslFiles(): Observable<string[]> {
-    let url = this.getFullUri(apiUri.sslFiles)
+    const url = this.getFullUri(apiUri.sslFiles)
     return this.httpClient.get<string[]>(url).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -130,7 +129,7 @@ export class ApiService {
     )
   }
   getSerialDevices(): Observable<string[]> {
-    let url = this.getFullUri(apiUri.serialDevices)
+    const url = this.getFullUri(apiUri.serialDevices)
     return this.httpClient.get<string[]>(url).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -139,7 +138,7 @@ export class ApiService {
     )
   }
   getUserAuthenticationStatus(): Observable<IUserAuthenticationStatus> {
-    let url = this.getFullUri(apiUri.userAuthenticationStatus)
+    const url = this.getFullUri(apiUri.userAuthenticationStatus)
     return this.httpClient.get<IUserAuthenticationStatus>(url).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -148,7 +147,7 @@ export class ApiService {
     )
   }
   getBusses(): Observable<IBus[]> {
-    let url = this.getFullUri(apiUri.busses)
+    const url = this.getFullUri(apiUri.busses)
     return this.httpClient.get<IBus[]>(url).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -157,7 +156,7 @@ export class ApiService {
     )
   }
   getBus(busid: number): Observable<IBus> {
-    let url = this.getFullUri(apiUri.bus) + `?busid=${busid}`
+    const url = this.getFullUri(apiUri.bus) + `?busid=${busid}`
     return this.httpClient.get<IBus>(url).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -213,7 +212,7 @@ export class ApiService {
     showAllPublicSpecs: boolean,
     language: string
   ): Observable<IidentificationSpecification[]> {
-    let p1 = specificSlaveId ? '&slaveid=' + specificSlaveId : ''
+    const p1 = specificSlaveId ? '&slaveid=' + specificSlaveId : ''
     let param = '?busid=' + busid + p1 + '&language=' + language
     if (showAllPublicSpecs) param = param + '&showAllPublicSpecs=true'
     return this.httpClient.get<IidentificationSpecification[]>(this.getFullUri(apiUri.specsDetection) + `${param}`).pipe(
@@ -300,7 +299,7 @@ export class ApiService {
         'Content-Type': 'application/json',
       },
     }
-    let f = this.getFullUri(apiUri.slave) + `?busid=${busid}`
+    const f = this.getFullUri(apiUri.slave) + `?busid=${busid}`
     return this.httpClient.post<Islave>(f, device, httpOptions).pipe(
       catchError((err) => {
         this.errorHandler(err)
@@ -329,7 +328,7 @@ export class ApiService {
     changedEntity: ImodbusEntity,
     busid: number,
     slaveid: number,
-    language: string
+    _language: string
   ): Observable<ImodbusEntityWithName> {
     return this.httpClient
       .post<ImodbusEntity>(
@@ -360,8 +359,8 @@ export class ApiService {
     language: string,
     mqttValue: string
   ): Observable<string> {
-    let lSpec: ImodbusSpecification = structuredClone(spec)
-    let entity = lSpec.entities.find((e) => e.id == entityid)
+    const lSpec: ImodbusSpecification = structuredClone(spec)
+    const entity = lSpec.entities.find((e) => e.id == entityid)
     if (entity && editableConverters.includes(entity.converter)) {
       switch (entity.converter) {
         case 'select':

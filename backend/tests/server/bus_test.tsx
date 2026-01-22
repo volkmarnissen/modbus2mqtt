@@ -102,6 +102,7 @@ function readModbusRegisterFake(): Promise<ImodbusValues> {
 }
 it('Bus getSpecsForDevice', async () => {
   prepareIdentification()
+  Config.setFakeModbus(true)
   if (Config.getConfiguration().fakeModbus) debug(LogLevelEnum.info, 'Fakemodbus')
   const bus = Bus.getBus(0)
   expect(bus).toBeDefined()
@@ -132,7 +133,7 @@ it('Bus getSpecsForDevice', async () => {
 
 it('Modbus getAvailableSpecs with specific slaveId no results 0-3', async () => {
   prepareIdentification()
-  Config['config'].fakeModbus = true
+  Config.setFakeModbus(true)
   if (Config.getConfiguration().fakeModbus) debug('Fakemodbus')
   const ispec = await Bus.getBus(0)!.getAvailableSpecs(1, false, 'en')
   expect(ispec).toBeDefined()

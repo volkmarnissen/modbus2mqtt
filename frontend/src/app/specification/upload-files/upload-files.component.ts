@@ -110,16 +110,16 @@ export class UploadFilesComponent implements OnInit, OnChanges {
     }
   }
   getBaseFilename(filename: string): string {
-    let idx = filename.lastIndexOf('/')
+    const idx = filename.lastIndexOf('/')
     if (idx >= 0) return filename.substring(idx + 1)
     return filename
   }
   onFileDropped(files: FileList, usage: SpecificationFileUsage) {
-    var fd = new FormData()
+    const fd = new FormData()
     if (this.currentSpecification) {
       Array.prototype.forEach.call(files, (element: File) => {
-        var specFiles = this.currentSpecification!.files
-        let found = specFiles.find((u) => u.url.endsWith(element.name) && u.usage == usage)
+        const specFiles = this.currentSpecification!.files
+        const found = specFiles.find((u) => u.url.endsWith(element.name) && u.usage == usage)
         if (!found) {
           fd.append('documents', element)
         }
@@ -140,9 +140,9 @@ export class UploadFilesComponent implements OnInit, OnChanges {
   }
 
   private addDocument(control: FormControl, usage: SpecificationFileUsage) {
-    let url = control.value
+    const url = control.value
     if (url && this.currentSpecification) {
-      let found = this.currentSpecification.files.find((f) => f.url == url)
+      const found = this.currentSpecification.files.find((f) => f.url == url)
       if (!found) {
         this.entityApiService
           .postAddFilesUrl(
@@ -175,17 +175,17 @@ export class UploadFilesComponent implements OnInit, OnChanges {
   }
 
   generateDocumentUrls() {
-    let rc: IimageAndDocumentUrl[] = []
+    const rc: IimageAndDocumentUrl[] = []
     if (this.currentSpecification && this.currentSpecification.files)
       for (let i = 0; i < this.currentSpecification.files.length; i++) {
-        let doc = this.currentSpecification.files[i]
+        const doc = this.currentSpecification.files[i]
         if (doc.usage == SpecificationFileUsage.documentation) rc.push(doc)
       }
     if (rc.length != this.documentUrls.length) this.documentUrls = rc
   }
   generateImageGalleryItems(): void {
-    let rc: GalleryItem[] = []
-    let rd: IimageAndDocumentUrl[] = []
+    const rc: GalleryItem[] = []
+    const rd: IimageAndDocumentUrl[] = []
     this.currentSpecification?.files.forEach((img) => {
       if (img.usage == SpecificationFileUsage.img) {
         rc.push(new ImageItem({ src: img.url, thumb: img.url }))
