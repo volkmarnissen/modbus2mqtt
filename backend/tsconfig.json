@@ -18,13 +18,7 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["src/*"],
-      "@src/*.mjs": ["src/*.mts"],
-      "@tests/*": ["tests/*"],
-      "@tests/*.mjs": ["tests/*.mts"]
-    }
+    "baseUrl": "."
   },
   "include": ["src", "tests", "vitest.config*.mts"],
   "exclude": ["../dist"]
