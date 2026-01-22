@@ -1,11 +1,11 @@
 import { expect, it, test, afterAll, beforeAll } from 'vitest'
-import { Config, MqttValidationResult } from '../../src/server/config'
-import { getFileNameFromName } from '../../src/shared/specification'
+import { Config, MqttValidationResult } from '../../src/server/config.js'
+import { getFileNameFromName } from '../../src/shared/specification/index.js'
 import * as fs from 'fs'
-import { setConfigsDirsForTest } from './configsbase'
-import { AuthenticationErrors } from '../../src/shared/server'
+import { setConfigsDirsForTest } from './configsbase.js'
+import { AuthenticationErrors } from '../../src/shared/server.js'
 import Debug from 'debug'
-import { ConfigTestHelper, TempConfigDirHelper } from './testhelper'
+import { ConfigTestHelper, TempConfigDirHelper } from './testhelper.js'
 setConfigsDirsForTest()
 const debug = Debug('config_test')
 

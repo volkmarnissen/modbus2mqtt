@@ -1,18 +1,18 @@
 import { expect, it, beforeAll, afterAll } from '@jest/globals'
-import { startModbusTCPserver, stopModbusTCPServer } from '../../src/server/modbusTCPserver'
+import { startModbusTCPserver, stopModbusTCPServer } from '../../src/server/modbusTCPserver.js'
 
-import { HttpErrorsEnum, ImodbusSpecification } from '../../src/shared/specification'
-import { FakeMqtt, FakeModes, setConfigsDirsBackendTCPForTest, initBussesForTest } from './configsbase'
+import { HttpErrorsEnum, ImodbusSpecification } from '../../src/shared/specification/index.js'
+import { FakeMqtt, FakeModes, setConfigsDirsBackendTCPForTest, initBussesForTest } from './configsbase.js'
 import supertest from 'supertest'
-import { apiUri } from '../../src/shared/server'
-import { HttpServer } from '../../src/server/httpserver'
-import { Config } from '../../src/server/config'
-import { ConfigBus } from '../../src/server/configbus'
+import { apiUri } from '../../src/shared/server.js'
+import { HttpServer } from '../../src/server/httpserver.js'
+import { Config } from '../../src/server/config.js'
+import { ConfigBus } from '../../src/server/configbus.js'
 import { MqttClient } from 'mqtt'
 import { join } from 'path'
-import { ConfigSpecification } from '../../src/specification'
-import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
-import { MqttConnector } from '../../src/server/mqttconnector'
+import { ConfigSpecification } from '../../src/specification/index.js'
+import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
+import { MqttConnector } from '../../src/server/mqttconnector.js'
 let httpServer: HttpServer
 
 beforeAll(() => {

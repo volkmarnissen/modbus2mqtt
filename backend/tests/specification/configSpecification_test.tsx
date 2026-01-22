@@ -1,8 +1,8 @@
 import { it, expect, beforeEach, afterEach } from 'vitest'
-import { ConfigSpecification } from '../../src/specification'
+import { ConfigSpecification } from '../../src/specification/index.js'
 import * as fs from 'fs'
 import { join } from 'path'
-import { configDir, singleMutex, dataDir } from './configsbase'
+import { configDir, singleMutex, dataDir } from './configsbase.js'
 import {
   IbaseSpecification,
   SPECIFICATION_VERSION,
@@ -11,10 +11,10 @@ import {
   getFileNameFromName,
   getSpecificationI18nName,
   newSpecification,
-} from '../../src/shared/specification'
-import { IModbusResultOrError } from '../../src/specification'
-import { ImodbusValues } from '../../src/specification'
-import { SpecificationTestHelper, TempConfigDirHelper } from '../server/testhelper'
+} from '../../src/shared/specification/index.js'
+import { IModbusResultOrError } from '../../src/specification/index.js'
+import { ImodbusValues } from '../../src/specification/index.js'
+import { SpecificationTestHelper, TempConfigDirHelper } from '../server/testhelper.js'
 
 ConfigSpecification['configDir'] = configDir
 ConfigSpecification['dataDir'] = dataDir

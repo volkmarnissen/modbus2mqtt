@@ -1,5 +1,5 @@
 declare module 'modbus-serial' {
-  import type { ReadCoilResult, ReadRegisterResult } from '../server/modbusTypes'
+  import type { ReadCoilResult, ReadRegisterResult } from '../server/modbusTypes.js'
 
   export interface ModbusRTULike {
     isOpen: boolean

@@ -1,6 +1,6 @@
-import { ConverterMap } from '../../src/specification'
-import { Converters, EnumNumberFormat, Ientity, Ispecification, ModbusRegisterType } from '../../src/shared/specification'
-import { ConfigSpecification } from '../../src/specification'
+import { ConverterMap } from '../../src/specification/index.js'
+import { Converters, EnumNumberFormat, Ientity, Ispecification, ModbusRegisterType } from '../../src/shared/specification/index.js'
+import { ConfigSpecification } from '../../src/specification/index.js'
 import { it, expect } from '@jest/globals'
 
 ConfigSpecification.setMqttdiscoverylanguage('en', undefined)

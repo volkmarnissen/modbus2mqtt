@@ -1,8 +1,8 @@
 import Debug from 'debug'
-import { M2mGitHub } from '../../src/specification'
-import { configDir, dataDir } from './configsbase'
+import { M2mGitHub } from '../../src/specification/index.js'
+import { configDir, dataDir } from './configsbase.js'
 import { join } from 'path'
-import { ConfigSpecification } from '../../src/specification'
+import { ConfigSpecification } from '../../src/specification/index.js'
 import { beforeAll, expect, it, describe, jest } from '@jest/globals'
 import * as fs from 'fs'
 

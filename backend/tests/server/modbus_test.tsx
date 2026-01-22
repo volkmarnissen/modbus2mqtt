@@ -1,5 +1,5 @@
-import { Bus } from '../../src/server/bus'
-import { Config } from '../../src/server/config'
+import { Bus } from '../../src/server/bus.js'
+import { Config } from '../../src/server/config.js'
 import {
   Itext,
   IdentifiedStates,
@@ -11,15 +11,15 @@ import {
   ModbusRegisterType,
   FileLocation,
   SpecificationFileUsage,
-} from '../../src/shared/specification'
-import { Modbus, ModbusForTest } from '../../src/server/modbus'
-import { getReadRegisterResult } from '../../src/server/submitRequestMock'
-import { initBussesForTest, setConfigsDirsForTest } from './configsbase'
-import { Islave, ModbusTasks } from '../../src/shared/server'
-import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification'
+} from '../../src/shared/specification/index.js'
+import { Modbus, ModbusForTest } from '../../src/server/modbus.js'
+import { getReadRegisterResult } from '../../src/server/submitRequestMock.js'
+import { initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
+import { Islave, ModbusTasks } from '../../src/shared/server.js'
+import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification/index.js'
 import { expect, it, describe, beforeEach, vi, beforeAll } from 'vitest'
 import Debug from 'debug'
-import { ConfigBus } from '../../src/server/configbus'
+import { ConfigBus } from '../../src/server/configbus.js'
 setConfigsDirsForTest()
 const debug = Debug('modbus_test')
 

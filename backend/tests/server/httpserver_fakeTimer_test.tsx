@@ -1,13 +1,13 @@
 import { expect, it, beforeAll, afterAll } from '@jest/globals'
-import { HttpServer as HttpServer } from '../../src/server/httpserver'
-import { Config } from '../../src/server/config'
+import { HttpServer as HttpServer } from '../../src/server/httpserver.js'
+import { Config } from '../../src/server/config.js'
 import supertest from 'supertest'
 import fs from 'fs'
-import { ConfigSpecification } from '../../src/specification'
+import { ConfigSpecification } from '../../src/specification/index.js'
 import { join } from 'path'
 import AdmZip from 'adm-zip'
-import { ConfigBus } from '../../src/server/configbus'
-import { setConfigsDirsForTest } from './configsbase'
+import { ConfigBus } from '../../src/server/configbus.js'
+import { setConfigsDirsForTest } from './configsbase.js'
 setConfigsDirsForTest()
 new ConfigSpecification().readYaml()
 

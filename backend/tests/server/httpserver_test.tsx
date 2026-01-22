@@ -1,7 +1,7 @@
 import { expect, it, xit, test, jest, describe, beforeAll, afterAll } from '@jest/globals'
 import { parse } from 'yaml'
 import Debug from 'debug'
-import { HttpServer as HttpServer } from '../../src/server'
+import { HttpServer as HttpServer } from '../../src/server.js'
 import {
   ImodbusEntity,
   ModbusRegisterType,
@@ -10,13 +10,13 @@ import {
   HttpErrorsEnum,
   FileLocation,
   Converters,
-} from '../../src/shared/specification'
-import { Config } from '../../src/server/config'
-import { FakeMqtt, FakeModes, initBussesForTest } from './configsbase'
+} from '../../src/shared/specification/index.js'
+import { Config } from '../../src/server/config.js'
+import { FakeMqtt, FakeModes, initBussesForTest } from './configsbase.js'
 import supertest from 'supertest'
 import * as fs from 'fs'
-import { ImodbusSpecification, SpecificationFileUsage, getSpecificationI18nName } from '../../src/shared/specification'
-import { Bus } from '../../src/server/bus'
+import { ImodbusSpecification, SpecificationFileUsage, getSpecificationI18nName } from '../../src/shared/specification/index.js'
+import { Bus } from '../../src/server/bus.js'
 import { VERSION } from 'ts-node'
 import {
   apiUri,
@@ -25,19 +25,19 @@ import {
   IModbusConnection,
   IidentificationSpecification,
   IUserAuthenticationStatus,
-} from '../../src/shared/server'
-import { IfileSpecification, LogLevelEnum, Logger } from '../../src/specification'
-import { ConfigSpecification } from '../../src/specification'
+} from '../../src/shared/server.js'
+import { IfileSpecification, LogLevelEnum, Logger } from '../../src/specification/index.js'
+import { ConfigSpecification } from '../../src/specification/index.js'
 import { Mutex } from 'async-mutex'
 import { join } from 'path'
-import { MqttDiscover } from '../../src/server/mqttdiscover'
+import { MqttDiscover } from '../../src/server/mqttdiscover.js'
 import { MqttClient } from 'mqtt'
-import { ConfigBus } from '../../src/server/configbus'
-import { MqttConnector } from '../../src/server/mqttconnector'
-import { MqttSubscriptions } from '../../src/server/mqttsubscriptions'
-import { ModbusAPI } from '../../src/server/modbusAPI'
-import { setConfigsDirsForTest } from './configsbase'
-import { ConfigTestHelper, TempConfigDirHelper } from './testhelper'
+import { ConfigBus } from '../../src/server/configbus.js'
+import { MqttConnector } from '../../src/server/mqttconnector.js'
+import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
+import { ModbusAPI } from '../../src/server/modbusAPI.js'
+import { setConfigsDirsForTest } from './configsbase.js'
+import { ConfigTestHelper, TempConfigDirHelper } from './testhelper.js'
 const mockReject = false
 const debug = Debug('testhttpserver')
 const mqttService = {

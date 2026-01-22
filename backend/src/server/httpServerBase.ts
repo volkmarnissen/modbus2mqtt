@@ -29,7 +29,7 @@ const debug = Debug('HttpServerBase')
 const debugUrl = Debug('HttpServerBaseUrl')
 const log = new Logger('HttpServerBase')
 // import cors from 'cors';
-//import { IfileSpecification } from './ispecification';
+//import { IfileSpecification } from './ispecification.js';
 
 export class HttpServerBase {
   protected app: Application

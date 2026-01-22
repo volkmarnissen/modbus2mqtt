@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { ModbusRTUWorker } from '../../src/server/modbusRTUworker'
-import { IModbusAPI } from '../../src/server/modbusWorker'
-import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue'
-import { ModbusRegisterType } from '../../src/shared/specification'
-import { ModbusTasks } from '../../src/shared/server'
-import { Itest, ModbusRTUWorkerForTest, FakeBus } from './testhelper'
+import { ModbusRTUWorker } from '../../src/server/modbusRTUworker.js'
+import { IModbusAPI } from '../../src/server/modbusWorker.js'
+import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
+import { ModbusRegisterType } from '../../src/shared/specification/index.js'
+import { ModbusTasks } from '../../src/shared/server.js'
+import { Itest, ModbusRTUWorkerForTest, FakeBus } from './testhelper.js'
 
 function enqueue(queue: ModbusRTUQueue, num: number, test: Itest) {
   queue.enqueue(

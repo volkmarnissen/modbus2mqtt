@@ -1,8 +1,8 @@
 import { expect, describe, test, beforeEach, afterEach } from '@jest/globals'
 import fs from 'fs'
 import path from 'path'
-import { CmdlineMigrate } from '../../src/server/CmdlineMigrate'
-import { MigrationTestHelper } from './testhelper'
+import { CmdlineMigrate } from '../../src/server/CmdlineMigrate.js'
+import { MigrationTestHelper } from './testhelper.js'
 
 describe('CmdlineMigrate', () => {
   const testBaseDir = path.join(__dirname, 'temp-migration-test')

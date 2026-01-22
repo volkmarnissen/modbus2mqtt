@@ -1,13 +1,13 @@
 import Debug from 'debug'
 import { expect, it, describe, beforeAll, vi } from 'vitest'
-import { Config } from '../../src/server/config'
-import { Bus } from '../../src/server/bus'
-import { initBussesForTest, setConfigsDirsForTest, singleMutex } from './configsbase'
-import { ModbusServer, XYslaveid } from '../../src/server/modbusTCPserver'
-import { IdentifiedStates, ImodbusEntity, ImodbusSpecification } from '../../src/shared/specification'
-import { ConfigSpecification, emptyModbusValues, IModbusResultOrError, ImodbusValues, LogLevelEnum } from '../../src/specification'
-import { ModbusAPI } from '../../src/server/modbusAPI'
-import { TempConfigDirHelper } from './testhelper'
+import { Config } from '../../src/server/config.js'
+import { Bus } from '../../src/server/bus.js'
+import { initBussesForTest, setConfigsDirsForTest, singleMutex } from './configsbase.js'
+import { ModbusServer, XYslaveid } from '../../src/server/modbusTCPserver.js'
+import { IdentifiedStates, ImodbusEntity, ImodbusSpecification } from '../../src/shared/specification/index.js'
+import { ConfigSpecification, emptyModbusValues, IModbusResultOrError, ImodbusValues, LogLevelEnum } from '../../src/specification/index.js'
+import { ModbusAPI } from '../../src/server/modbusAPI.js'
+import { TempConfigDirHelper } from './testhelper.js'
 
 const debug = Debug('bustest')
 const testPort = 8888

@@ -1,9 +1,9 @@
 import Debug from 'debug'
-import { M2mGithubValidate } from '../../src/specification/m2mGithubValidate'
-import { ConfigSpecification } from '../../src/specification'
+import { M2mGithubValidate } from '../../src/specification/m2mGithubValidate.js'
+import { ConfigSpecification } from '../../src/specification/index.js'
 import { it, expect, beforeAll, afterAll } from '@jest/globals'
 import * as fs from 'fs'
-import { configDir } from './configsbase'
+import { configDir } from './configsbase.js'
 const debug = Debug('m2mgithubvalidate')
 
 const yamlDir = '__tests__/yamlDirValidate'

@@ -1,5 +1,5 @@
 import { expect, describe, test } from '@jest/globals'
-import { Logger, LogLevelEnum } from '../../src/specification/log'
+import { Logger, LogLevelEnum } from '../../src/specification/log.js'
 import fs from 'fs'
 describe('Logger wrapper (npmlog backend)', () => {
   test('initializes and logs in jest environment without throwing', () => {

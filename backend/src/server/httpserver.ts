@@ -38,7 +38,7 @@ import { MqttSubscriptions } from './mqttsubscriptions.js'
 const debug = Debug('httpserver')
 const log = new Logger('httpserver')
 // import cors from 'cors';
-//import { IfileSpecification } from './ispecification';
+//import { IfileSpecification } from './ispecification.js';
 
 export class HttpServer extends HttpServerBase {
   constructor(angulardir: string = '.') {

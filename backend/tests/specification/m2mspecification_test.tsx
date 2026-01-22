@@ -7,15 +7,15 @@ import {
   SPECIFICATION_VERSION,
   SpecificationFileUsage,
   SpecificationStatus,
-} from '../../src/shared/specification'
-import { ConfigSpecification } from '../../src/specification'
-import { ImodbusValues, M2mSpecification, emptyModbusValues } from '../../src/specification'
-import { Converters, IdentifiedStates } from '../../src/shared/specification'
+} from '../../src/shared/specification/index.js'
+import { ConfigSpecification } from '../../src/specification/index.js'
+import { ImodbusValues, M2mSpecification, emptyModbusValues } from '../../src/specification/index.js'
+import { Converters, IdentifiedStates } from '../../src/shared/specification/index.js'
 import * as fs from 'fs'
-import { singleMutex, configDir } from './configsbase'
-import { IfileSpecification } from '../../src/specification'
+import { singleMutex, configDir } from './configsbase.js'
+import { IfileSpecification } from '../../src/specification/index.js'
 import { it, expect, beforeAll, describe, afterAll } from '@jest/globals'
-import { IpullRequest } from '../../src/specification/m2mGithubValidate'
+import { IpullRequest } from '../../src/specification/m2mGithubValidate.js'
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
