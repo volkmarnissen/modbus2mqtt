@@ -28,7 +28,7 @@ enum ModbusFunctionCodes {
 
 const FCOffset: number = 100000
 export class Migrator {
-  constructor() {}
+  constructor() { }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate(filecontent: any): IfileSpecification {
     let count = 0

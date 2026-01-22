@@ -275,11 +275,11 @@ export class Config {
           if (res)
             res
               .json()
-              .then((obj) => {
-                if (obj)
-                  if (obj.data) next(obj)
-                  else if (obj.result == 'error') reject(new Error('HASSIO: ' + obj.message))
-                  else reject(new Error('get' + url + ' expected data root object: ' + JSON.stringify(obj)))
+              .then((obj: unknown) => {
+                const o = obj as { data?: unknown; result?: string; message?: string }
+                if (o && o.data !== undefined) next(obj as T)
+                else if (o && o.result === 'error') reject(new Error('HASSIO: ' + (o.message ?? '')))
+                else reject(new Error('get' + url + ' expected data root object: ' + JSON.stringify(obj)))
               })
               .catch((reason) => {
                 const msg = 'supervisor call ' + url + ' failed ' + JSON.stringify(reason) + ' ' + res.headers.get('content-type')

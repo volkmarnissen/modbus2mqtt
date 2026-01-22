@@ -25,8 +25,12 @@
     "useDefineForClassFields": false,
     "rootDir": "src",
     "lib": ["ES2022", "dom"],
-    "types": ["node", "jest", "debug"]
+    "types": ["node", "jest", "vitest", "debug"],
+    "paths": {
+      "@src/*": ["backend/src/*"],
+      "@tests/*": ["backend/tests/*"]
+    }
   },
-  "include": ["src/**/*", "__test__/**/*"],
+  "include": ["src/**/*", "backend/tests/**/*"],
   "exclude": ["src/angular/**/*", "node_modules/**/*", "**/testHelpers/*", "dist/**/*", "eslint.config.mjs"]
 }

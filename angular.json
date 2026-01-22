@@ -7,24 +7,24 @@
       "projectType": "application",
       "schematics": {},
       "root": ".",
-      "sourceRoot": "angular/src",
+      "sourceRoot": "frontend/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "baseHref": "./",
-            "outputPath": "dist/angular",
+            "outputPath": "dist/frontend",
             "localize": true,
-            "index": "angular/src/index.html",
+            "index": "frontend/src/index.html",
             "polyfills": ["@angular/localize/init"],
-            "tsConfig": "angular/tsconfig.angular.json",
-            "assets": ["angular/src/assets/images", "angular/src/assets"],
-            "styles": ["angular/src/styles.css"],
+            "tsConfig": "frontend/tsconfig.angular.json",
+            "assets": ["frontend/src/assets/images", "frontend/src/assets"],
+            "styles": ["frontend/src/styles.css"],
             "scripts": [],
             "preserveSymlinks": true,
             "allowedCommonJsDependencies": ["../shared"],
-            "browser": "angular/src/main.ts"
+            "browser": "frontend/src/main.ts"
           },
           "configurations": {
             "production": {
@@ -53,12 +53,12 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "proxyConfig": "angular/proxy.conf.3000.json"
+            "proxyConfig": "frontend/proxy.conf.3000.json"
           },
           "configurations": {
             "3005": {
               "buildTarget": "modbus2mqtt:build:development",
-              "proxyConfig": "angular/proxy.conf.3005.json"
+              "proxyConfig": "frontend/proxy.conf.3005.json"
             },
             "production": {
               "buildTarget": "modbus2mqtt:build:production"
@@ -80,8 +80,8 @@
           "options": {
             "polyfills": ["@angular/localize/init"],
             "tsConfig": "tsconfig.json",
-            "assets": ["src/angular/assets/images/*", "src/assets"],
-            "styles": ["src/angular/styles.css"],
+            "assets": ["frontend/src/assets/images/*", "frontend/src/assets"],
+            "styles": ["frontend/src/styles.css"],
             "scripts": []
           }
         }

@@ -108,9 +108,9 @@ export class Modbus2Mqtt {
         // Prefer configured frontend directory; fallback to Angular build output
         let angulardir = Config.getConfiguration().frontendDir
         if (!angulardir) {
-          // Fallback: derive from current module location to dist/angular/browser (ESM-safe)
+          // Fallback: derive from current module location to dist/frontend/browser (ESM-safe)
           const currentDir = dirname(fileURLToPath(import.meta.url))
-          angulardir = join(currentDir, '..', 'angular', 'browser')
+          angulardir = join(currentDir, '..', 'frontend', 'browser')
         }
         // Did not work in github workflow for testing
 

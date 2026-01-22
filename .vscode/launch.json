@@ -26,7 +26,7 @@
       "port": 9222,
       "webRoot": "${workspaceFolder}",
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/dist/angular/**/*.js"]
+      "outFiles": ["${workspaceRoot}/dist/frontend/**/*.js"]
     },
     {
       "type": "chrome",

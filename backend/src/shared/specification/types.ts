@@ -220,7 +220,7 @@ export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntit
 }
 
 declare global {
-  // eslint-disable-next-line unused-imports/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Array<T> {
     errormessage: string
   }

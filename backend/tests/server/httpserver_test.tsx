@@ -484,14 +484,14 @@ describe('http POST', () => {
       .set('Content-Type', 'application/json; charset=utf-8')
       .send(i)
       .expect(201)
-    // Nach Upload (2 Dateien) und einem Delete sollte der AddFilesUrl-Eintrag die Länge auf 2 setzen
+    // After uploading (2 files) and one delete, AddFilesUrl entry length should be 2
     expect(response.body.length).toBe(2)
     const responseDelete = await supertest(httpServer['app'])
       .delete(
         '/api/upload?specification=waterleveltransmitter&url=http://www.spiegel.de&usage=' + SpecificationFileUsage.documentation
       )
       .expect(200)
-    // Ein globaler URL-Eintrag entfernt -> Länge 1
+    // One global URL entry removed -> length 1
     expect(responseDelete.body.length).toBe(1)
     const responseDelete2 = await supertest(httpServer['app'])
       .delete(
@@ -501,7 +501,7 @@ describe('http POST', () => {
           SpecificationFileUsage.documentation
       )
       .expect(200)
-    // Lokale Datei war schon einmal gelöscht; nach zweitem Delete sollte die Liste 0 Einträge haben
+    // Local file was already deleted once; after the second delete the list should have 0 entries
     expect(responseDelete2.body.length).toBe(0)
   })
 })
