@@ -67,12 +67,8 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "css",
-            "assets": [
-              { "glob": "**/*", "input": "src/assets" }
-            ],
-            "styles": [
-              "src/styles.css"
-            ],
+            "assets": [{ "glob": "**/*", "input": "src/assets" }],
+            "styles": ["src/styles.css"],
             "scripts": []
           }
         }

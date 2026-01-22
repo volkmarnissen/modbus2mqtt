@@ -6,7 +6,7 @@ export interface ReadRegisterResult {
 }
 // Base class for all converters
 export abstract class Converter {
-  constructor(protected component: Converters) { }
+  constructor(protected component: Converters) {}
   getModbusLength(_entity: Ientity): number {
     return 1
   }

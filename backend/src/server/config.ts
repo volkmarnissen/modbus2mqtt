@@ -16,7 +16,6 @@ import { Bus } from './bus.js'
 import { IClientOptions } from 'mqtt'
 const CONFIG_VERSION = '0.1'
 declare global {
-
   namespace NodeJS {
     interface ProcessEnv {
       HASSIO_TOKEN: string
@@ -24,7 +23,7 @@ declare global {
   }
 }
 
-export { }
+export {}
 const DEFAULT_MQTT_CONNECT_TIMEOUT = 60 * 1000
 const HASSIO_TIMEOUT = 3000
 export enum MqttValidationResult {
@@ -328,9 +327,9 @@ export class Config {
   }
   static updateMqttTlsConfig(config: Iconfiguration) {
     if (config && config.mqttconnect) {
-      ; (config.mqttconnect as IClientOptions).key = this.readCertfile(config.mqttkeyFile)
-        ; (config.mqttconnect as IClientOptions).ca = this.readCertfile(config.mqttcaFile)
-        ; (config.mqttconnect as IClientOptions).cert = this.readCertfile(config.mqttcertFile)
+      ;(config.mqttconnect as IClientOptions).key = this.readCertfile(config.mqttkeyFile)
+      ;(config.mqttconnect as IClientOptions).ca = this.readCertfile(config.mqttcaFile)
+      ;(config.mqttconnect as IClientOptions).cert = this.readCertfile(config.mqttcertFile)
     }
   }
 
@@ -462,7 +461,7 @@ export class Config {
   readYaml(): void {
     this.readYamlAsync
       .bind(this)()
-      .then(() => { })
+      .then(() => {})
       .catch((reason) => {
         log.log(LogLevelEnum.error, 'readYaml failed ' + reason)
       })

@@ -41,7 +41,7 @@ export class FakeMqtt {
   constructor(
     protected md: MqttSubscriptions,
     public fakeMode: FakeModes
-  ) { }
+  ) {}
   public subscribe(topic: string | string[]): void {
     debug('subscribe: ' + topic)
   }
@@ -71,7 +71,7 @@ export class FakeMqtt {
     endFunc()
     debug('end')
   }
-  public on(event: 'message', cb: () => {}) { }
+  public on(event: 'message', cb: () => {}) {}
 }
 
 export function initBussesForTest() {

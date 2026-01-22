@@ -2,7 +2,11 @@
   "name": "@modbus2mqtt/specification",
   "version": "0.15.34",
   "description": "File access, GitHub access and validation for specifications",
-  "keywords": ["modbus2mqtt", "specification", "validation"],
+  "keywords": [
+    "modbus2mqtt",
+    "specification",
+    "validation"
+  ],
   "bugs": "https://github.com/modbus2mqtt/server/issues",
   "type": "module",
   "exports": {

@@ -7,18 +7,8 @@ import path from 'node:path'
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 
-const INCLUDE_DIRS = [
-  'backend/tests',
-]
-const EXCLUDE_DIRS = new Set([
-  'node_modules',
-  'dist',
-  'distprod',
-  '.git',
-  '.vscode',
-  '.idea',
-  'coverage',
-])
+const INCLUDE_DIRS = ['backend/tests']
+const EXCLUDE_DIRS = new Set(['node_modules', 'dist', 'distprod', '.git', '.vscode', '.idea', 'coverage'])
 
 const EXTS = ['.ts', '.tsx', '.mts']
 

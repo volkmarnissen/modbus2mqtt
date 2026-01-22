@@ -288,7 +288,7 @@ export class FakeBus implements IModbusAPI {
             break
           case 200:
             const e = new Error('Error')
-              ; (e as any).errno = 'ETIMEDOUT'
+            ;(e as any).errno = 'ETIMEDOUT'
             reject(e)
             break
           default:

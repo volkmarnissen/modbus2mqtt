@@ -1,11 +1,17 @@
 import Debug from 'debug'
-import { expect, it, describe, beforeAll, vi } from 'vitest'
+import { expect, it, describe, beforeAll, vi, afterAll } from 'vitest'
 import { Config } from '../../src/server/config.js'
 import { Bus } from '../../src/server/bus.js'
 import { initBussesForTest, setConfigsDirsForTest, singleMutex } from './configsbase.js'
 import { ModbusServer, XYslaveid } from '../../src/server/modbusTCPserver.js'
 import { IdentifiedStates, ImodbusEntity, ImodbusSpecification } from '../../src/shared/specification/index.js'
-import { ConfigSpecification, emptyModbusValues, IModbusResultOrError, ImodbusValues, LogLevelEnum } from '../../src/specification/index.js'
+import {
+  ConfigSpecification,
+  emptyModbusValues,
+  IModbusResultOrError,
+  ImodbusValues,
+  LogLevelEnum,
+} from '../../src/specification/index.js'
 import { ModbusAPI } from '../../src/server/modbusAPI.js'
 import { TempConfigDirHelper } from './testhelper.js'
 
@@ -219,44 +225,39 @@ describe('ServerTCP based', () => {
     expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testRead(1, 4, 1, 1, ModbusAPI.prototype.readDiscreteInputs).then(() => {
-        done()
         release()
       })
     })
   })
-  it('read HoldingRegisters success, Illegal Address', (done) => {
+  it('read HoldingRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testRead(0x0101, 0x0109, 1, 1, ModbusAPI.prototype.readHoldingRegisters).then(() => {
         debug('done')
-        done()
         release()
       })
     })
   })
-  it('read readInputRegisters success, Illegal Address', (done) => {
+  it('read readInputRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testRead(1, 2, 195, 500, ModbusAPI.prototype.readInputRegisters).then(() => {
-        done()
         release()
       })
     })
   })
-  it('writeHoldingRegisters success, Illegal Address', (done) => {
+  it('writeHoldingRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testWrite(1, 2, 10, ModbusAPI.prototype.writeHoldingRegisters).then(() => {
-        done()
         release()
       })
     })
   })
-  it('writeCoils success, Illegal Address', (done) => {
+  it('writeCoils success, Illegal Address', async () => {
     expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testWrite(1, 4, 0, ModbusAPI.prototype.writeCoils).then(() => {
-        done()
         release()
       })
     })

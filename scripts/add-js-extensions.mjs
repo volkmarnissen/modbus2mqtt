@@ -4,10 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 const workspaceRoot = process.cwd()
-const targets = [
-  'backend/src',
-  'backend/tests',
-]
+const targets = ['backend/src', 'backend/tests']
 
 const exts = new Set(['.ts', '.tsx', '.mts'])
 

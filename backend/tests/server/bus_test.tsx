@@ -1,5 +1,5 @@
 import Debug from 'debug'
-import { expect, it, beforeAll, beforeEach, afterEach, vi } from 'vitest'
+import { expect, it, beforeAll, beforeEach, afterEach, vi, afterAll } from 'vitest'
 import { Config } from '../../src/server/config.js'
 import { Bus } from '../../src/server/bus.js'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
@@ -9,7 +9,6 @@ import { ModbusAPI } from '../../src/server/modbusAPI.js'
 import { FileBackupHelper, TempConfigDirHelper } from './testhelper.js'
 
 const debug = Debug('bustest')
-const testPort = 8888
 setConfigsDirsForTest()
 
 // Test helper for bus files
@@ -91,7 +90,7 @@ function prepareIdentification() {
   }
 }
 function readModbusRegisterFake(): Promise<ImodbusValues> {
-  return new Promise<ImodbusValues>((resolve, reject) => {
+  return new Promise<ImodbusValues>((resolve) => {
     const ev = emptyModbusValues()
     // Ensure identification for waterleveltransmitter (~21 via multiplier 0.1) and selects = 1
     ev.holdingRegisters.set(4, { data: [210] })

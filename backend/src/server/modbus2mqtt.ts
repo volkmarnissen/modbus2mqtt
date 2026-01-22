@@ -28,7 +28,6 @@ process.on('SIGINT', () => {
 const debug = Debug('modbus2mqtt')
 const debugAction = Debug('actions')
 declare global {
-   
   namespace NodeJS {
     interface ProcessEnv {
       MODBUS_NOPOLL: string | undefined
