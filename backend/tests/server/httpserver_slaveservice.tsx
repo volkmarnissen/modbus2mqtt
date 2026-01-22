@@ -1,0 +1,141 @@
+import { expect, it, test, jest, beforeAll } from '@jest/globals'
+import { HttpServer as HttpServer } from '../../src/server/httpserver.js'
+import { Config } from '../../src/server/config.js'
+import supertest from 'supertest'
+import { ImodbusSpecification } from '../../src/shared/specification/index.js'
+import { Bus } from '../../src/server/bus.js'
+import { Slave } from '../../src/shared/server/index.js'
+import { LogLevelEnum, Logger } from '../../src/specification/index.js'
+import { ConfigSpecification } from '../../src/specification/index.js'
+import { join } from 'path'
+import { ConfigBus } from '../../src/server/configbus.js'
+import { Observable, Subject } from 'rxjs'
+import { initBussesForTest } from './configsbase.js'
+import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
+import { setConfigsDirsForTest } from './configsbase.js'
+const mockReject = false
+const mqttService = {
+  host: 'core-mosquitto',
+  port: 1883,
+  ssl: false,
+  protocol: '3.1.1',
+  username: 'addons',
+  password: 'Euso6ahphaiWei9Aeli6Tei0si2paep5agethohboophe7vae9uc0iebeezohg8e',
+  addon: 'core_mosquitto',
+  ingress_entry: 'test',
+}
+function executeHassioGetRequest<T>(_url: string, next: (_dev: T) => void, reject: (error: any) => void): void {
+  if (mockReject) reject('mockedReason')
+  else next({ data: mqttService } as T)
+}
+
+const log = new Logger('httpserverTest')
+setConfigsDirsForTest()
+new ConfigSpecification().readYaml()
+Config['executeHassioGetRequest'] = executeHassioGetRequest
+
+let httpServer: HttpServer
+
+beforeAll(() => {
+  return new Promise<void>((resolve) => {
+    setConfigsDirsForTest()
+    const cfg = new Config()
+    cfg.readYamlAsync().then(() => {
+      ConfigBus.readBusses()
+      initBussesForTest()
+      ;(Config as any)['fakeModbusCache'] = true
+      jest.mock('../../src/server/modbus')
+      // TODO Fix test: ModbusCache.prototype.submitGetHoldingRegisterRequest = submitGetHoldingRegisterRequest
+      HttpServer.prototype.authenticate = (req, res, next) => {
+        next()
+      }
+      httpServer = new HttpServer(join(Config.configDir, 'angular'))
+
+      httpServer.setModbusCacheAvailable()
+      httpServer.init()
+      resolve()
+    })
+  })
+})
+
+class MockMqttSubsctription {
+  slave: Slave = new Slave(0, Bus.getBus(0)!.getSlaveBySlaveId(1)!, Config.getConfiguration().mqttbasetopic)
+  getSlave(): Slave | undefined {
+    return this.slave
+  }
+  readModbus(slave: Slave): Observable<ImodbusSpecification> | undefined {
+    const bus = Bus.getBus(slave.getBusId())
+    if (bus) {
+      const sub = new Subject<ImodbusSpecification>()
+      const f = async function (sub: Subject<ImodbusSpecification>) {
+        setTimeout(() => {
+          sub.next(slave.getSpecification() as ImodbusSpecification)
+        }, 20)
+      }
+      f(sub)
+      return sub
+    }
+    return undefined
+  }
+  sendEntityCommandWithPublish(_slave: Slave, topic: string, payload: string): Promise<void> {
+    expect(topic.startsWith('/')).toBeFalsy()
+    expect(payload).toBe('20.2')
+    return new Promise<void>((resolve) => {
+      resolve()
+    })
+  }
+  sendCommand(_slave: Slave, payload: string): Promise<void> {
+    expect(payload.indexOf('20.2')).not.toBe(-1)
+    return new Promise<void>((resolve) => {
+      resolve()
+    })
+  }
+}
+function prepareMqttDiscover(): MockMqttSubsctription {
+  const mockDiscover = new MockMqttSubsctription()
+  MqttSubscriptions['instance'] = mockDiscover as any as MqttSubscriptions
+  return mockDiscover
+}
+it('GET state topic', (done) => {
+  const mockDiscover = prepareMqttDiscover()
+
+  supertest(httpServer['app'])
+    .get('/' + mockDiscover.slave.getStateTopic())
+    .expect(200)
+    .then((response) => {
+      expect(response.text.indexOf('waterleveltransmitter')).not.toBe(-1)
+      done()
+    })
+    .catch(() => {
+      log.log(LogLevelEnum.error, 'error')
+      expect(1).toBeFalsy()
+    })
+})
+
+test('GET command Entity topic', (done) => {
+  const mockDiscover = prepareMqttDiscover()
+  ConfigBus.addSpecification(mockDiscover.slave['slave'])
+  const spec = mockDiscover.slave.getSpecification()
+  let url = '/' + mockDiscover.slave.getEntityCommandTopic(spec!.entities[2] as any)!.commandTopic
+  url = url + '20.2'
+  supertest(httpServer['app'])
+    .get(url)
+    //.send("{hotwatertargettemperature: 20.2}")
+    // .send("20.2")
+    .expect(200)
+    .then(() => {
+      done()
+    })
+})
+test('POST command topic', (done) => {
+  const mockDiscover = prepareMqttDiscover()
+  const url = '/' + mockDiscover.slave.getCommandTopic()
+  supertest(httpServer['app'])
+    .post(url)
+    .send({ hotwatertargettemperature: 20.2 })
+    // .send("20.2")
+    .expect(200)
+    .then(() => {
+      done()
+    })
+})

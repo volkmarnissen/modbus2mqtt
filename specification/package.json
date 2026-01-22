@@ -1,0 +1,40 @@
+{
+  "name": "@modbus2mqtt/specification",
+  "version": "0.15.34",
+  "description": "File access, GitHub access and validation for specifications",
+  "keywords": [
+    "modbus2mqtt",
+    "specification",
+    "validation"
+  ],
+  "bugs": "https://github.com/modbus2mqtt/server/issues",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "author": "Volkmar Nissen <volkmar.nissen@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modbus2mqtt/specification"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.1.1",
+    "adm-zip": "^0.5.16",
+    "async-mutex": "^0.5.0",
+    "commander": "^14.0.2",
+    "debug": "^4.3.7",
+    "rxjs": "^7.8.2",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

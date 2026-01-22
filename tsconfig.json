@@ -1,32 +1,4 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "baseUrl": "./",
-    "module": "nodenext",
-    "outDir": "./dist",
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "strictPropertyInitialization": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "declaration": true,
-    "downlevelIteration": true,
-    "experimentalDecorators": true,
-    "moduleResolution": "nodenext",
-    "importHelpers": true,
-    "target": "es2022",
-    "useDefineForClassFields": false,
-    "rootDir": "src",
-    "lib": ["ES2022", "dom"],
-    "types": ["node", "jest", "debug"]
-  },
-  "include": ["src/**/*", "__test__/**/*"],
-  "exclude": ["src/angular/**/*", "node_modules/**/*", "**/testHelpers/*", "dist/**/*", "eslint.config.mjs"]
+  "files": [],
+  "references": [{ "path": "./backend" }]
 }

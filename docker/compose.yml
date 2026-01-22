@@ -1,7 +1,7 @@
 services:
   modbus2mqtt:
-    # We use a mariadb image which supports both amd64 & arm64 architecture
-    image: modbus2mqtt.latest:latest
+    # Use locally built image tag from docker/build.sh
+    image: modbus2mqtt:latest
     container_name: modbus2mqtt
     ports:
       - 3000:3000

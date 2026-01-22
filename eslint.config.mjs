@@ -10,7 +10,7 @@ export default [
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs', 'vitest.config.ts', 'angular/**'],
+    ignores: ['dist/**', 'jest.config.ts', 'jest.config.cjs', 'vitest.config.ts', '**/vitest.config.ts'],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       jest,
@@ -56,13 +56,30 @@ export default [
     settings: {
       'import/resolver': {
         typescript: {
-          project: ['tsconfig.eslint.json', 'angular/tsconfig.angular.json'],
+          project: ['tsconfig.eslint.json', 'frontend/tsconfig.angular.json'],
         },
       },
     },
   },
   {
-    files: ['__tests__/**/*.ts', '__tests__/**/*.tsx', '__tests__/**/*.js'],
+    files: ['frontend/src/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+      'no-case-declarations': 'off',
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        sourceType: 'module',
+        project: ['frontend/tsconfig.angular.json'],
+      },
+    },
+  },
+  {
+    files: ['backend/tests/**/*.ts', 'backend/tests/**/*.tsx', 'backend/tests/**/*.js'],
     rules: {
       // Relax strict TS/Jest rules in tests to reduce noise
       'unused-imports/no-unused-imports': 'off',

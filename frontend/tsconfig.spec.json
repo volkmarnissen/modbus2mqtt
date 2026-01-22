@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.angular.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "sourceMap": true
+  },
+  "include": ["src/**/*.spec.ts", "src/**/*.test.ts"],
+  "exclude": ["node_modules", "dist"]
+}

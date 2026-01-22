@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2022",
+    "rootDir": ".",
+    "outDir": "../dist",
+    "types": ["node", "vitest"],
+    "lib": ["ES2022"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "verbatimModuleSyntax": false,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "baseUrl": "."
+  },
+  "include": ["src", "tests", "vitest.config*.mts"],
+  "exclude": ["../dist"]
+}

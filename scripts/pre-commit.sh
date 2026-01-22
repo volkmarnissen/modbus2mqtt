@@ -143,33 +143,32 @@ check_apkbuild() {
   if [ -z "$apk_content" ] && [ -f "$APK_PATH" ]; then
     apk_content=$(cat "$APK_PATH")
   fi
-  echo "$apk_content" | grep -F 'npmpackage="${pkgname}"' >/dev/null 2>&1 || {
-    echo -e "\033[31m[pre-commit] ERROR: $APK_PATH must contain the line: npmpackage=\"\${pkgname}\"\033[0m" >&2
+  # Allow either official package name or fork namespace
+  # Valid examples:
+  #   npmpackage="${pkgname}"
+  #   npmpackage="@owner/repo"
+  if echo "$apk_content" | grep -E 'npmpackage="\$\{pkgname\}"' >/dev/null 2>&1; then
+    : # ok
+  elif echo "$apk_content" | grep -E 'npmpackage="@[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+"' >/dev/null 2>&1; then
+    : # ok (fork)
+  else
+    echo -e "\033[31m[pre-commit] ERROR: $APK_PATH must define npmpackage as \"\${pkgname}\" or \"@owner/repo\".\033[0m" >&2
     return 1
-  }
+  fi
   return 0
 }
 
 check_eslint() {
   if command -v npx >/dev/null 2>&1; then
-    ESLINT_ERRORS=0
-    for file in $CHANGED_FILES; do
-      case "$file" in
-        src/angular/*|angular/src/*)
-          # Skip Angular app files in hook (use angular's own lint/build)
-          continue
-          ;;
-        *.js|*.ts|*.tsx|*.jsx)
-          # echo "Running ESLint on $file..."
-          if ! npx eslint --no-warn-ignored "$file"; then
-            echo -e "\033[31m[pre-commit] ERROR: ESLint found problems in $file. Commit aborted.\033[0m" >&2
-            ESLINT_ERRORS=1
-          fi
-          ;;
-      esac
-    done
-    if [ "$ESLINT_ERRORS" -ne 0 ]; then
-      return 1
+    # Collect staged lintable files and run ESLint once for all
+    STAGED_LINT_FILES=$(echo "$CHANGED_FILES" | grep -E '\\.(ts|tsx|js|jsx)$' | grep -v -E '^(src/angular/|angular/src/)' || true)
+    if [ -n "$STAGED_LINT_FILES" ]; then
+      echo "[pre-commit] Running ESLint on staged files ..." >&2
+      # Use cache and stylish output; fail on any error
+      if ! printf '%s\n' $STAGED_LINT_FILES | xargs -I{} -r npx eslint --cache --format stylish --max-warnings=0 {}; then
+        echo -e "\033[31m[pre-commit] ERROR: ESLint failed for staged files. Commit aborted.\033[0m" >&2
+        return 1
+      fi
     fi
   fi
   return 0
