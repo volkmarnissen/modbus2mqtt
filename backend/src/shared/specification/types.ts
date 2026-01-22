@@ -225,12 +225,8 @@ export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntit
   return typeof object === 'object' && object !== null && instanceOfIentity(object) && 'modbusValue' in object && 'mqttValue' in object
 }
 
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface Array<unknown> {
-    errormessage: string
-  }
-}
+// Removed incorrect global Array interface augmentation that broke TypeScript's
+// built-in Array types and caused widespread compile errors.
 
 export const SPECIFICATION_VERSION = '0.4'
 export const SPECIFICATION_FILES_VERSION = '0.1'
