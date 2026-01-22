@@ -5,7 +5,7 @@
 # Maintainer: Modbus2mqtt <info@carcam360.de>
 pkgname=modbus2mqtt
 # Version comes from package.json or the PKG_VERSION environment variable
-pkgver=0.17.4
+pkgver=0.17.2
 pkgrel=0
 pkgdesc="Modbus to MQTT bridge"
 url="https://github.com/modbus2mqtt/server"
@@ -26,7 +26,7 @@ source="
 	$pkgname.confd
 	"
 builddir="$srcdir/$pkgname-$pkgver"
-npmpackage="@volkmarnissen/modbus2mqtt"
+npmpackage="${pkgname}"
 build() {
     # Build modbus2mqtt within the abuild build environment so native
     # modules are compiled for the target architecture.

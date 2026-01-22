@@ -34,13 +34,18 @@ fi
 export GITHUB_REPOSITORY
 echo "Package version: $PKG_VERSION for repository: ${GITHUB_REPOSITORY:-unknown}"
 
-if [ -z "${GITHUB_REPOSITORY:-}" ] || [ "${GITHUB_REPOSITORY}" = "modbus2mqtt/modbus2mqtt" ]; then
-  echo "Detected official repository use pkgname as npm package"
-else
-  echo "Detected forked repository use   @$GITHUB_REPOSITORY as npm package"
-  sed -E 's%(^npmpackage=")\$\{pkgname\}"%\1@'"${GITHUB_REPOSITORY}"'"%g' alpine/package/modbus2mqtt/APKBUILD > /tmp/APKBUILD.$$ \
+# Always use the official npm package name for reproducible builds.
+# If a forked scope is desired, set NPM_PACKAGE_OVERRIDE to a valid package
+# (e.g., @owner/modbus2mqtt), otherwise default remains 'modbus2mqtt'.
+if [ -n "${NPM_PACKAGE_OVERRIDE:-}" ]; then
+  echo "Using NPM_PACKAGE_OVERRIDE=${NPM_PACKAGE_OVERRIDE}"
+  sed -E 's%(^npmpackage=").*"%\1'"${NPM_PACKAGE_OVERRIDE}"'"%g' alpine/package/modbus2mqtt/APKBUILD > /tmp/APKBUILD.$$ \
     && mv /tmp/APKBUILD.$$ alpine/package/modbus2mqtt/APKBUILD
-fi  
+else
+  echo "Using official npm package 'modbus2mqtt'"
+  sed -E 's%(^npmpackage=").*"%\1modbus2mqtt"%g' alpine/package/modbus2mqtt/APKBUILD > /tmp/APKBUILD.$$ \
+    && mv /tmp/APKBUILD.$$ alpine/package/modbus2mqtt/APKBUILD
+fi
 
 # Detect Alpine version using shared function
 detect_alpine_version || exit $?
