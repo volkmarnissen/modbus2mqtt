@@ -1,13 +1,9 @@
 let prefix = ''
-let localhost='localhost'
+let localhost = 'localhost'
 function runRegister(authentication, port) {
-  if( prefix.length )
-    cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix)
-  else
-    if(port != undefined )
-        cy.visit('http://' + localhost + ':' + port )
-    else
-        cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort'))
+  if (prefix.length) cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix)
+  else if (port != undefined) cy.visit('http://' + localhost + ':' + port)
+  else cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort'))
   if (authentication) {
     cy.get('[formcontrolname="username"]').type('test')
     cy.get('[formcontrolname="password"]').type('test')
@@ -23,14 +19,11 @@ function runRegister(authentication, port) {
     })
   }
   // Some flows route directly to /busses when config exists; ensure we end on /configure
-  cy.url().then((url)=>{
-    if(!url.includes('/configure')){
-      if( prefix.length )
-        cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix + '/configure')
-      else if(port != undefined )
-        cy.visit('http://' + localhost + ':' + port + '/configure')
-      else
-        cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort') + '/configure')
+  cy.url().then((url) => {
+    if (!url.includes('/configure')) {
+      if (prefix.length) cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix + '/configure')
+      else if (port != undefined) cy.visit('http://' + localhost + ':' + port + '/configure')
+      else cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort') + '/configure')
     }
   })
   cy.url().should('contain', prefix + '/configure')
@@ -38,7 +31,9 @@ function runRegister(authentication, port) {
 function runConfig(authentication) {
   let port = authentication ? Cypress.env('mosquittoAuthMqttPort') : Cypress.env('mosquittoNoAuthMqttPort')
   // Clear first to avoid concatenating existing value (seen as double URL)
-  cy.get('[formcontrolname="mqttserverurl"]').clear({ force: true }).type('mqtt://' + localhost + ':' + port, { force: true })
+  cy.get('[formcontrolname="mqttserverurl"]')
+    .clear({ force: true })
+    .type('mqtt://' + localhost + ':' + port, { force: true })
   cy.get('[formcontrolname="mqttserverurl"]').trigger('change')
   if (authentication) {
     cy.get('[formcontrolname="mqttuser"]').clear({ force: true }).type('homeassistant', { force: true })
@@ -58,7 +53,7 @@ function runBusses() {
   cy.get('[formcontrolname="port"]').clear({ force: true }).type('3002', { force: true })
   cy.get('[formcontrolname="timeout"]').eq(0).clear({ force: true }).type('500', { force: true })
   cy.get('[formcontrolname="host"]').trigger('change')
-  cy.get('div.card-header-buttons button:first').click({ force: true})
+  cy.get('div.card-header-buttons button:first').click({ force: true })
   // List slaves second header button on first card
   cy.get('div.card-header-buttons:first button').eq(1).click()
 }
@@ -66,10 +61,9 @@ function runBusses() {
 function addSlave(willLog) {
   let logSetting = { log: willLog }
   cy.log('Add Slave ')
-  cy.task('log','Add Slave' )
-  cy.url().then((url)=>{
-  cy.task('log',url )
-
+  cy.task('log', 'Add Slave')
+  cy.url().then((url) => {
+    cy.task('log', url)
   })
   cy.url().should('contain', prefix + '/slaves')
   cy.get('[formcontrolname="detectSpec"]', logSetting).click(logSetting)
@@ -118,7 +112,7 @@ describe('End to End Tests', () => {
   })
   after(() => {
     let logSetting = { log: false }
-    // wait for all tests then 
+    // wait for all tests then
   })
 
   it(
@@ -127,10 +121,9 @@ describe('End to End Tests', () => {
       retries: {
         runMode: 0,
         openMode: 0,
-      }
+      },
     },
     () => {
-
       runRegister(true)
       runConfig(true)
       runBusses()
@@ -143,7 +136,7 @@ describe('End to End Tests', () => {
       retries: {
         runMode: 0,
         openMode: 0,
-      }
+      },
     },
     () => {
       runRegister(false, Cypress.env('modbus2mqttMqttNoAuthPort'))
@@ -156,11 +149,11 @@ describe('End to End Tests', () => {
       retries: {
         runMode: 0,
         openMode: 0,
-      }
+      },
     },
     () => {
       prefix = 'ingress'
-      cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix)
+      cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix)
       runBusses()
     }
   )
