@@ -36,12 +36,10 @@ jobs:
           name: e2e-serverlogs
           path: e2e/
           retention-days: 1
-      - name: Run jest component tests
-        run: npx jest --reporters default --reporters github-actions
+      - name: Run component tests
+        run: npm run test
       - name: Cypress run component tests
         uses: cypress-io/github-action@v6
         with:
           component: true
           install: false
-      - name: Run jest component tests
-        run: npx jest --reporters default --reporters github-actions
