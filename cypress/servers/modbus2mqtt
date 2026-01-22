@@ -20,6 +20,15 @@ then
     rm -rf $DEBUGTMPDIR/public
     rm -rf $DEBUGTMPDIR/modbus2mqtt/specifications
     rm -rf $DEBUGTMPDIR/modbus2mqtt/busses
+    # Ensure MQTT config exists in debug tmpdir
+    if ! grep -q "^mqttconnect:" "$DEBUGTMPDIR/modbus2mqtt/modbus2mqtt.yaml"; then
+      cat >>"$DEBUGTMPDIR/modbus2mqtt/modbus2mqtt.yaml" <<EOF
+mqttconnect:
+  mqttserverurl: mqtt://$localhost:3001
+  username: homeassistant
+  password: homeassistant
+EOF
+    fi
     sleep infinity &
     MPID=$!
 else
@@ -39,8 +48,16 @@ else
     export HASSIO_TOKEN=abcd1234
   else
     echo "normal scenario" >>"$logfile"
+    # Provide local MQTT connection details only for non-Hassio scenario
+    cat >>"$TMPDIR/modbus2mqtt/modbus2mqtt.yaml" <<EOF
+mqttconnect:
+  mqttserverurl: mqtt://$localhost:3001
+  username: homeassistant
+  password: homeassistant
+EOF
   fi
-  node distprod/node_modules/modbus2mqtt/bin/modbus2mqtt -c "$TMPDIR"  -d "$TMPDIR" -s "$TMPDIR" >>"$logfile" 2>&1 &
+  # Use local workspace binary instead of distprod package
+  node bin/modbus2mqtt -c "$TMPDIR"  -d "$TMPDIR" -s "$TMPDIR" >>"$logfile" 2>&1 &
   MPID=$!
 fi
 echo "TMPDIR_$HTTPPORT $TMPDIR" >>./cypress/servers/tmpfiles

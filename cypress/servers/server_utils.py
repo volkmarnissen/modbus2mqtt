@@ -79,38 +79,25 @@ def checkRequiredApps():
         raise SyncException( nginxGetLibDir() + " directory not found!") 
  
 def startRequiredApps(permanent:bool, restart:bool):
+    # Always avoid npm pack/init/install for e2e start; use local build instead
     try:
         shutil.rmtree("./distprod")
     except OSError:
-        pass  
+        pass
     try:
         for f in glob.glob("modbus2mqtt-*.tgz"):
-            os.remove( f)
+            os.remove(f)
     except OSError:
         pass
-    if( not permanent):
-        print("::group::start npm pack and install modbus2mqtt")
+    if (not permanent):
+        print("::group::Build backend for local e2e server")
         try:
-            executeSyncCommand(["npm","run", "build"]).decode('utf-8').strip()
-            executeSyncCommand(["npm","pack", "--silent"]).decode('utf-8').strip()
+            # Build only the backend (server + TCP sim)
+            executeSyncCommand(["npm", "run", "build:backend"]).decode('utf-8').strip()
         except Exception as err:
-            eprint("npm pack failed: " + str(err))
-            raise SyncException("npm pack failed")  
-        eprint("npm pack succeeded ")
-        os.mkdir("./distprod")
-        os.chdir("./distprod")
-        eprint("npm init -y")
-        executeSyncCommand(["npm","init","-y", "--silent"])
-        eprint("npm installing modbus2mqtt")
-        for f in glob.glob("../modbus2mqtt-*.tgz"):
-            try:
-                executeSyncCommand(["npm","install" , "--silent", f ] )
-            except Exception as err:
-                eprint("npm install failed: " + str(err))
-                raise SyncException("npm install failed")
-        os.chdir("..")
-        # kill existing apps
-        print( '::endgroup::' )
+            eprint("npm run build:backend failed: " + str(err))
+            raise SyncException("backend build failed")
+        print('::endgroup::')
     print("::group::start Start required servers")
     if( not restart):
         checkRequiredApps()
