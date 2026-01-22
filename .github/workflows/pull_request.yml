@@ -23,8 +23,10 @@ jobs:
           sudo apt install -y mosquitto mosquitto-clients
       - name: npm run build
         run: |
+          pushd frontend && npm ci && popd
+          pushd backend && npm ci && popd
           npm ci
-          npm run build.dev
+          npm run build
           npm run e2e:start
           npx cypress run
       - name: Protocol from starting servers
