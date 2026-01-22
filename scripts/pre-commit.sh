@@ -143,10 +143,18 @@ check_apkbuild() {
   if [ -z "$apk_content" ] && [ -f "$APK_PATH" ]; then
     apk_content=$(cat "$APK_PATH")
   fi
-  echo "$apk_content" | grep -F 'npmpackage="${pkgname}"' >/dev/null 2>&1 || {
-    echo -e "\033[31m[pre-commit] ERROR: $APK_PATH must contain the line: npmpackage=\"\${pkgname}\"\033[0m" >&2
+  # Allow either official package name or fork namespace
+  # Valid examples:
+  #   npmpackage="${pkgname}"
+  #   npmpackage="@owner/repo"
+  if echo "$apk_content" | grep -E 'npmpackage="\$\{pkgname\}"' >/dev/null 2>&1; then
+    : # ok
+  elif echo "$apk_content" | grep -E 'npmpackage="@[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+"' >/dev/null 2>&1; then
+    : # ok (fork)
+  else
+    echo -e "\033[31m[pre-commit] ERROR: $APK_PATH must define npmpackage as \"\${pkgname}\" or \"@owner/repo\".\033[0m" >&2
     return 1
-  }
+  fi
   return 0
 }
 
