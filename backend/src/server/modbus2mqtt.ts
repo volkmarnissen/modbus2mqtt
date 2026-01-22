@@ -28,7 +28,7 @@ process.on('SIGINT', () => {
 const debug = Debug('modbus2mqtt')
 const debugAction = Debug('actions')
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+   
   namespace NodeJS {
     interface ProcessEnv {
       MODBUS_NOPOLL: string | undefined

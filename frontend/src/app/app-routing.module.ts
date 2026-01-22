@@ -1,19 +1,19 @@
 import { Routes } from '@angular/router'
-import { SpecificationComponent } from './specification/specification/specification.component'
-import { LoginComponent } from './login/login.component'
-import { AuthGuardService } from './services/auth-guard.service'
-import { SelectModbusComponent } from './select-modbus/select-modbus.component'
-import { SelectSlaveComponent } from './select-slave/select-slave.component'
-import { RootRoutingComponent } from './root-routing/root-routing.component'
-import { SpecificationsComponent } from './specifications/specifications.component'
-import { RoutingNames } from '../shared/server'
+import { SpecificationComponent } from '@app/specification/specification/specification.component'
+import { LoginComponent } from '@app/login/login.component'
+import { AuthGuardService } from '@app/services/auth-guard.service'
+import { SelectModbusComponent } from '@app/select-modbus/select-modbus.component'
+import { SelectSlaveComponent } from '@app/select-slave/select-slave.component'
+import { RootRoutingComponent } from '@app/root-routing/root-routing.component'
+import { SpecificationsComponent } from '@app/specifications/specifications.component'
+import { RoutingNames } from '@shared/server'
 export const APP_ROUTES: Routes = [
   { path: '', component: RootRoutingComponent, pathMatch: 'full' },
   { path: RoutingNames.login, component: LoginComponent },
   { path: RoutingNames.register, component: LoginComponent },
   {
     path: RoutingNames.configure,
-    loadComponent: () => import('./configure/configure.component').then((m) => m.ConfigureComponent),
+    loadComponent: () => import('@app/configure/configure.component').then((m) => m.ConfigureComponent),
     canActivate: [AuthGuardService],
   },
   {
@@ -34,7 +34,7 @@ export const APP_ROUTES: Routes = [
   {
     path: RoutingNames.specification + '/:busid/:slaveid/:disabled',
     canActivate: [AuthGuardService],
-    loadComponent: () => import('./specification/specification/specification.component').then((m) => m.SpecificationComponent),
+    loadComponent: () => import('@app/specification/specification/specification.component').then((m) => m.SpecificationComponent),
     canDeactivate: [(component: SpecificationComponent) => !component.canDeactivate()],
   },
 ]

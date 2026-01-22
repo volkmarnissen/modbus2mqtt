@@ -21,7 +21,12 @@
     "module": "ES2022",
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@shared/*": ["src/shared/*"],
+      "@m2m-shared/*": ["../../src/shared/*"]
+    }
   },
   "ts-node": {
     "esm": true,

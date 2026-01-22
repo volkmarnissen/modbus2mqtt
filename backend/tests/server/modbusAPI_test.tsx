@@ -216,6 +216,7 @@ it('Modbus getAvailableSpecs with specific slaveId no results 0-3', async () => 
 })
 describe('ServerTCP based', () => {
   it('read Discrete Inputs success, Illegal Address', (done) => {
+    expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testRead(1, 4, 1, 1, ModbusAPI.prototype.readDiscreteInputs).then(() => {
         done()
@@ -224,6 +225,7 @@ describe('ServerTCP based', () => {
     })
   })
   it('read HoldingRegisters success, Illegal Address', (done) => {
+    expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testRead(0x0101, 0x0109, 1, 1, ModbusAPI.prototype.readHoldingRegisters).then(() => {
         debug('done')
@@ -233,6 +235,7 @@ describe('ServerTCP based', () => {
     })
   })
   it('read readInputRegisters success, Illegal Address', (done) => {
+    expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testRead(1, 2, 195, 500, ModbusAPI.prototype.readInputRegisters).then(() => {
         done()
@@ -241,6 +244,7 @@ describe('ServerTCP based', () => {
     })
   })
   it('writeHoldingRegisters success, Illegal Address', (done) => {
+    expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testWrite(1, 2, 10, ModbusAPI.prototype.writeHoldingRegisters).then(() => {
         done()
@@ -249,6 +253,7 @@ describe('ServerTCP based', () => {
     })
   })
   it('writeCoils success, Illegal Address', (done) => {
+    expect.hasAssertions()
     singleMutex.acquire().then((release) => {
       testWrite(1, 4, 0, ModbusAPI.prototype.writeCoils).then(() => {
         done()

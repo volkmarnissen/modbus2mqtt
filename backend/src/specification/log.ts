@@ -18,7 +18,7 @@ class DebugTransport extends Transport {
     super()
   }
   // Winston transport contract: log(info, next)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   override log(info: any, next?: () => void) {
     setImmediate(() => {
       const level = info?.level ?? 'info'
@@ -71,12 +71,12 @@ export class Logger {
       transports: [loggerTransport],
     })
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   log(level: LogLevelEnum, message: any, ...args: any[]) {
     const msg = format(message, ...args)
     this.logger.log({ level: level, message: msg, prefix: this.prefix })
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   log2File(message: any, ...args: any[]) {
     if (process.env['JEST_WORKER_ID'] !== undefined) fs.appendFileSync('test.log', format(message, ...args))
   }

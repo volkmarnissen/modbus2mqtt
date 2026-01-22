@@ -6,7 +6,7 @@ import * as fs from 'fs'
 import { M2mGithubValidate } from './m2mGithubValidate.js'
 import { M2mSpecification } from './m2mspecification.js'
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+   
   namespace NodeJS {
     interface ProcessEnv {
       GITHUB_TOKEN: string

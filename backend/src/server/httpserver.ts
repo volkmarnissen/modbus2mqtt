@@ -375,7 +375,8 @@ export class HttpServer extends HttpServerBase {
       let filename = 'local.zip'
       if (req.params && req.params['what'] && req.params['what'] == 'local') downloadMethod = Config.createZipFromLocal
       else {
-        filename = req.params['what'] + '.zip'
+        const whatParam = Array.isArray(req.params['what']) ? req.params['what'][0] : (req.params['what'] as string)
+        filename = whatParam + '.zip'
         downloadMethod = (file: string, r: Writable) => {
           return new Promise<void>((resolve, reject) => {
             try {
@@ -390,8 +391,9 @@ export class HttpServer extends HttpServerBase {
       res.setHeader('Content-Type', 'application/zip')
       res.setHeader('Content-disposition', 'attachment; filename=' + filename)
       // Tell the browser that this is a zip file.
-      if (req.params && req.params['what'])
-        downloadMethod(req.params['what'], res)
+      if (req.params && req.params['what']) {
+        const whatParam = Array.isArray(req.params['what']) ? req.params['what'][0] : (req.params['what'] as string)
+        downloadMethod(whatParam, res)
           .then(() => {
             super.returnResult(req, res, HttpErrorsEnum.OK, undefined)
           })
@@ -400,9 +402,10 @@ export class HttpServer extends HttpServerBase {
               req,
               res,
               HttpErrorsEnum.SrvErrInternalServerError,
-              JSON.stringify('download Zip ' + req.params['what'] + e.message)
+              JSON.stringify('download Zip ' + whatParam + e.message)
             )
           })
+      }
     })
     this.post(apiUri.specficationContribute, (req: express.Request, res: http.ServerResponse) => {
       if (!req.query['spec']) {
@@ -750,9 +753,9 @@ export class HttpServer extends HttpServerBase {
           // req.body.documents
           const config = new ConfigSpecification()
           const f: string[] = []
-          ;(req.files as Express.Multer.File[])!.forEach((f0) => {
-            f.push(f0.originalname)
-          })
+            ; (req.files as Express.Multer.File[])!.forEach((f0) => {
+              f.push(f0.originalname)
+            })
           if (req.query['usage'] === undefined) {
             this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
           }
@@ -781,7 +784,7 @@ export class HttpServer extends HttpServerBase {
         if (req.files) {
           // req.body.documents
 
-          ;(req.files as Express.Multer.File[])!.forEach((f) => {
+          ; (req.files as Express.Multer.File[])!.forEach((f) => {
             try {
               const zipfilename = join(f.destination, f.filename)
               const errors = ConfigSpecification.importSpecificationZip(zipfilename)
