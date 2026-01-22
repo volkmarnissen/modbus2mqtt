@@ -37,11 +37,12 @@ function runRegister(authentication, port) {
 }
 function runConfig(authentication) {
   let port = authentication ? Cypress.env('mosquittoAuthMqttPort') : Cypress.env('mosquittoNoAuthMqttPort')
-  cy.get('[formcontrolname="mqttserverurl"]').type('mqtt://' + localhost + ':' + port, { force: true })
+  // Clear first to avoid concatenating existing value (seen as double URL)
+  cy.get('[formcontrolname="mqttserverurl"]').clear({ force: true }).type('mqtt://' + localhost + ':' + port, { force: true })
   cy.get('[formcontrolname="mqttserverurl"]').trigger('change')
   if (authentication) {
-    cy.get('[formcontrolname="mqttuser"]').type('homeassistant', { force: true })
-    cy.get('[formcontrolname="mqttpassword"]').type('homeassistant', { force: true })
+    cy.get('[formcontrolname="mqttuser"]').clear({ force: true }).type('homeassistant', { force: true })
+    cy.get('[formcontrolname="mqttpassword"]').clear({ force: true }).type('homeassistant', { force: true })
     cy.get('[formcontrolname="mqttpassword"]').trigger('change')
   }
   cy.get('div.saveCancel button:first').click({ force: true })
@@ -81,8 +82,15 @@ function addSlave(willLog) {
     .type('3', { force: true, log: willLog })
     .trigger('change')
     .trigger('blur')
-  cy.wait(500)
-  // wait for preparedSpecifications to be available
+  // Add the new slave via Enter key on the slaveId input (form handles enter)
+  cy.contains('mat-card-title', 'New Slave')
+    .parents('mat-card')
+    .find('[formcontrolname="slaveId"]')
+    .type('{enter}', { force: true })
+
+  // Wait for the first slave card to render (uiSlaves)
+  cy.get('app-select-slave:first mat-expansion-panel-header', { timeout: 10000 })
+  // Open collapsed panels to reveal controls
   cy.get('app-select-slave:first mat-expansion-panel-header[aria-expanded=false]', logSetting).then((elements) => {
     if (elements.length >= 1) {
       elements[0].click(logSetting)
@@ -92,6 +100,7 @@ function addSlave(willLog) {
     }
   })
 
+  // Set Poll Mode on the newly added slave
   cy.get('app-select-slave:first mat-select[formControlName="pollMode"]', logSetting)
     .click()
     .get('mat-option')

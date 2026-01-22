@@ -685,19 +685,18 @@ export class HttpServer extends HttpServerBase {
     })
     this.post(apiUri.slave, (req: express.Request, res: http.ServerResponse) => {
       debug('POST /slave: ' + JSON.stringify(req.body))
-      const msg = this.checkBusidSlaveidParameter(req)
-      const bus = Bus.getBus(Number.parseInt(String(req.query['busid']!)))
-      if (msg !== '') {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + String(req.query['busid']))
+      const busidStr = req.query['busid'] !== undefined ? String(req.query['busid']) : ''
+      if (busidStr === '') {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'busid was not passed')
+        return
+      }
+      const bus = Bus.getBus(Number.parseInt(busidStr))
+      if (!bus) {
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + busidStr)
         return
       }
       if (req.body.slaveid == undefined) {
-        this.returnResult(
-          req,
-          res,
-          HttpErrorsEnum.ErrBadRequest,
-          'Bus Id: ' + String(req.query['busid']) + ' Slave Id is not defined'
-        )
+        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Slave Id is not defined')
         return
       }
 
@@ -707,10 +706,6 @@ export class HttpServer extends HttpServerBase {
       res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, x-access-token')
       res.setHeader('Access-Control-Allow-Credentials', 'true')
       res.setHeader('Content-Type', 'application/json')
-      if (bus === undefined) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Bus not found. Id: ' + req.query['busid'])
-        return
-      }
       const rc: Islave = bus.writeSlave(req.body)
       this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
     })
@@ -753,9 +748,9 @@ export class HttpServer extends HttpServerBase {
           // req.body.documents
           const config = new ConfigSpecification()
           const f: string[] = []
-          ;(req.files as Express.Multer.File[])!.forEach((f0) => {
-            f.push(f0.originalname)
-          })
+            ; (req.files as Express.Multer.File[])!.forEach((f0) => {
+              f.push(f0.originalname)
+            })
           if (req.query['usage'] === undefined) {
             this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
           }
@@ -784,7 +779,7 @@ export class HttpServer extends HttpServerBase {
         if (req.files) {
           // req.body.documents
 
-          ;(req.files as Express.Multer.File[])!.forEach((f) => {
+          ; (req.files as Express.Multer.File[])!.forEach((f) => {
             try {
               const zipfilename = join(f.destination, f.filename)
               const errors = ConfigSpecification.importSpecificationZip(zipfilename)
