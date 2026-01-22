@@ -3,7 +3,7 @@ import { ModbusRTUWorker } from '../../src/server/modbusRTUworker.js'
 import { IModbusAPI } from '../../src/server/modbusWorker.js'
 import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
 import { ModbusRegisterType } from '../../src/shared/specification/index.js'
-import { ModbusTasks } from '../../src/shared/server.js'
+import { ModbusTasks } from '../../src/shared/server/index.js'
 import { Itest, ModbusRTUWorkerForTest, FakeBus } from './testhelper.js'
 
 function enqueue(queue: ModbusRTUQueue, num: number, test: Itest) {

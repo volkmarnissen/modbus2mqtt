@@ -3,7 +3,7 @@ import { IModbusResultWithDuration } from '../../src/server/bus.js'
 import { ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
 import { ModbusRTUWorker } from '../../src/server/modbusRTUworker.js'
 import { IModbusAPI } from '../../src/server/modbusWorker.js'
-import { ModbusTasks } from '../../src/shared/server.js'
+import { ModbusTasks } from '../../src/shared/server/index.js'
 import * as fs from 'fs'
 import { Config } from '../../src/server/config.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
@@ -288,7 +288,7 @@ export class FakeBus implements IModbusAPI {
             break
           case 200:
             const e = new Error('Error')
-            ;(e as any).errno = 'ETIMEDOUT'
+              ; (e as any).errno = 'ETIMEDOUT'
             reject(e)
             break
           default:

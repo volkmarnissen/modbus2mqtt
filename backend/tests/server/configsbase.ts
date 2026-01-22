@@ -1,7 +1,7 @@
 import { Mutex } from 'async-mutex'
 import Debug from 'debug'
 import { Config } from '../../src/server/config.js'
-import { ImqttClient } from '../../src/shared/server.js'
+import { ImqttClient } from '../../src/shared/server/index.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { Bus } from '../../src/server/bus.js'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
@@ -41,7 +41,7 @@ export class FakeMqtt {
   constructor(
     protected md: MqttSubscriptions,
     public fakeMode: FakeModes
-  ) {}
+  ) { }
   public subscribe(topic: string | string[]): void {
     debug('subscribe: ' + topic)
   }
@@ -71,7 +71,7 @@ export class FakeMqtt {
     endFunc()
     debug('end')
   }
-  public on(event: 'message', cb: () => {}) {}
+  public on(event: 'message', cb: () => {}) { }
 }
 
 export function initBussesForTest() {

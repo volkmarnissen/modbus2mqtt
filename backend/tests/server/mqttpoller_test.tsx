@@ -6,7 +6,7 @@ import { FakeModes, FakeMqtt, initBussesForTest, setConfigsDirsForTest } from '.
 import { Bus } from '../../src/server/bus.js'
 import Debug from 'debug'
 import { expect, test, beforeAll } from 'vitest'
-import { Islave, Slave } from '../../src/shared/server.js'
+import { Islave, Slave } from '../../src/shared/server/index.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'
 import { MqttPoller } from '../../src/server/mqttpoller.js'

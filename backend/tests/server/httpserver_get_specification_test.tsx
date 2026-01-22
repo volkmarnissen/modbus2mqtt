@@ -4,7 +4,7 @@ import { startModbusTCPserver, stopModbusTCPServer } from '../../src/server/modb
 import { HttpErrorsEnum, ImodbusSpecification } from '../../src/shared/specification/index.js'
 import { FakeMqtt, FakeModes, setConfigsDirsBackendTCPForTest, initBussesForTest } from './configsbase.js'
 import supertest from 'supertest'
-import { apiUri } from '../../src/shared/server.js'
+import { apiUri } from '../../src/shared/server/index.js'
 import { HttpServer } from '../../src/server/httpserver.js'
 import { Config } from '../../src/server/config.js'
 import { ConfigBus } from '../../src/server/configbus.js'

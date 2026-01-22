@@ -2,7 +2,7 @@ import { expect, it } from '@jest/globals'
 import { ModbusRegisterType } from '../../src/shared/specification/index.js'
 import { ModbusRTUProcessor } from '../../src/server/modbusRTUprocessor.js'
 import { IQueueEntry, ModbusErrorActions, ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
-import { ImodbusAddress, ModbusTasks } from '../../src/shared/server.js'
+import { ImodbusAddress, ModbusTasks } from '../../src/shared/server/index.js'
 function addAddresses(addresses: Set<ImodbusAddress>, registerType: ModbusRegisterType, startAddress: number, endAddress: number) {
   for (let idx = startAddress; idx < endAddress; idx++)
     addresses.add({

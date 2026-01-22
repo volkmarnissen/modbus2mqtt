@@ -1,5 +1,10 @@
 import { Config } from '../../src/server/config.js'
-import { ImodbusEntity, ImodbusSpecification, ModbusRegisterType, VariableTargetParameters } from '../../src/shared/specification/index.js'
+import {
+  ImodbusEntity,
+  ImodbusSpecification,
+  ModbusRegisterType,
+  VariableTargetParameters,
+} from '../../src/shared/specification/index.js'
 import { ItopicAndPayloads, MqttDiscover } from '../../src/server/mqttdiscover.js'
 import { MqttClient } from 'mqtt'
 import { FakeModes, FakeMqtt, initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
@@ -7,7 +12,7 @@ import { Bus } from '../../src/server/bus.js'
 import Debug from 'debug'
 import { ConfigSpecification, Logger } from '../../src/specification/index.js'
 import { expect, test, beforeAll, vi, afterAll } from 'vitest'
-import { Islave, Slave } from '../../src/shared/server.js'
+import { Islave, Slave } from '../../src/shared/server/index.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { Modbus } from '../../src/server/modbus.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'

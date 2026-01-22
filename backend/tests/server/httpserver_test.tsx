@@ -1,7 +1,7 @@
 import { expect, it, xit, test, jest, describe, beforeAll, afterAll } from '@jest/globals'
 import { parse } from 'yaml'
 import Debug from 'debug'
-import { HttpServer as HttpServer } from '../../src/server.js'
+import { HttpServer as HttpServer } from '../../../src/server/index.js'
 import {
   ImodbusEntity,
   ModbusRegisterType,
@@ -25,7 +25,7 @@ import {
   IModbusConnection,
   IidentificationSpecification,
   IUserAuthenticationStatus,
-} from '../../src/shared/server.js'
+} from '../../src/shared/server/index.js'
 import { IfileSpecification, LogLevelEnum, Logger } from '../../src/specification/index.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { Mutex } from 'async-mutex'

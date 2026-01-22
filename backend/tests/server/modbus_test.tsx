@@ -15,7 +15,7 @@ import {
 import { Modbus, ModbusForTest } from '../../src/server/modbus.js'
 import { getReadRegisterResult } from '../../src/server/submitRequestMock.js'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
-import { Islave, ModbusTasks } from '../../src/shared/server.js'
+import { Islave, ModbusTasks } from '../../src/shared/server/index.js'
 import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification/index.js'
 import { expect, it, describe, beforeEach, vi, beforeAll } from 'vitest'
 import Debug from 'debug'

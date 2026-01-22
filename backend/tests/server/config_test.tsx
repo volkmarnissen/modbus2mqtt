@@ -3,7 +3,7 @@ import { Config, MqttValidationResult } from '../../src/server/config.js'
 import { getFileNameFromName } from '../../src/shared/specification/index.js'
 import * as fs from 'fs'
 import { setConfigsDirsForTest } from './configsbase.js'
-import { AuthenticationErrors } from '../../src/shared/server.js'
+import { AuthenticationErrors } from '../../src/shared/server/index.js'
 import Debug from 'debug'
 import { ConfigTestHelper, TempConfigDirHelper } from './testhelper.js'
 setConfigsDirsForTest()
