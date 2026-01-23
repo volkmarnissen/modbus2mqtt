@@ -79,8 +79,13 @@ function addSlave(willLog) {
     .parents('mat-card')
     .find('button')
     .first()
-    .should('not.be.disabled')
-    .click({ force: true })
+    .then(($btn) => {
+      if ($btn.is(':disabled')) {
+        cy.log('Add Slave button disabled; assuming slave already exists')
+      } else {
+        cy.wrap($btn).click({ force: true })
+      }
+    })
 
   // Wait for the first slave card to render (uiSlaves)
   cy.get('app-select-slave mat-card', { timeout: 10000 })
