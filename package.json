@@ -49,7 +49,8 @@
     "build:frontend": "cd frontend && npm run build",
     "prettier": "./scripts/prettier-changed.sh",
     "prettier:write": "prettier --write .",
-    "install-hooks": "mkdir -p .githooks && ln -sf ../scripts/pre-commit.sh .githooks/pre-commit && chmod +x .githooks/pre-commit && git config core.hooksPath .githooks && echo 'Git hooks configured to use .githooks directory and linked to scripts/pre-commit.sh'"
+    "install-hooks": "mkdir -p .githooks && ln -sf ../scripts/pre-commit.sh .githooks/pre-commit && chmod +x .githooks/pre-commit && git config core.hooksPath .githooks && echo 'Git hooks configured to use .githooks directory and linked to scripts/pre-commit.sh'",
+    "test:spec-install": "bash scripts/test-spec-install.sh"
   },
   "dependencies": {
     "@octokit/rest": "^20.1.1",
