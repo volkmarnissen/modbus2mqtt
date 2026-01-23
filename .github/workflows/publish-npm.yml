@@ -88,7 +88,7 @@ jobs:
     needs: npm_publish
     permissions:
       packages: write
-    uses: ./.github/workflows/build-release-artifacts-and-images-on-dispatch.yml
+    uses: ./.github/workflows/release-assets-on-dispatch.yml
     with:
       version: ${{ needs.npm_publish.outputs.version }}
 # Notes:

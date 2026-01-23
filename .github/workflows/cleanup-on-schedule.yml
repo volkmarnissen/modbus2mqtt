@@ -1,4 +1,4 @@
-name: "On schedule: Cleanup workflow runs"
+name: "On schedule: Cleanup"
 
 on:
   workflow_dispatch:
@@ -21,8 +21,8 @@ permissions:
   contents: read
 
 jobs:
-  cleanup-workflow-runs-on-schedule:
-    name: "On schedule: Cleanup workflow runs"
+  cleanup-on-schedule:
+    name: "On schedule: Cleanup"
     runs-on: ubuntu-latest
     steps:
       - name: Cleanup old workflow runs
