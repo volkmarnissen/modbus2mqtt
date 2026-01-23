@@ -2,9 +2,28 @@ import { it, expect, describe, beforeAll, afterAll } from '@jest/globals'
 import { ModbusTcpRtuBridge } from '../../src/server/tcprtubridge.js'
 import { ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
 import { ModbusRegisterType } from '../../src/shared/specification/index.js'
-import { FakeBus, getAvailablePort, ModbusRTUWorkerForTest } from './testhelper.js'
+import { FakeBus, ModbusRTUWorkerForTest } from './testhelper.js'
 import ModbusRTU from 'modbus-serial'
 import { Mutex } from 'async-mutex'
+import { createServer } from 'net'
+
+const getAvailablePort = async (): Promise<number> => {
+  return await new Promise<number>((resolve, reject) => {
+    const server = createServer()
+    server.once('error', (err) => {
+      reject(err)
+    })
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address()
+      if (address && typeof address === 'object') {
+        const port = address.port
+        server.close(() => resolve(port))
+      } else {
+        server.close(() => reject(new Error('Unable to determine free port')))
+      }
+    })
+  })
+}
 
 it('getCoil', () => {
   const queue = new ModbusRTUQueue()
@@ -116,6 +135,7 @@ describe('live tests', () => {
   let livePort = 0
   beforeAll(async () => {
     livePort = await getAvailablePort()
+    return new Promise<void>((resolve) => {
       const queue = new ModbusRTUQueue()
       const fakeBus = new FakeBus()
       testWorker = new ModbusRTUWorkerForTest(fakeBus, queue, () => {}, 'start/stop')
@@ -123,11 +143,21 @@ describe('live tests', () => {
       // open connection to a tcp line
       client.setID(1)
       console.log('startServer')
-      await bridge.startServer(livePort)
-     
-      await client
+      bridge.startServer(livePort).then(() => {
+        console.log('server started')
+        setTimeout(() => {
+          client
             .connectTCP('127.0.0.1', { port: livePort })
-            console.log('connected')
+            .then(() => {
+              console.log('connected')
+              resolve()
+            })
+            .catch((e: any) => {
+              console.log(e.message)
+            })
+        }, 200)
+      })
+    })
   })
 
   afterAll(() => {
