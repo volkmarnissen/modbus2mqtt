@@ -1,0 +1,66 @@
+name: 'On push: Enforce English'
+
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  enforce-english-on-push:
+    name: 'On push: Enforce English'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine event context (push)
+        id: context
+        run: |
+          echo "EVENT_NAME=push" >> $GITHUB_ENV
+          echo "AFTER=${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "BEFORE=${GITHUB_EVENT_BEFORE}" >> $GITHUB_ENV || true
+
+      - name: Scan for non-English indicators (push)
+        id: scan
+        run: |
+          set -euo pipefail
+          echo "Scanning commits for non-English indicators..."
+
+          umlaut_pattern='[äöüÄÖÜß]'
+          german_words='\b(und|der|die|das|nicht|bitte|Änderung|Änderungen|übersetz|deutsch|deutsche|ich|wir|Sie|dass)\b'
+
+          matches=()
+          BEFORE=${BEFORE:-}
+          AFTER=${AFTER}
+          if [ -n "$BEFORE" ] && git rev-parse "$BEFORE" >/dev/null 2>&1; then
+            range="$BEFORE..$AFTER"
+          else
+            range="$AFTER"
+          fi
+
+          changed_files=$(git diff --name-only "$range" -- '*.md' '*.yml' '*.yaml' '*.json' || true)
+          for f in $changed_files; do
+            if git diff "$range" -- "$f" | grep -E "^[+].*($umlaut_pattern|$german_words)" -i >/dev/null 2>&1; then
+              matches+=("file:$f")
+            fi
+          done
+
+          if [ ${#matches[@]} -gt 0 ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "matches=${matches[*]}" >> $GITHUB_OUTPUT
+            echo "Matches: ${matches[*]}"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "Matches: none"
+          fi
+
+      - name: Fail push on detection
+        if: steps.scan.outputs.found == 'true'
+        run: |
+          echo "Non-English content detected: ${{ steps.scan.outputs.matches }}" >&2
+          exit 1

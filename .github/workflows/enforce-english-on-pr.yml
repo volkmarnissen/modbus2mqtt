@@ -1,0 +1,72 @@
+name: 'On pull request: Enforce English'
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  enforce-english-on-pr:
+    name: 'On pull request: Enforce English'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine event context (PR)
+        id: context
+        run: |
+          echo "EVENT_NAME=pull_request" >> $GITHUB_ENV
+          echo "PR_BASE_SHA=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
+          echo "PR_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      - name: Scan for non-English indicators (PR)
+        id: scan
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          echo "Scanning PR for non-English indicators..."
+
+          umlaut_pattern='[äöüÄÖÜß]'
+          german_words='\b(und|der|die|das|nicht|bitte|Änderung|Änderungen|übersetz|deutsch|deutsche|ich|wir|Sie|dass)\b'
+
+          matches=()
+          if [ -n "${PR_BASE_SHA:-}" ] && [ -n "${PR_HEAD_SHA:-}" ]; then
+            range="${PR_BASE_SHA}..${PR_HEAD_SHA}"
+            changed_files=$(git diff --name-only "$range" -- '*.md' '*.yml' '*.yaml' '*.json' || true)
+            for f in $changed_files; do
+              if git diff "$range" -- "$f" | grep -E "^[+].*($umlaut_pattern|$german_words)" -i >/dev/null 2>&1; then
+                matches+=("file:$f")
+              fi
+            done
+          fi
+
+          if [ ${#matches[@]} -gt 0 ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "matches=${matches[*]}" >> $GITHUB_OUTPUT
+            echo "Matches: ${matches[*]}"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "Matches: none"
+          fi
+
+      - name: Report and fail on PR
+        if: steps.scan.outputs.found == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const matches = `${{ steps.scan.outputs.matches }}`
+            const repo = context.repo
+            const pr = context.payload.pull_request.number
+            const body = `⚠️ Please use English for repository changes. Detected potential non-English content in: ${matches}`
+            core.info(`Commenting on PR #${pr}`)
+            await github.rest.issues.createComment({ owner: repo.owner, repo: repo.repo, issue_number: pr, body })
+            core.setFailed('Non-English content detected in files; please update to use English.')

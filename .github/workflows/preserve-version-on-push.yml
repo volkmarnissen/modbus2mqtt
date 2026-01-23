@@ -1,4 +1,4 @@
-name: 'On Push: Preserve Version Number'
+name: 'On push: Preserve version number'
 
 on:
   push:
@@ -9,7 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  preserve-version:
+  preserve-version-on-push:
+    name: 'On push: Preserve version number'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
