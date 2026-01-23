@@ -1,4 +1,4 @@
-name: "On dispatch: Publish to npm and build assets"
+name: 'On dispatch: Publish to npm and build assets'
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ on:
         default: false
 jobs:
   npm_publish:
-    name: "On dispatch: Publish to npm and build assets"
+    name: 'On dispatch: Publish to npm and build assets'
     environment: release
     runs-on: ubuntu-latest
     outputs:
