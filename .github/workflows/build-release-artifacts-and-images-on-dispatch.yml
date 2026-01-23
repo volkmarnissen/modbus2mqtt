@@ -249,9 +249,9 @@ jobs:
           VERSION: ${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}
         run: |
           set -eux
-          MAIN_TAG="$main_docker_name:${{ needs.prepare.outputs.resolved_version }}"
-          AMD64_TAG="$main_docker_name-amd64:${{ needs.prepare.outputs.resolved_version }}"
-          ARM64_TAG="$main_docker_name-arm64:${{ needs.prepare.outputs.resolved_version }}"
+          MAIN_TAG="$main_docker_name:${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}"
+          AMD64_TAG="$main_docker_name-amd64:${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}"
+          ARM64_TAG="$main_docker_name-arm64:${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}"
 
           echo "Creating multi-architecture manifest: $MAIN_TAG"
           docker buildx imagetools create -t "$MAIN_TAG" "$AMD64_TAG" "$ARM64_TAG"
@@ -289,7 +289,7 @@ jobs:
 
       - name: Generate GitHub changelog (initial-release-notes.md)
         run: |
-          TAG="v${{ needs.prepare.outputs.resolved_version }}"
+          TAG="v${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}"
           API="https://api.github.com/repos/${{ github.repository }}/releases/generate-notes"
           echo "Requesting generated release notes for $TAG"
           RESPONSE=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"tag_name\":\"$TAG\"}" "$API")
@@ -315,12 +315,12 @@ jobs:
 
           # Create release body mit APK-Tabelle
           cat >> release-body.md << 'EOF'
-          ## 📦 $product_name v${{ needs.prepare.outputs.resolved_version }}
+          ## 📦 $product_name v${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}
 
           ### 🐳 Docker Image
 
           ```bash
-          docker pull ghcr.io/${{ github.repository }}:v${{ needs.prepare.outputs.resolved_version }}
+          docker pull ghcr.io/${{ github.repository }}:v${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}
           ```
                     
           **Multi-architecture support:** `linux/amd64`, `linux/arm64`
@@ -363,7 +363,7 @@ jobs:
           # for aarch64 uncomment the following line and comment the x86_64 line
           # wget https://github.com/${{ github.repository }}/releases/download/v${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}/$product_name-${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}-r0-aarch64.apk
           wget https://github.com/${{ github.repository }}/releases/download/v${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}/$product_name-${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}-r0-x86_64.apk
-          apk add $product_name-${{ needs.prepare.outputs.resolved_version }}-r0.apk
+          apk add $product_name-${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}-r0.apk
           ```
 
           ### 🚀 Quick Start
