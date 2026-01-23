@@ -115,6 +115,6 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4",
     "typescript-map": "^0.1.0",
-    "vitest": "^1.6.1"
+    "vitest": "^4.0.12"
   }
 }
