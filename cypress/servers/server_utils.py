@@ -9,7 +9,7 @@ import time
 from command_utils import executeSyncCommand
 defaultMimeTypes = "/etc/nginx/mime.types"
 defaultLibDir = "/var/lib/nginx"
-MAX_PORT_RETRIES = 12
+MAX_PORT_RETRIES = 60
 PERMANENT_PORTS = [3002, 3006]
 RESTART_PORTS = [3001, 3003, 3004, 3005, 3007]
 

@@ -1,5 +1,5 @@
 #!/bin/sh 
-set -e
+set -ex
 TMPDIR="$(mktemp -d -t modbus2mqttXXXXX)"
 export TMPDIR
 export MPID=$$
@@ -20,6 +20,7 @@ then
     echo "Using existing debug tmpdir $DEBUGTMPDIR"
     TMPDIR=$DEBUGTMPDIR
   if [ -f "$TMPFILES" ]; then
+    : >"$TMPFILES.tmp"
     grep -v "^$HTTPPORT " "$TMPFILES" >"$TMPFILES.tmp" || true
     mv "$TMPFILES.tmp" "$TMPFILES"
   fi
@@ -40,10 +41,11 @@ EOF
     MPID=$!
 else
   mkdir -p "$TMPDIR/modbus2mqtt"
-  if [ -f "$TMPFILES" ]; then
+    if [ -f "$TMPFILES" ]; then
+      : >"$TMPFILES.tmp"
       grep -v "^$HTTPPORT " "$TMPFILES" >"$TMPFILES.tmp" || true
       mv "$TMPFILES.tmp" "$TMPFILES"
-  fi
+    fi
   echo "$HTTPPORT $TMPDIR" >>"$TMPFILES"
   echo 'httpport: '"$HTTPPORT" >"$TMPDIR/modbus2mqtt/modbus2mqtt.yaml"
   logdir=cypress/servers/logs

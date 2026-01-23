@@ -185,29 +185,23 @@ describe('simple tests', () => {
   })
 })
 
-it.skip('closeContribution need github access', (done) => {
+it.skip('closeContribution need github access', async () => {
   singleMutex.acquire()
+  try {
+    ConfigSpecification.setMqttdiscoverylanguage('en', process.env.GITHUB_TOKEN)
+    ConfigSpecification['configDir'] = configDir
+    fs.rmSync(configDir, { recursive: true, force: true })
+    fs.mkdirSync(configDir)
+    const tspec = structuredClone(spec)
+    ConfigSpecification['specifications'].push(tspec)
 
-  ConfigSpecification.setMqttdiscoverylanguage('en', process.env.GITHUB_TOKEN)
-  ConfigSpecification['configDir'] = configDir
-  fs.rmSync(configDir, { recursive: true, force: true })
-  fs.mkdirSync(configDir)
-  const tspec = structuredClone(spec)
-  ConfigSpecification['specifications'].push(tspec)
-
-  new ConfigSpecification().writeSpecificationFromFileSpec(tspec, tspec.filename, undefined)
-  tspec.pullNumber = 81
-  M2mSpecification.closeContribution(tspec)
-    .then(() => {
-      done()
-      fs.rmSync(configDir, { recursive: true, force: true })
-      singleMutex.release()
-    })
-    .catch((e) => {
-      fs.rmSync(configDir, { recursive: true, force: true })
-      console.log('error' + e.message)
-      expect(1).toBeFalsy()
-    })
+    new ConfigSpecification().writeSpecificationFromFileSpec(tspec, tspec.filename, undefined)
+    tspec.pullNumber = 81
+    await M2mSpecification.closeContribution(tspec)
+  } finally {
+    fs.rmSync(configDir, { recursive: true, force: true })
+    singleMutex.release()
+  }
 })
 
 class TestM2mSpecification {
@@ -243,7 +237,7 @@ class TestM2mSpecification {
     TestM2mSpecification.pollOriginal(specfilename, error)
   }
 }
-it('startPolling', (done) => {
+it('startPolling', async () => {
   const specP = structuredClone(spec)
   specP.pullNumber = 16
   specP.status = SpecificationStatus.contributed
@@ -260,50 +254,61 @@ it('startPolling', (done) => {
   })
   let callCount = 0
   let expectedCallCount = 2
-  o?.subscribe({
-    next(pullRequest) {
-      switch (callCount) {
-        case 0:
-          expect(pullRequest.merged).toBeFalsy()
-          break
-        case 1:
-          expect(pullRequest.merged).toBeTruthy()
-          break
-      }
-      const i = M2mSpecification['ghContributions'].get(specP.filename)
-      expect(i?.nextCheck).toBe('0.0 Sec')
-      callCount++
-      if (callCount > expectedCallCount) expect(callCount).toBe(expectedCallCount)
-    },
-    complete() {
-      expect(M2mSpecification['ghContributions'].has(specP.filename)).toBeFalsy()
-      expect(callCount).toBe(2)
-      //expect(m['ghPollIntervalIndexCount']).toBe(2)
-      //expect(m['ghPollIntervalIndex']).toBe(0)
-      expectedCallCount = 11
-      o = M2mSpecification.startPolling(specP.filename, () => {
-        expect(true).toBeFalsy()
-      })
-      o?.subscribe({
-        next(pullRequest) {
-          switch (callCount) {
-            case 0:
-              expect(pullRequest.closed).toBeFalsy()
-              break
-            case 1:
-              expect(pullRequest.closed).toBeTruthy()
-              break
-          }
-          callCount++
-          if (callCount > expectedCallCount) expect(callCount).toBe(expectedCallCount)
-        },
-        complete() {
-          expect(callCount).toBe(expectedCallCount)
-          //          expect(m['ghPollIntervalIndexCount']).toBe(0)
-          //          expect(m['ghPollIntervalIndex']).toBe(1)
-          done()
-        },
-      })
-    },
+  await new Promise<void>((resolve, reject) => {
+    o?.subscribe({
+      next(pullRequest) {
+        switch (callCount) {
+          case 0:
+            expect(pullRequest.merged).toBeFalsy()
+            break
+          case 1:
+            expect(pullRequest.merged).toBeTruthy()
+            break
+        }
+        const i = M2mSpecification['ghContributions'].get(specP.filename)
+        expect(i?.nextCheck).toBe('0.0 Sec')
+        callCount++
+        if (callCount > expectedCallCount) expect(callCount).toBe(expectedCallCount)
+      },
+      complete() {
+        resolve()
+      },
+      error(err) {
+        reject(err)
+      },
+    })
   })
+  expect(M2mSpecification['ghContributions'].has(specP.filename)).toBeFalsy()
+  expect(callCount).toBe(2)
+  //expect(m['ghPollIntervalIndexCount']).toBe(2)
+  //expect(m['ghPollIntervalIndex']).toBe(0)
+  expectedCallCount = 11
+  o = M2mSpecification.startPolling(specP.filename, () => {
+    expect(true).toBeFalsy()
+  })
+  await new Promise<void>((resolve, reject) => {
+    o?.subscribe({
+      next(pullRequest) {
+        switch (callCount) {
+          case 0:
+            expect(pullRequest.closed).toBeFalsy()
+            break
+          case 1:
+            expect(pullRequest.closed).toBeTruthy()
+            break
+        }
+        callCount++
+        if (callCount > expectedCallCount) expect(callCount).toBe(expectedCallCount)
+      },
+      complete() {
+        resolve()
+      },
+      error(err) {
+        reject(err)
+      },
+    })
+  })
+  expect(callCount).toBe(expectedCallCount)
+  //          expect(m['ghPollIntervalIndexCount']).toBe(0)
+  //          expect(m['ghPollIntervalIndex']).toBe(1)
 })

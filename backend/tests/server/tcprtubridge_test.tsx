@@ -2,7 +2,7 @@ import { it, expect, describe, beforeAll, afterAll } from '@jest/globals'
 import { ModbusTcpRtuBridge } from '../../src/server/tcprtubridge.js'
 import { ModbusRTUQueue } from '../../src/server/modbusRTUqueue.js'
 import { ModbusRegisterType } from '../../src/shared/specification/index.js'
-import { FakeBus, ModbusRTUWorkerForTest } from './testhelper.js'
+import { FakeBus, getAvailablePort, ModbusRTUWorkerForTest } from './testhelper.js'
 import ModbusRTU from 'modbus-serial'
 import { Mutex } from 'async-mutex'
 
@@ -87,11 +87,15 @@ it('getMultipleHoldingRegisters', () => {
   expect(queue.getEntries()[0].address.registerType).toBe(ModbusRegisterType.HoldingRegister)
   expect(queue.getEntries()[0].address.write).not.toBeDefined()
 })
-it('getMultipleInputRegisters', (done) => {
+it('getMultipleInputRegisters', async () => {
   const queue = new ModbusRTUQueue()
   const bridge = new ModbusTcpRtuBridge(queue)
+  let resolveDone: (() => void) | undefined
+  const donePromise = new Promise<void>((resolve) => {
+    resolveDone = resolve
+  })
   bridge['vector']!.getMultipleInputRegisters!(1, 3, 2, () => {
-    done()
+    resolveDone && resolveDone()
   })
 
   expect(queue.getLength()).toBe(1)
@@ -101,6 +105,7 @@ it('getMultipleInputRegisters', (done) => {
   expect(queue.getEntries()[0].address.registerType).toBe(ModbusRegisterType.AnalogInputs)
   expect(queue.getEntries()[0].address.write).not.toBeDefined()
   queue.getEntries()[0].onResolve(queue.getEntries()[0], [198, 198, 198])
+  await donePromise
 })
 
 describe('live tests', () => {
@@ -108,8 +113,9 @@ describe('live tests', () => {
   let bridge: ModbusTcpRtuBridge
   let testWorker: ModbusRTUWorkerForTest
   const liveMutext = new Mutex()
-  beforeAll(() => {
-    return new Promise<void>((resolve) => {
+  let livePort = 0
+  beforeAll(async () => {
+    livePort = await getAvailablePort()
       const queue = new ModbusRTUQueue()
       const fakeBus = new FakeBus()
       testWorker = new ModbusRTUWorkerForTest(fakeBus, queue, () => {}, 'start/stop')
@@ -117,67 +123,43 @@ describe('live tests', () => {
       // open connection to a tcp line
       client.setID(1)
       console.log('startServer')
-      bridge.startServer(3010).then(() => {
-        console.log('server started')
-        setTimeout(() => {
-          client
-            .connectTCP('127.0.0.1', { port: 3010 })
-            .then(() => {
-              console.log('connected')
-              resolve()
-            })
-            .catch((e: any) => {
-              console.log(e.message)
-            })
-        }, 200)
-      })
-    })
+      await bridge.startServer(livePort)
+     
+      await client
+            .connectTCP('127.0.0.1', { port: livePort })
+            console.log('connected')
   })
 
   afterAll(() => {
+    client.close(() => undefined)
     bridge.stopServer()
   })
-  it('live readHoldingRegisters', (done) => {
-    liveMutext.runExclusive(() => {
-      client
-        .readHoldingRegisters(2, 4)
-        .then((value) => {
-          expect(value.data.length).toBe(4)
-          done()
-        })
-        .catch((e) => {
-          done(e)
-        })
+  it('live readHoldingRegisters', async () => {
+    await liveMutext.runExclusive(async () => {
+      const value = await client.readHoldingRegisters(2, 4)
+      expect(value.data.length).toBe(4)
     })
   })
 
-  it('live readDiscreteInputs', (done) => {
-    liveMutext.runExclusive(() => {
-      client
-        .readDiscreteInputs(2, 4)
-        .then((value) => {
-          expect(value.data[0]).toBeFalsy()
-          done()
-        })
-        .catch((e) => {
-          done(e)
-        })
+  it('live readDiscreteInputs', async () => {
+    await liveMutext.runExclusive(async () => {
+      const value = await client.readDiscreteInputs(2, 4)
+      expect(value.data[0]).toBeFalsy()
     })
   })
 
-  it('live writeRegisters', (done) => {
-    liveMutext.runExclusive(() => {
+  it('live writeRegisters', async () => {
+    await liveMutext.runExclusive(async () => {
       testWorker.expectedAPIcallCount = 1
       testWorker.expectedAPIwroteDataCount = 1
-      testWorker['done'] = done
-      client
-        .writeRegisters(2, [1])
-        .then(() => {
-          // resolution handled by testWorker via done
-        })
-        .catch((e) => {
-          done(e)
-        })
+      const donePromise = new Promise<void>((resolve, reject) => {
+        testWorker['done'] = (err?: any) => {
+          if (err) reject(err)
+          else resolve()
+        }
+      })
+      await client.writeRegisters(2, [200])
+      await donePromise
     })
   })
 })

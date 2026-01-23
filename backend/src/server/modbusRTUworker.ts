@@ -413,8 +413,14 @@ export class ModbusRTUWorker extends ModbusWorker {
         const fct = this.functionCodeWriteMap.get(current.address.registerType)
         if (fct)
           return fct(current.slaveId, current.address.address, current.address.write)
-            .then(() => this.processOneEntry())
-            .catch(() => this.processOneEntry())
+            .then(() => {
+              current.onResolve(current, current.address.write)
+              return this.processOneEntry()
+            })
+            .catch((e) => {
+              current.onError(current, e)
+              return this.processOneEntry()
+            })
         else return Promise.reject(new Error('Invalid function code for write' + current.address.registerType))
       } else
         return this.executeModbusFunctionCodeRead(current)

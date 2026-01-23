@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["backend/src", "backend/tests", "frontend/src", "vitest.config.mts"]
+  "include": ["backend/src", "backend/tests", "backend/__tests__", "frontend/src", "vitest.config.mts", "cypress/**/*"]
 }
