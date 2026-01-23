@@ -12,11 +12,18 @@ if [ $# -ge 1 ]
 then
     HTTPPORT=$1
 fi
+TMPFILES="cypress/servers/tmpfiles"
+mkdir -p "$(dirname "$TMPFILES")"
 DEBUGTMPDIR=e2e/modbus2mqtt.temp
 if [ -r e2e/modbus2mqtt.temp ] && grep "httpport: $1" e2e/modbus2mqtt.temp/modbus2mqtt/modbus2mqtt.yaml >/dev/null 2>&1
 then
     echo "Using existing debug tmpdir $DEBUGTMPDIR"
     TMPDIR=$DEBUGTMPDIR
+  if [ -f "$TMPFILES" ]; then
+    grep -v "^$HTTPPORT " "$TMPFILES" >"$TMPFILES.tmp" || true
+    mv "$TMPFILES.tmp" "$TMPFILES"
+  fi
+  echo "$HTTPPORT $TMPDIR" >>"$TMPFILES"
     rm -rf $DEBUGTMPDIR/public
     rm -rf $DEBUGTMPDIR/modbus2mqtt/specifications
     rm -rf $DEBUGTMPDIR/modbus2mqtt/busses
@@ -33,6 +40,11 @@ EOF
     MPID=$!
 else
   mkdir -p "$TMPDIR/modbus2mqtt"
+  if [ -f "$TMPFILES" ]; then
+      grep -v "^$HTTPPORT " "$TMPFILES" >"$TMPFILES.tmp" || true
+      mv "$TMPFILES.tmp" "$TMPFILES"
+  fi
+  echo "$HTTPPORT $TMPDIR" >>"$TMPFILES"
   echo 'httpport: '"$HTTPPORT" >"$TMPDIR/modbus2mqtt/modbus2mqtt.yaml"
   logdir=cypress/servers/logs
   mkdir -p "$logdir"

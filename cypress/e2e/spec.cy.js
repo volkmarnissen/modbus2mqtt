@@ -76,16 +76,21 @@ function addSlave(willLog) {
     .type('3', { force: true, log: willLog })
     .trigger('change')
     .trigger('blur')
-  // Add the new slave via Enter key on the slaveId input (form handles enter)
+  // Add the new slave via the Add button (more reliable than Enter key in CI)
   cy.contains('mat-card-title', 'New Slave')
     .parents('mat-card')
-    .find('[formcontrolname="slaveId"]')
-    .type('{enter}', { force: true })
+    .find('button')
+    .should('not.be.disabled')
+    .click({ force: true })
 
   // Wait for the first slave card to render (uiSlaves)
-  cy.get('app-select-slave:first mat-expansion-panel-header', { timeout: 10000 })
+  cy.get('app-select-slave mat-card', { timeout: 10000 })
+    .filter((_, el) => !el.innerText.includes('New Slave'))
+    .first()
+    .as('firstSlaveCard')
+  cy.get('@firstSlaveCard').find('mat-expansion-panel-header', { timeout: 10000 })
   // Open collapsed panels to reveal controls
-  cy.get('app-select-slave:first mat-expansion-panel-header[aria-expanded=false]', logSetting).then((elements) => {
+  cy.get('@firstSlaveCard').find('mat-expansion-panel-header[aria-expanded=false]', logSetting).then((elements) => {
     if (elements.length >= 1) {
       elements[0].click(logSetting)
     }
@@ -95,14 +100,14 @@ function addSlave(willLog) {
   })
 
   // Set Poll Mode on the newly added slave
-  cy.get('app-select-slave:first mat-select[formControlName="pollMode"]', logSetting)
+  cy.get('@firstSlaveCard').find('mat-select[formControlName="pollMode"]', logSetting)
     .click()
     .get('mat-option')
     .contains('No polling')
     .click(logSetting)
-  cy.get('div.card-header-buttons:first button:contains("check_circle")', logSetting).eq(0, logSetting).click(logSetting)
+  cy.get('@firstSlaveCard').find('div.card-header-buttons button:contains("check_circle")', logSetting).eq(0, logSetting).click(logSetting)
   // Show specification third header button on first card
-  cy.get('div.card-header-buttons:first button:contains("add_box")', logSetting).eq(0, logSetting).click(logSetting)
+  cy.get('@firstSlaveCard').find('div.card-header-buttons button:contains("add_box")', logSetting).eq(0, logSetting).click(logSetting)
 
   cy.url().should('contain', prefix + '/specification')
 }
