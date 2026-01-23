@@ -1,45 +1,57 @@
-name: Pull/Run Unit tests
+name: Build + Unit + E2E + Component
 
 on:
   workflow_dispatch:
-  pull_request_target:
-    types: [opened, reopened, edited]
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_call:
 permissions:
   contents: write
 jobs:
   test:
-    runs-on: ubuntu-latest
-    name: 'Test E2E'
+    name: 'Pull/Run Unit tests'
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - name: Set up Node.js
         uses: actions/setup-node@v1
-        with:
-          node-version: 22.x
+            node-version: '22.x'
+            cache: 'npm'
+            cache-dependency-path: |
+              package-lock.json
+              backend/package-lock.json
+              frontend/package-lock.json
+        - name: Install system dependencies (nginx, mosquitto)
       - name: Install mosquitto client
         run: |
-          sudo apt update
-          sudo apt install -y mosquitto mosquitto-clients
-      - name: npm run build
-        run: |
-          pushd frontend && npm ci && popd
+            sudo apt install -y nginx mosquitto mosquitto-clients
+        - name: Install Node dependencies
+          run: |
           pushd backend && npm ci && popd
-          npm ci
+          pushd frontend && npm ci && popd
+        - name: npm run build
+          run: |
           npm run build
-          npm run e2e:start
-          npx cypress run
-      - name: Protocol from starting servers
-        if: ${{ always()}}
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-serverlogs
+        - name: Run backend unit tests
+          run: |
+            pushd backend && npm run test && popd
+        - name: Start local E2E servers
+          run: |
+            npm run e2e:start
+        - name: Run Cypress E2E tests
+          run: |
+            npx cypress run
+        - name: Protocol from starting servers
+          if: ${{ always()}}
+            uses: actions/upload-artifact@v4
+          with:
+            path: |
+              cypress/servers/e2e/
+              cypress/servers/tmpfiles
           path: e2e/
-          retention-days: 1
-      - name: Run component tests
-        run: npm run test
-      - name: Cypress run component tests
-        uses: cypress-io/github-action@v6
-        with:
-          component: true
-          install: false
+        - name: Cypress component tests (frontend)
+        - name: Cypress run component tests
+          uses: cypress-io/github-action@v6
+          with:
+            install: false
+            working-directory: frontend

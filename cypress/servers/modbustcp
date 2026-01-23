@@ -7,8 +7,11 @@ localhost="127.0.0.1"
 trap 'echo signal 15 $MPID $TMPDIR; rm -rf $TMPDIR; kill -15 $MPID; exit 1' 15
 trap 'echo signal 2 $MPID $TMPDIR; rm -rf $TMPDIR; kill -2 $MPID; exit 1;' 2
 mkdir -p $TMPDIR/modbustcp
-mkdir -p e2e 
+mkdir -p cypress/servers/logs
+logfile=cypress/servers/logs/modbusTCP_3002.out
+# Stable symlink to latest TCP server log
+ln -sf "$logfile" cypress/servers/logs/modbusTCP_3002.log
 
-node ./dist/server/runModbusTCPserver.js -d $TMPDIR -c ./cypress/servers/modbustcp.conf/config-dir --busid 0 >e2e/modbusTCP_3002.out 2>&1 &
+node ./dist/server/runModbusTCPserver.js -d $TMPDIR -c ./cypress/servers/modbustcp.conf/config-dir --busid 0 >>"$logfile" 2>&1 &
 MPID=$!  
 wait $MPID

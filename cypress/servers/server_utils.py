@@ -58,7 +58,6 @@ def killRequiredApps(permanent:bool=False, restart:bool=False):
         if(not permanent or restart):
             killOne("modbus2mqtt")
             killOne("mosquitto")
-            unlinkIfExist("cypress/servers/tmpfiles" )
         unlinkIfExist("nohup.out" )
     finally:
         print( '::endgroup::' )
@@ -78,7 +77,7 @@ def checkRequiredApps():
     if not os.path.isdir(ngxinlib) :
         raise SyncException( nginxGetLibDir() + " directory not found!") 
  
-def startRequiredApps(permanent:bool, restart:bool):
+def startRequiredApps(permanent: bool, restart: bool):
     # Always avoid npm pack/init/install for e2e start; use local build instead
     try:
         shutil.rmtree("./distprod")
@@ -89,65 +88,79 @@ def startRequiredApps(permanent:bool, restart:bool):
             os.remove(f)
     except OSError:
         pass
-    if (not permanent):
+
+    if not permanent:
         print("::group::Build backend for local e2e server")
         try:
             # Build only the backend (server + TCP sim)
-            executeSyncCommand(["npm", "run", "build:backend"]).decode('utf-8').strip()
+            executeSyncCommand(["npm", "run", "build:backend"]).decode("utf-8").strip()
         except Exception as err:
             eprint("npm run build:backend failed: " + str(err))
             raise SyncException("backend build failed")
-        print('::endgroup::')
+        print("::endgroup::")
+
     print("::group::start Start required servers")
-    if( not restart):
+
+    # ensure logs directory exists
+    os.makedirs("cypress/servers/logs", exist_ok=True)
+
+    if not restart:
         checkRequiredApps()
-        with open( "./cypress/servers/nginx.conf/nginx.conf","r") as f:
+        with open("./cypress/servers/nginx.conf/nginx.conf", "r") as f:
             nginxConf = f.read()
-            nginxConf = re.sub(r"mime.types", nginxGetMimesTypes(),nginxConf)
-        # default directory
+            nginxConf = re.sub(r"mime.types", nginxGetMimesTypes(), nginxConf)
         fb = tempfile.NamedTemporaryFile(delete_on_close=False)
-        fb.write( nginxConf.encode('utf-8'))
+        fb.write(nginxConf.encode("utf-8"))
         fb.close()
-    if( not permanent):
-        file="cypress/servers/tmpfiles"
-        if os.path.exists(file):
-            os.remove(file )
-    with open('stderr.out', "a") as outfile:
-        if( not restart):
-            subprocess.Popen(["nohup", "nginx","-c",fb.name,"-p","."],stderr=outfile, stdout=outfile)
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbustcp"],stderr=outfile, stdout=outfile)
-        if( not permanent or restart):
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/mosquitto"],stderr=outfile, stdout=outfile)
+
+    with open("stderr.out", "a") as outfile:
+        if not restart:
+            subprocess.Popen(["nohup", "nginx", "-c", fb.name, "-p", "."], stderr=outfile, stdout=outfile)
+            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbustcp"], stderr=outfile, stdout=outfile)
+        if not permanent or restart:
+            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/mosquitto"], stderr=outfile, stdout=outfile)
             # use modbus2mqtt with different config files
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3005 " + file],stderr=outfile, stdout=outfile)  # e2ePort
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3004 "  + file + " localhost:3006"],stderr=outfile, stdout=outfile) 
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3007 " + file],stderr=outfile, stdout=outfile)  # mqttNoAuthPort
-            # Use docker host port
-        if( permanent):
+            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3005"], stderr=outfile, stdout=outfile)  # e2ePort
+            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3004 ingress"], stderr=outfile, stdout=outfile)
+            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3007"], stderr=outfile, stdout=outfile)  # mqttNoAuthPort
+
+        # Create symlink for nginx error log into logs folder if present
+        try:
+            if os.path.exists("nginx.error.log"):
+                target = os.path.abspath("nginx.error.log")
+                link_name = os.path.join("cypress", "servers", "logs", "nginx.error.log")
+                if os.path.islink(link_name) or os.path.exists(link_name):
+                    os.remove(link_name)
+                os.symlink(target, link_name)
+        except Exception:
+            pass
+
+        # Wait for required ports
+        if permanent:
             ports = PERMANENT_PORTS
-        elif( restart):
+        elif restart:
             ports = RESTART_PORTS
         else:
             ports = PERMANENT_PORTS + RESTART_PORTS
         eprint("Waiting for " + str(ports) + " to open")
-        error=""
+        error = ""
         for port in ports:
-            count=0
-            while count < MAX_PORT_RETRIES:            
+            count = 0
+            while count < MAX_PORT_RETRIES:
                 if not isOpen("localhost", port):
                     time.sleep(1)
                 else:
                     break
                 count += 1
             if count == MAX_PORT_RETRIES:
-                if(os.path.exists("stderr.out")):
-                    with open( "stderr.out") as f:
+                if os.path.exists("stderr.out"):
+                    with open("stderr.out") as f:
                         eprint(f.read())
                 error += f"Port {port} not opened!\n"
-        if( error != ""):
-            raise SyncException( error)
+        if error != "":
+            raise SyncException(error)
         else:
             eprint("All required ports are open.")
-        outfile.close()
-        print( '::endgroup::' )
-        unlinkIfExist("stderr.out")
+
+    print("::endgroup::")
+    unlinkIfExist("stderr.out")
