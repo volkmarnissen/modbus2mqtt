@@ -19,13 +19,11 @@ function runRegister(authentication, port) {
     })
   }
   // Some flows route directly to /busses when config exists; ensure we end on /configure
-  cy.url().then((url) => {
-    if (!url.includes('/configure')) {
-      if (prefix.length) cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix + '/configure')
-      else if (port != undefined) cy.visit('http://' + localhost + ':' + port + '/configure')
-      else cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort') + '/configure')
-    }
-  })
+  let targetBaseUrl = ''
+  if (prefix.length) targetBaseUrl = 'http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix
+  else if (port != undefined) targetBaseUrl = 'http://' + localhost + ':' + port
+  else targetBaseUrl = 'http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort')
+  cy.visit(targetBaseUrl + '/configure')
   cy.url().should('contain', prefix + '/configure')
 }
 function runConfig(authentication) {
@@ -53,9 +51,9 @@ function runBusses() {
   cy.get('[formcontrolname="port"]').clear({ force: true }).type('3002', { force: true })
   cy.get('[formcontrolname="timeout"]').eq(0).clear({ force: true }).type('500', { force: true })
   cy.get('[formcontrolname="host"]').trigger('change')
-  cy.get('div.card-header-buttons button:first').click({ force: true })
+  cy.get('div.card-header-buttons').first().find('button').first().click({ force: true })
   // List slaves second header button on first card
-  cy.get('div.card-header-buttons:first button').eq(1).click()
+  cy.get('div.card-header-buttons').first().find('button').eq(1).click()
 }
 
 function addSlave(willLog) {
