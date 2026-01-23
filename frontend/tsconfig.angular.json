@@ -25,14 +25,14 @@
     "types": [],
     "paths": {
       "@app/*": ["src/app/*"],
-      "@shared/*": ["../backend/src/shared/*"],
-      "@m2m-shared/*": ["../backend/src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@m2m-shared/*": ["src/shared/*"]
     }
   },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "include": ["./src/**/*.ts", "../backend/src/shared/**/*.ts"],
-  "exclude": ["./src/**/*.spec.ts", "./src/**/*.test.ts", "./src/shared/**"]
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/*.spec.ts", "./src/**/*.test.ts"]
 }

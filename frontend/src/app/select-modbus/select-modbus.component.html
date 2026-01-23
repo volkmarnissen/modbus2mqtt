@@ -107,11 +107,15 @@
                     </mat-form-field>
                   </div>
                   <div>
-                    <mat-slide-toggle
-                      formControlName="tcpBridge"
-                      matTooltip="A Modbus TCP bridge will listen on port 502 and forwards modbus requests to this RTU connection"
-                      >TCP Bridge to RTU
-                    </mat-slide-toggle>
+                    <mat-form-field>
+                      <mat-label>TCP Bridge Port</mat-label>
+                      <input
+                        type="number"
+                        matInput
+                        formControlName="tcpBridgePort"
+                        matTooltip="Leer lassen, um die TCP-Bridge zu deaktivieren"
+                      />
+                    </mat-form-field>
                   </div>
                 </div>
               </mat-tab>

@@ -1,1 +1,0 @@
-../../dist/shared/specification/index.js

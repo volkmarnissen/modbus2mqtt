@@ -111,7 +111,7 @@ export class Bus implements IModbusConfiguration {
       if (!connectionRtu.serialport || connectionRtu.serialport !== rtu.serialport) return true
       if (!connectionRtu.baudrate || connectionRtu.baudrate !== rtu.baudrate) return true
       if (!connectionRtu.timeout || connectionRtu.timeout !== rtu.timeout) return true
-      if (connectionRtu.tcpBridge !== rtu.tcpBridge) return true
+      if (connectionRtu.tcpBridgePort !== rtu.tcpBridgePort) return true
       return false
     } else {
       const tcp = this.properties.connectionData as ITCPConnection
@@ -122,9 +122,9 @@ export class Bus implements IModbusConfiguration {
       return false
     }
   }
-  private startTcpRtuBridge() {
+  private startTcpRtuBridge(port: number) {
     this.tcprtuBridge = new ModbusTcpRtuBridge(this.modbusAPI.getQueue())
-    this.tcprtuBridge.startServer().catch((e) => {
+    this.tcprtuBridge.startServer(port).catch((e) => {
       log.log(LogLevelEnum.error, 'Unable to start Server : ' + e.message)
     })
   }
@@ -134,7 +134,10 @@ export class Bus implements IModbusConfiguration {
       debug('updateBus()')
       if (this.connectionChanged(connection)) {
         const fct = () => {
-          if ((connection as IRTUConnection).tcpBridge) this.startTcpRtuBridge()
+          const rtuConnection = connection as IRTUConnection
+          if (rtuConnection.serialport && typeof rtuConnection.tcpBridgePort === 'number') {
+            this.startTcpRtuBridge(rtuConnection.tcpBridgePort)
+          }
         }
         if (this.tcprtuBridge && this.tcprtuBridge.serverTCP) this.tcprtuBridge.stopServer(fct)
         else fct()
@@ -174,8 +177,9 @@ export class Bus implements IModbusConfiguration {
   constructor(ibus: IBus) {
     this.properties = ibus
     this.modbusAPI = new ModbusAPI(this)
-    if ((ibus.connectionData as IRTUConnection).tcpBridge) {
-      this.startTcpRtuBridge()
+    const rtuConnection = ibus.connectionData as IRTUConnection
+    if (rtuConnection.serialport && typeof rtuConnection.tcpBridgePort === 'number') {
+      this.startTcpRtuBridge(rtuConnection.tcpBridgePort)
     }
   }
   getModbusAPI(): IconsumerModbusAPI {
