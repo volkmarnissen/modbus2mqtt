@@ -1,13 +1,10 @@
 name: On pull request: Build and Test
-
 on:
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   build-and-test-on-pr:
     name: On pull request: Build and Test
@@ -17,7 +14,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Set up Node.js from .nvmrc
         uses: actions/setup-node@v4
         with:
@@ -27,36 +23,28 @@ jobs:
             package-lock.json
             backend/package-lock.json
             frontend/package-lock.json
-
       - name: Install system dependencies (nginx, mosquitto, jq)
         run: sudo apt-get update && sudo apt-get install -y nginx mosquitto mosquitto-clients jq
-
       - name: Install Node dependencies
         run: |
           npm ci
           pushd backend && npm ci && popd
           pushd frontend && npm ci && popd
-
       - name: Run pre-commit checks (fast, no full mode)
         env:
           GITHUB_ACTIONS: "1"
           GITHUB_BASE_REF: origin/${{ github.base_ref }}
         run: |
           bash scripts/pre-commit.sh
-
       - name: Build all
         run: npm run build
-
       - name: Run backend unit tests
         run: |
           pushd backend && npm run test && popd
-
       - name: Start local E2E servers
         run: npm run e2e:start
-
       - name: Run Cypress E2E tests
         run: npx cypress run
-
       - name: Upload server logs
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -66,7 +54,6 @@ jobs:
             cypress/servers/logs/**
           retention-days: 7
           if-no-files-found: warn
-
       - name: Cypress component tests (frontend)
         uses: cypress-io/github-action@v6
         with:
