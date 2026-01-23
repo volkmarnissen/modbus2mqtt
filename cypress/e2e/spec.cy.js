@@ -23,7 +23,16 @@ function runRegister(authentication, port) {
   if (prefix.length) targetBaseUrl = 'http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix
   else if (port != undefined) targetBaseUrl = 'http://' + localhost + ':' + port
   else targetBaseUrl = 'http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort')
-  cy.visit(targetBaseUrl + '/configure')
+  const targetUrl = targetBaseUrl + '/configure'
+  cy.visit(targetUrl)
+  cy.url().then((url) => {
+    if (url.includes('/login')) {
+      cy.get('[formcontrolname="username"]').type('test')
+      cy.get('[formcontrolname="password"]').type('test')
+      cy.get('button[value="authentication"]').click()
+      cy.visit(targetUrl)
+    }
+  })
   cy.url().should('contain', prefix + '/configure')
 }
 function runConfig(authentication) {
