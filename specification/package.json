@@ -9,11 +9,10 @@
   ],
   "bugs": "https://github.com/modbus2mqtt/server/issues",
   "type": "module",
+  "main": "./dist/specification/validate.js",
   "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "default": "./dist/src/index.js"
-    }
+    ".": "./dist/specification/validate.js",
+    "./shared/specification": "./dist/shared/specification/index.js"
   },
   "author": "Volkmar Nissen <volkmar.nissen@gmail.com>",
   "license": "MIT",
@@ -36,5 +35,9 @@
   },
   "devDependencies": {
     "typescript": "^5.9.3"
-  }
+  },
+  "files": [
+    "dist",
+    "shared/specification/index.js"
+  ]
 }
