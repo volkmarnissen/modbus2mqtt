@@ -78,6 +78,7 @@ function addSlave(willLog) {
   cy.contains('mat-card-title', 'New Slave')
     .parents('mat-card')
     .find('button')
+    .first()
     .should('not.be.disabled')
     .click({ force: true })
 
