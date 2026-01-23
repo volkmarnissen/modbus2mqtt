@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-PKGDIR="$(mktemp -d -t specification)"
+PKGDIR="$(mktemp -d -t specification.XXXXX )"
 SOURCE="../dist/shared/specification/index.js"
 
 # Run inside specification/ package
