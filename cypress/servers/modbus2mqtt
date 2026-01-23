@@ -1,11 +1,11 @@
 #!/bin/sh 
-set -ex
+set -e
 TMPDIR="$(mktemp -d -t modbus2mqttXXXXX)"
 export TMPDIR
 export MPID=$$
 localhost="127.0.0.1"
-trap 'echo signal 15 $MPID $TMPDIR; rm -rf $TMPDIR; kill -15 $MPID; exit 1' 15
-trap 'echo signal 2 $MPID $TMPDIR; rm -rf $TMPDIR; kill -2 $MPID; exit 1;' 2
+trap 'echo signal 15 $MPID $TMPDIR; rm -rf $TMPDIR; kill -0 $MPID 2>/dev/null && kill -15 $MPID; exit 1' 15
+trap 'echo signal 2 $MPID $TMPDIR; rm -rf $TMPDIR; kill -0 $MPID 2>/dev/null && kill -2 $MPID; exit 1;' 2
 
 HTTPPORT=3004
 if [ $# -ge 1 ]
@@ -19,11 +19,13 @@ if [ -r e2e/modbus2mqtt.temp ] && grep "httpport: $1" e2e/modbus2mqtt.temp/modbu
 then
     echo "Using existing debug tmpdir $DEBUGTMPDIR"
     TMPDIR=$DEBUGTMPDIR
+  tmpfile="$(mktemp "${TMPFILES}.tmp.XXXXXX")"
   if [ -f "$TMPFILES" ]; then
-    : >"$TMPFILES.tmp"
-    grep -v "^$HTTPPORT " "$TMPFILES" >"$TMPFILES.tmp" || true
-    mv "$TMPFILES.tmp" "$TMPFILES"
+    grep -v "^$HTTPPORT " "$TMPFILES" >"$tmpfile" || true
+  else
+    : >"$tmpfile"
   fi
+  mv "$tmpfile" "$TMPFILES"
   echo "$HTTPPORT $TMPDIR" >>"$TMPFILES"
     rm -rf $DEBUGTMPDIR/public
     rm -rf $DEBUGTMPDIR/modbus2mqtt/specifications
@@ -41,30 +43,27 @@ EOF
     MPID=$!
 else
   mkdir -p "$TMPDIR/modbus2mqtt"
+    tmpfile="$(mktemp "${TMPFILES}.tmp.XXXXXX")"
     if [ -f "$TMPFILES" ]; then
-      : >"$TMPFILES.tmp"
-      grep -v "^$HTTPPORT " "$TMPFILES" >"$TMPFILES.tmp" || true
-      mv "$TMPFILES.tmp" "$TMPFILES"
+      grep -v "^$HTTPPORT " "$TMPFILES" >"$tmpfile" || true
+    else
+      : >"$tmpfile"
     fi
+    mv "$tmpfile" "$TMPFILES"
   echo "$HTTPPORT $TMPDIR" >>"$TMPFILES"
   echo 'httpport: '"$HTTPPORT" >"$TMPDIR/modbus2mqtt/modbus2mqtt.yaml"
-  logdir=cypress/servers/logs
-  mkdir -p "$logdir"
-  logfile="$logdir/modbus2mqtt_$HTTPPORT.out"
-  # Create/refresh stable symlink pointing to current log
-  ln -sf "$logfile" "$logdir/modbus2mqtt_${HTTPPORT}.log"
   for arg in "$@"; do
-    echo  "arg: $arg" >>"$logfile"
+    echo  "arg: $arg"
   done
   # Ingress scenario indicated by second argument 'ingress'
   if [ "$2" = "ingress" ]
   then # port 3004 ingress
     echo "supervisor_host: '$localhost:3006'" >>"$TMPDIR/modbus2mqtt/modbus2mqtt.yaml"
-    echo "ingress scenario" >>"$logfile"
+    echo "ingress scenario"
  
     export HASSIO_TOKEN=abcd1234
   else
-    echo "normal scenario" >>"$logfile"
+    echo "normal scenario"
     # Provide local MQTT connection details only for non-Hassio scenario
     cat >>"$TMPDIR/modbus2mqtt/modbus2mqtt.yaml" <<EOF
 mqttconnect:
@@ -73,8 +72,9 @@ mqttconnect:
   password: homeassistant
 EOF
   fi
-  # Use local workspace binary instead of distprod package
-  node bin/modbus2mqtt -c "$TMPDIR"  -d "$TMPDIR" -s "$TMPDIR" >>"$logfile" 2>&1 &
+  echo "Starting modbus2mqtt in new tmpdir $TMPDIR"
+   # Use local workspace binary instead of distprod package
+  node bin/modbus2mqtt -c "$TMPDIR"  -d "$TMPDIR" -s "$TMPDIR" &
   MPID=$!
 fi
 wait $MPID

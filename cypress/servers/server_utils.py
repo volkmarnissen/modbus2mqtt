@@ -5,6 +5,7 @@ import subprocess
 import os
 import sys
 import tempfile
+from pathlib import Path
 import time
 from command_utils import executeSyncCommand
 defaultMimeTypes = "/etc/nginx/mime.types"
@@ -12,6 +13,9 @@ defaultLibDir = "/var/lib/nginx"
 MAX_PORT_RETRIES = 60
 PERMANENT_PORTS = [3002, 3006]
 RESTART_PORTS = [3001, 3003, 3004, 3005, 3007]
+modbus2mqtt_log_handles = []
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
 class SyncException(Exception):
     pass
@@ -102,33 +106,49 @@ def startRequiredApps(permanent: bool, restart: bool):
     print("::group::start Start required servers")
 
     # ensure logs directory exists
-    os.makedirs("cypress/servers/logs", exist_ok=True)
+    logdir = os.path.join(PROJECT_ROOT, "cypress", "servers", "logs")
+    os.makedirs(logdir, exist_ok=True)
 
     if not restart:
         checkRequiredApps()
-        with open("./cypress/servers/nginx.conf/nginx.conf", "r") as f:
+        with open(os.path.join(PROJECT_ROOT, "cypress", "servers", "nginx.conf", "nginx.conf"), "r") as f:
             nginxConf = f.read()
             nginxConf = re.sub(r"mime.types", nginxGetMimesTypes(), nginxConf)
         fb = tempfile.NamedTemporaryFile(delete_on_close=False)
         fb.write(nginxConf.encode("utf-8"))
         fb.close()
 
-    with open("stderr.out", "a") as outfile:
+    with open(os.path.join(PROJECT_ROOT, "stderr.out"), "a") as outfile:
         if not restart:
-            subprocess.Popen(["nohup", "nginx", "-c", fb.name, "-p", "."], stderr=outfile, stdout=outfile)
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbustcp"], stderr=outfile, stdout=outfile)
+            subprocess.Popen(["nohup", "nginx", "-c", fb.name, "-p", PROJECT_ROOT], stderr=outfile, stdout=outfile)
+            subprocess.Popen(["nohup", "sh", "-c", os.path.join(PROJECT_ROOT, "cypress", "servers", "modbustcp")], stderr=outfile, stdout=outfile)
         if not permanent or restart:
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/mosquitto"], stderr=outfile, stdout=outfile)
-            # use modbus2mqtt with different config files
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3005"], stderr=outfile, stdout=outfile)  # e2ePort
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3004 ingress"], stderr=outfile, stdout=outfile)
-            subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbus2mqtt 3007"], stderr=outfile, stdout=outfile)  # mqttNoAuthPort
+            subprocess.Popen(["nohup", "sh", "-c", os.path.join(PROJECT_ROOT, "cypress", "servers", "mosquitto")], stderr=outfile, stdout=outfile)
+            # use modbus2mqtt with different config files; log per port
+            def start_modbus2mqtt(http_port: int, ingress: bool = False):
+                logfile = os.path.join(logdir, f"modbus2mqtt_{http_port}.log")
+                Path(logfile).parent.mkdir(parents=True, exist_ok=True)
+                log_path = Path(logfile)
+                if log_path.is_symlink() or log_path.exists():
+                    log_path.unlink()
+                log_path.touch(exist_ok=True)
+                log_handle = open(logfile, "ab", buffering=0)
+                modbus2mqtt_log_handles.append(log_handle)
+                cmd = f"{os.path.join(PROJECT_ROOT, 'cypress', 'servers', 'modbus2mqtt')} {http_port}"
+                if ingress:
+                    cmd += " ingress"
+                subprocess.Popen(["nohup", "sh", "-c", cmd], stdout=log_handle, stderr=log_handle)
+
+            start_modbus2mqtt(3005)  # e2ePort
+            start_modbus2mqtt(3004, ingress=True)
+            start_modbus2mqtt(3007)  # mqttNoAuthPort
 
         # Create symlink for nginx error log into logs folder if present
         try:
-            if os.path.exists("nginx.error.log"):
-                target = os.path.abspath("nginx.error.log")
-                link_name = os.path.join("cypress", "servers", "logs", "nginx.error.log")
+            nginx_error_log = os.path.join(PROJECT_ROOT, "nginx.error.log")
+            if os.path.exists(nginx_error_log):
+                target = os.path.abspath(nginx_error_log)
+                link_name = os.path.join(PROJECT_ROOT, "cypress", "servers", "logs", "nginx.error.log")
                 if os.path.islink(link_name) or os.path.exists(link_name):
                     os.remove(link_name)
                 os.symlink(target, link_name)
@@ -153,8 +173,9 @@ def startRequiredApps(permanent: bool, restart: bool):
                     break
                 count += 1
             if count == MAX_PORT_RETRIES:
-                if os.path.exists("stderr.out"):
-                    with open("stderr.out") as f:
+                stderr_path = os.path.join(PROJECT_ROOT, "stderr.out")
+                if os.path.exists(stderr_path):
+                    with open(stderr_path) as f:
                         eprint(f.read())
                 error += f"Port {port} not opened!\n"
         if error != "":
@@ -163,4 +184,4 @@ def startRequiredApps(permanent: bool, restart: bool):
             eprint("All required ports are open.")
 
     print("::endgroup::")
-    unlinkIfExist("stderr.out")
+    unlinkIfExist(os.path.join(PROJECT_ROOT, "stderr.out"))
