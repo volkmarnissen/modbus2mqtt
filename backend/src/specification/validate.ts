@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { IbaseSpecification, Imessage, SPECIFICATION_VERSION } from '../shared/specification/index.js'
 import { LogLevelEnum, Logger } from './log.js'
 import { Command } from 'commander'
@@ -23,6 +24,11 @@ cli.option('-d, --data <data-dir>', 'set directory for persistent data (public s
 
 cli.option('-p, --pr_number <number>', 'pr_number of commit which triggered the pull request')
 cli.option('-o, --pr_owner <owner>', 'Creator of the pull request')
+const rawArgs = process.argv.slice(2)
+if (rawArgs.includes('--help') || rawArgs.includes('-h')) {
+  cli.outputHelp()
+  process.exit(1)
+}
 cli.parse(process.argv)
 let pr_number: number | undefined
 let pr_owner: string | undefined
@@ -104,8 +110,8 @@ function validate() {
           gh.addIssueComment(
             pr_number!,
             "**$${\\color{green}\\space ' + specnames + '\\space validated\\space successfully}$$**\nSpecifications '" +
-              specnames +
-              "' have no issues"
+            specnames +
+            "' have no issues"
           )
             .then(() => {
               log.log(LogLevelEnum.info, 'Issue Comment added')

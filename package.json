@@ -26,11 +26,7 @@
   "credits": "multiple choice by Studio 365 from <a href='https://thenounproject.com/browse/icons/term/multiple-choice/' target='_blank' title='multiple choice Icons'>Noun Project</a> (CC BY 3.0)",
   "scripts": {
     "ng": "npx ng",
-    "test": "npm run test",
-    "test:jest": "jest",
-    "test:vitest": "vitest -c vitest.config.ts",
-    "test:vitest:run": "vitest -c vitest.config.ts --run",
-    "migrate:shared": "node scripts/migrate-shared.js",
+    "test": "pushd backend && npm run test && popd && pushd frontend && npm run test && popd && pushd specification && npm run test && popd",
     "cypress": "TS_NODE_PROJECT=frontend/tsconfig.angular.json ;CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress",
     "cypress:open": "npm run cypress -- open",
     "cypress:component": "npm run cypress -- run --component",

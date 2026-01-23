@@ -30,28 +30,17 @@ echo "[spec-test] Built tarball: $TARBALL_PATH"
 
 echo "[spec-test] Creating temp project and installing tarball..."
 cd "$PKGDIR"
-pwd 
-ls 
-npm init -y 
-ls
-npm install "$tarball" 
+npm init -y 2>/dev/null >/dev/null
+npm install "$tarball" 2>/dev/null >/dev/null
 
 echo "[spec-test] Verifying validate.js exists in installed package ..."
 PKG_NODE_DIR="$PKGDIR/node_modules/@modbus2mqtt/specification"
-VALIDATE_JS="$PKG_NODE_DIR/dist/specification/validate.js"
-if [ -f "$VALIDATE_JS" ]; then
-  echo "OK: Found $VALIDATE_JS"
-  echo "[spec-test] Success. Cleaning up."
-  rm -rf "$PKGDIR"
-  exit 0
-else
-  echo "FAIL: Missing $VALIDATE_JS" >&2
+( (npx m2m-validate --help 2>&1 || true) | grep -q "Usage" ) || {
+  echo "FAIL: 'npx m2m-validate' command failed" >&2
   echo "Installed package contents:" >&2
   cd "$PKG_NODE_DIR"
   find "dist" -type f >&2
-  rm -rf "$PKGDIR"
   exit 1
-fi
-
-rm -rf "$TMP_DIR"
+}
+echo "[spec-test] OK: 'npx m2m-validate' command succeeded"
 exit 0

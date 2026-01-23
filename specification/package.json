@@ -10,6 +10,9 @@
   "bugs": "https://github.com/modbus2mqtt/server/issues",
   "type": "module",
   "main": "./dist/specification/validate.js",
+  "bin": {
+    "m2m-validate": "./bin/m2m-validate.js"
+  },
   "exports": {
     ".": "./dist/specification/validate.js",
     "./shared/specification": "./dist/shared/specification/index.js"
@@ -38,6 +41,7 @@
   },
   "files": [
     "dist",
-    "shared/specification/index.js"
+    "shared/specification/index.js",
+    "bin/m2m-validate.js"
   ]
 }
