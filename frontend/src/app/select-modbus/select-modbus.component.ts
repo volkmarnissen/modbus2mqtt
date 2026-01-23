@@ -115,7 +115,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   readBussesFromServer(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.bussesObservable.subscribe((results) => {
-        ;(results as (IBus | null)[]).push(null)
+        ; (results as (IBus | null)[]).push(null)
         this.busses.data = results
         if (this.bussesFormArray != undefined) {
           this.bussesFormArray.clear()
@@ -213,9 +213,9 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
           null != (baudrate = fg.get(['rtu', 'selectBaudRate']) as FormControl) &&
           null != (serial = fg.get(['rtu', 'serial']) as FormControl)
         ) {
-          ;(connectionData as IRTUConnection).baudrate = baudrate.value
-          ;(connectionData as IRTUConnection).serialport = serial.value
-          ;(connectionData as IRTUConnection).timeout = timeout.value
+          ; (connectionData as IRTUConnection).baudrate = baudrate.value
+            ; (connectionData as IRTUConnection).serialport = serial.value
+            ; (connectionData as IRTUConnection).timeout = timeout.value
         }
         // Optional BridgePort
         const tcpBridgePort = fg.get(['rtu', 'tcpBridgePort']) as FormControl
@@ -239,9 +239,9 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
           undefined != (timeout = fg.get(['tcp', 'timeout']) as FormControl) &&
           undefined != (port = fg.get(['tcp', 'port']) as FormControl)
         ) {
-          ;(connectionData as ITCPConnection).host = host.value
-          ;(connectionData as ITCPConnection).port = port.value
-          ;(connectionData as ITCPConnection).timeout = timeout.value
+          ; (connectionData as ITCPConnection).host = host.value
+            ; (connectionData as ITCPConnection).port = port.value
+            ; (connectionData as ITCPConnection).timeout = timeout.value
         }
         delete (connectionData as any).serialport
         delete (connectionData as any).baudrate
@@ -257,7 +257,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
     // Remove serialport names, which are already configured
     const devices = structuredClone(this.serialDevices)
     let didx
-    for (didx = 0; didx < devices.length; ) {
+    for (didx = 0; didx < devices.length;) {
       const sd = devices[didx]
       const idx = this.busses.data.findIndex(
         (b) =>

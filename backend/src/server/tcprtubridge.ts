@@ -75,7 +75,7 @@ function queueOneRegister<T>(
 
 export class ModbusTcpRtuBridge {
   serverTCP: ServerTCP | undefined = undefined
-  constructor(private queue: ModbusRTUQueue) {}
+  constructor(private queue: ModbusRTUQueue) { }
   private static resultMapperNumber(inp: number): number {
     return inp
   }
