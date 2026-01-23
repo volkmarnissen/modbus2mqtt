@@ -64,6 +64,7 @@ jobs:
           name: e2e-logs
           path: |
             cypress/servers/logs/**
+          retention-days: 7
           if-no-files-found: warn
 
       - name: Cypress component tests (frontend)

@@ -135,6 +135,7 @@ jobs:
         with:
           name: apks-${{ steps.platformattributes.outputs.arch }}-${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}
           path: alpine/repo/upload/*.apk
+          retention-days: 14
           if-no-files-found: error
 
       - name: Upload packager.rsa.pub as separate artifact
@@ -143,6 +144,7 @@ jobs:
         with:
           name: packager-rsa-pub-${{ needs.build-release-artifacts-and-images-on-dispatch.outputs.resolved_version }}
           path: alpine/repo/packager.rsa.pub
+          retention-days: 30
           if-no-files-found: error
 
   build_and_push_docker:

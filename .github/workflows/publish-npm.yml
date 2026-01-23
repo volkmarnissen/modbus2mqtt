@@ -1,4 +1,4 @@
-name: Publish to npm and Build Assets
+name: On dispatch: Publish to npm and build assets
 
 on:
   workflow_dispatch:
@@ -19,6 +19,7 @@ on:
         default: false
 jobs:
   npm_publish:
+    name: On dispatch: Publish to npm and build assets
     environment: release
     runs-on: ubuntu-latest
     outputs:
@@ -28,10 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node (from .nvmrc)
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
@@ -87,7 +88,7 @@ jobs:
     needs: npm_publish
     permissions:
       packages: write
-    uses: ./.github/workflows/release-assets.yml
+    uses: ./.github/workflows/build-release-artifacts-and-images-on-dispatch.yml
     with:
       version: ${{ needs.npm_publish.outputs.version }}
 # Notes:
