@@ -2,15 +2,15 @@
 <form [formGroup]="configureModbusFormGroup" novalidate>
   <ng-container formArrayName="bussesFormArray">
     <div class="flexrows">
-      <ng-container *ngFor="let bus of busses.data; let i = index">
+      @for (bus of busses.data; track $index; let i = $index) {
         <mat-card [formGroup]="getBusFormGroup(i)">
           <mat-card-header
             ><mat-card-title matTooltip="List or Add Slaves" (click)="listSlaves(i)" class="clickable">{{
               getConnectionTitle(i)
             }}</mat-card-title>
             <div class="card-header-buttons">
-              <ng-container *ngIf="bus != null">
-                <ng-container *ngIf="needsSaving(i)">
+              @if (bus != null) {
+                @if (needsSaving(i)) {
                   <button
                     mat-icon-button
                     class="material-icons app-toolbar-menu save-button"
@@ -31,8 +31,8 @@
                   >
                     <mat-icon>cancel</mat-icon>
                   </button>
-                </ng-container>
-                <ng-container *ngIf="!needsSaving(i)">
+                }
+                @if (!needsSaving(i)) {
                   <button
                     mat-icon-button
                     type="button"
@@ -55,9 +55,9 @@
                   >
                     <mat-icon> list</mat-icon>
                   </button>
-                </ng-container>
-              </ng-container>
-              <ng-container *ngIf="bus == null">
+                }
+              }
+              @if (bus == null) {
                 <button
                   mat-icon-button
                   class="material-icons app-toolbar-menu cancel-button"
@@ -65,11 +65,10 @@
                   color="primary"
                   (click)="saveBus(i)"
                   [disabled]="!needsSaving(i) || !addEnabled(i)"
-                  *ngIf="bus == null"
                 >
                   <mat-icon>add_box</mat-icon>
                 </button>
-              </ng-container>
+              }
             </div>
           </mat-card-header>
           <mat-card-content>
@@ -77,26 +76,29 @@
               <mat-tab label="RTU" formGroupName="rtu">
                 <div class="flexcolumns">
                   <div>
-                    <ng-container *ngIf="getSerialDevices().length == 0; else supervisor">
+                    @if (getSerialDevices().length == 0) {
                       <mat-form-field>
                         <mat-label>Modbus Serial Device</mat-label>
                         <input #serial matInput formControlName="serial" />
                       </mat-form-field>
-                    </ng-container>
-                    <ng-template #supervisor>
+                    } @else {
                       <mat-form-field>
                         <mat-label>Serial Port</mat-label>
                         <mat-select matInput formControlName="serial">
-                          <mat-option *ngFor="let device of getSerialDevices(bus)" [value]="device">{{ device }}</mat-option>
+                          @for (device of getSerialDevices(bus); track $index) {
+                            <mat-option [value]="device">{{ device }}</mat-option>
+                          }
                         </mat-select>
                       </mat-form-field>
-                    </ng-template>
+                    }
                   </div>
                   <div>
                     <mat-form-field>
                       <mat-label>Baud Rate</mat-label>
                       <mat-select matInput formControlName="selectBaudRate">
-                        <mat-option *ngFor="let baudRate of baudRates" [value]="baudRate">{{ baudRate }}</mat-option>
+                        @for (baudRate of baudRates; track $index) {
+                          <mat-option [value]="baudRate">{{ baudRate }}</mat-option>
+                        }
                       </mat-select>
                     </mat-form-field>
                   </div>
@@ -144,7 +146,8 @@
             </mat-tab-group>
           </mat-card-content>
         </mat-card>
-      </ng-container>
-    </div> </ng-container
-  ><!-- FormArray -->
+      }
+    </div>
+  </ng-container>
+  <!-- FormArray -->
 </form>

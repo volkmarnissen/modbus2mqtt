@@ -1,4 +1,5 @@
-<mat-expansion-panel *ngIf="mqttdiscoverylanguage != 'en'">
+@if (mqttdiscoverylanguage != 'en') {
+  <mat-expansion-panel>
   <mat-expansion-panel-header>
     <mat-panel-title>
       <p [ngClass]="{ errorText: !translationFormGroup.valid }">Translation({{ getLanguageName(translationLanguage) }})</p>
@@ -10,7 +11,7 @@
       Switch Languages: {{ getLanguageName(originalLanguage) + '->' + getLanguageName(translationLanguage) }}</mat-slide-toggle
     >
     <form [formGroup]="translationFormGroup">
-      <ng-container *ngIf="!translationFormGroup.valid">
+      @if (!translationFormGroup.valid) {
         <button mat-button (click)="googleTranslate()" type="button" [disabled]="">
           Google Translate{{
             supportsGoogleTranslate
@@ -19,16 +20,18 @@
           URL'
           }}
         </button>
-        <mat-form-field *ngIf="!supportsGoogleTranslate">
-          <textarea
-            matInput
-            placeholder="Paste Translated Texts here "
-            cdkTextareaAutosize
-            cdkAutosizeMinRows="3"
-            (input)="translatedValuesPasted($event)"
-          ></textarea>
-        </mat-form-field>
-      </ng-container>
+        @if (!supportsGoogleTranslate) {
+          <mat-form-field>
+            <textarea
+              matInput
+              placeholder="Paste Translated Texts here "
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="3"
+              (input)="translatedValuesPasted($event)"
+            ></textarea>
+          </mat-form-field>
+        }
+      }
       <div class="full-width flexcolumns">
         <h2>Specification</h2>
         <mat-form-field class="width300pt">
@@ -37,20 +40,21 @@
         </mat-form-field>
         <h2>Entities</h2>
         <div class="scrollable flexcolumns">
-          <ng-container *ngFor="let key of getAllKeys()">
+          @for (key of getAllKeys(); track $index) {
             <mat-form-field class="width300pt">
               <mat-label>{{ getOriginalText(key) }}({{ getLanguageName(translationLanguage) }})</mat-label>
               <input matInput [formControlName]="key" (change)="changeText(key)" />
             </mat-form-field>
-            <ng-container *ngFor="let optionKey of getOptionKeys(key)">
+            @for (optionKey of getOptionKeys(key); track $index) {
               <mat-form-field class="width250pt margin">
                 <mat-label>{{ getOriginalText(optionKey) }}</mat-label>
                 <input matInput [formControlName]="optionKey" (change)="changeText(optionKey)" />
               </mat-form-field>
-            </ng-container>
-          </ng-container>
+            }
+          }
         </div>
       </div>
     </form>
   </div>
-</mat-expansion-panel>
+  </mat-expansion-panel>
+}

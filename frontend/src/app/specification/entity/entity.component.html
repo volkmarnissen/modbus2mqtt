@@ -3,8 +3,8 @@
     <mat-card-title>
       <div>
         <div class="card-header-buttons">
-          <ng-container *ngIf="this.entity.id != -1">
-            <ng-container *ngIf="!this.allFormGroups.pristine">
+          @if (this.entity.id != -1) {
+            @if (!this.allFormGroups.pristine) {
               <button
                 mat-icon-button
                 class="material-icons app-toolbar-menu save-button"
@@ -14,7 +14,7 @@
               >
                 <mat-icon>undo</mat-icon>
               </button>
-            </ng-container>
+            }
             <button
               type="button"
               mat-icon-button
@@ -35,8 +35,8 @@
             >
               <mat-icon>delete</mat-icon>
             </button>
-          </ng-container>
-          <ng-container *ngIf="this.entity.id == -1">
+          }
+          @if (this.entity.id == -1) {
             <button
               type="button"
               mat-icon-button
@@ -48,11 +48,11 @@
             >
               <mat-icon>add_circle</mat-icon>
             </button>
-          </ng-container>
+          }
         </div>
       </div>
       <span [ngClass]="{ errorText: isCurrentMessage() }"
-        >{{ getVariableTypeOrEntityNameLabel() }}<br *ngIf="entity.name == null" />{{ getEntityLabel() }}</span
+        >{{ getVariableTypeOrEntityNameLabel() }}@if (entity.name == null) { <br /> }{{ getEntityLabel() }}</span
       >
       <mat-icon [color]="entity.identified == 1 ? 'primary' : entity.identified == -1 ? '' : 'warn'" class="icon-display">
         {{
@@ -95,9 +95,9 @@
               [errorStateMatcher]="errorStateMatcher"
               (change)="onEntityNameValueChange()"
             />
-            <mat-error *ngIf="entityFormGroup!.get('name')?.hasError('required') != null">
-              Required! "Set Value" is empty
-            </mat-error>
+            @if (entityFormGroup!.get('name')?.hasError('required') != null) {
+              <mat-error> Required! "Set Value" is empty </mat-error>
+            }
           </mat-form-field>
           <div class="flexrows">
             <mat-form-field class="smallfield">
@@ -113,10 +113,12 @@
                 (change)="onEntityNameValueChange()"
               />
 
-              <mat-error *ngIf="entityFormGroup!.get('mqttname')?.hasError('unique') != null">
-                Must be unique within table
-              </mat-error>
-              <mat-error *ngIf="entityFormGroup!.get('mqttname')?.hasError('required') != null"> Required! </mat-error>
+              @if (entityFormGroup!.get('mqttname')?.hasError('unique') != null) {
+                <mat-error> Must be unique within table </mat-error>
+              }
+              @if (entityFormGroup!.get('mqttname')?.hasError('required') != null) {
+                <mat-error> Required! </mat-error>
+              }
             </mat-form-field>
             <mat-form-field class="smallfield">
               <mat-label>Icon</mat-label>
@@ -138,15 +140,18 @@
                 (change)="onModbusAddressChange()"
                 (keypress)="onModbusAddressKeyPress($event)"
               />
-              <mat-error *ngIf="entityFormGroup.get('modbusAddress')!.hasError('required')"> This field is required </mat-error>
-              <mat-error
-                *ngIf="
-                  entityFormGroup.get('modbusAddress')!.hasError('min') || entityFormGroup.get('modbusAddress')!.hasError('max')
-                "
-              >
-                Range is 1-65536
-              </mat-error>
-              <mat-error *ngIf="entityFormGroup.get('modbusAddress')!.hasError('pattern')"> dec or hex </mat-error>
+              @if (entityFormGroup.get('modbusAddress')!.hasError('required')) {
+                <mat-error> This field is required </mat-error>
+              }
+              @if (
+                entityFormGroup.get('modbusAddress')!.hasError('min') ||
+                  entityFormGroup.get('modbusAddress')!.hasError('max')
+              ) {
+                <mat-error> Range is 1-65536 </mat-error>
+              }
+              @if (entityFormGroup.get('modbusAddress')!.hasError('pattern')) {
+                <mat-error> dec or hex </mat-error>
+              }
             </mat-form-field>
             <mat-form-field class="smallfield">
               <mat-label>Register</mat-label>
@@ -158,19 +163,21 @@
                 [compareWith]="compareFunctionCodes"
                 (selectionChange)="onModbusAddressChange()"
               >
-                <mat-option *ngFor="let fc of registerTypes" [value]="fc">
-                  {{ fc.name }}
-                </mat-option>
+                @for (fc of registerTypes; track $index) {
+                  <mat-option [value]="fc">{{ fc.name }}</mat-option>
+                }
               </mat-select>
-              <mat-error *ngIf="entityFormGroup.get('registerType')!.hasError('required')"> This field is required </mat-error>
+              @if (entityFormGroup.get('registerType')!.hasError('required')) {
+                <mat-error> This field is required </mat-error>
+              }
             </mat-form-field>
           </div>
           <mat-form-field class="smallfield">
             <mat-label>Converter</mat-label>
             <mat-select matInput formControlName="converter" (selectionChange)="onModbusAddressChange()">
-              <mat-option *ngFor="let c of converters | async" [value]="c">
-                {{ c }}
-              </mat-option>
+              @for (c of converters | async; track $index) {
+                <mat-option [value]="c">{{ c }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -202,9 +209,9 @@
                             Set to diagnostic for an entity exposing some configuration parameter or diagnostics of a device but does 
                             not allow changing it, for example, a sensor showing RSSI or MAC address."
             >
-              <mat-option *ngFor="let c of entityCategories" [value]="c">
-                {{ c }}
-              </mat-option>
+              @for (c of entityCategories; track $index) {
+                <mat-option [value]="c">{{ c }}</mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -217,158 +224,168 @@
       </form>
     </mat-expansion-panel>
 
-    <mat-expansion-panel *ngIf="isConverterSelected() && entity && getParameterTypeFromConverterFormControl() == 'Inumber'">
-      <mat-expansion-panel-header>
-        <mat-panel-title [matTooltip]="numberPropertiesFormGroup.valid ? '' : 'This panel has errors'">
-          <p [ngClass]="{ errorText: !numberPropertiesFormGroup.valid }">Number Converter Properties</p>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <form [formGroup]="numberPropertiesFormGroup">
-        <div class="flexcols">
-          <div class="flexrows">
-            <mat-form-field class="smallfield width150pt">
-              <mat-label>Device Class</mat-label>
-              <mat-select
-                matInput
-                formControlName="deviceClass"
-                (selectionChange)="onConverterValueChange()"
-                [compareWith]="compareName"
-              >
-                <mat-option *ngFor="let c of getDeviceClasses()" [value]="c">
-                  {{ c.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field class="smallfield width100pt">
-              <mat-label>UOM</mat-label>
+    @if (isConverterSelected() && entity && getParameterTypeFromConverterFormControl() == 'Inumber') {
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title [matTooltip]="numberPropertiesFormGroup.valid ? '' : 'This panel has errors'">
+            <p [ngClass]="{ errorText: !numberPropertiesFormGroup.valid }">Number Converter Properties</p>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <form [formGroup]="numberPropertiesFormGroup">
+          <div class="flexcols">
+            <div class="flexrows">
+              <mat-form-field class="smallfield width150pt">
+                <mat-label>Device Class</mat-label>
+                <mat-select
+                  matInput
+                  formControlName="deviceClass"
+                  (selectionChange)="onConverterValueChange()"
+                  [compareWith]="compareName"
+                >
+                  @for (c of getDeviceClasses(); track $index) {
+                    <mat-option [value]="c">{{ c.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="smallfield width100pt">
+                <mat-label>UOM</mat-label>
 
-              <input *ngIf="!deviceClassHasUoms()" matInput type="text" formControlName="uom" (change)="form2Entity()" />
-              <mat-select *ngIf="deviceClassHasUoms()" matInput formControlName="uom" (selectionChange)="onConverterValueChange()">
-                <mat-option *ngFor="let c of numberPropertiesFormGroup.get('deviceClass')!.value.uom" [value]="c">
-                  {{ c }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field class="smallfield width150pt">
-              <mat-label>State Class</mat-label>
-              <mat-select
-                matInput
-                formControlName="stateClass"
-                [errorStateMatcher]="errorStateMatcher"
-                (selectionChange)="onConverterValueChange()"
-                [compareWith]="compareNumber"
-              >
-                <mat-option [value]="0">None</mat-option>
-                <mat-option [value]="1">Measurement</mat-option>
-                <mat-option [value]="2">Total</mat-option>
-                <mat-option [value]="3">Total increasing</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="flexrows">
-            <mat-form-field class="smallfield width100pt">
-              <mat-label>Multiplier</mat-label>
-              <input #propMultiplier matInput type="number" formControlName="multiplier" (change)="onConverterValueChange()" />
-              <mat-error *ngIf="numberPropertiesFormGroup.get('multiplier')!.hasError('required')">
-                This field is required
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field class="smallfield width80pt">
-              <mat-label>Offset</mat-label>
-              <input #propOffset matInput type="number" formControlName="offset" (change)="onConverterValueChange()" />
-              <mat-error *ngIf="numberPropertiesFormGroup.get('offset')!.hasError('required')"> This field is required </mat-error>
-            </mat-form-field>
-            <mat-form-field class="smallfield width130pt">
-              <mat-label>Number Format</mat-label>
-              <mat-select
-                matInput
-                formControlName="numberFormat"
-                [errorStateMatcher]="errorStateMatcher"
-                (selectionChange)="onConverterValueChange()"
-                [compareWith]="compareNumber"
-              >
-                <mat-option [value]="0">Unsigned Int 16</mat-option>
-                <mat-option [value]="2">Signed Int 16</mat-option>
-                <mat-option [value]="3">Unsigned Int 32</mat-option>
-                <mat-option [value]="4">Signed Int 32</mat-option>
-                <mat-option [value]="1">Float 32</mat-option>
-              </mat-select>
-              <mat-error *ngIf="numberPropertiesFormGroup.get('numberFormat')!.hasError('required')">
-                This field is required
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field class="smallfield width100pt">
-              <mat-label>Decimals</mat-label>
-              <mat-select
-                matInput
-                formControlName="decimals"
-                (selectionChange)="onConverterValueChange()"
-                [compareWith]="compareNumber"
-              >
-                <mat-option [value]="-1"></mat-option>
-                <mat-option [value]="0">0</mat-option>
-                <mat-option [value]="1">1</mat-option>
-                <mat-option [value]="2">2</mat-option>
-                <mat-option [value]="3">3</mat-option>
-                <mat-option [value]="4">4</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <h3 class="smallfield width150pt">Identification{{ entity.readonly ? '' : '/step' }}</h3>
-          <div class="flexrows">
-            <mat-form-field class="smallfield width100pt">
-              <mat-label>Min</mat-label>
-              <input
-                matInput
-                type="number"
-                matTooltip="Optional: The entity is identified if the mqttvalue is between min and max."
-                formControlName="min"
-                (change)="onConverterValueChange()"
-              />
-            </mat-form-field>
-            <mat-form-field appearance="fill" class="smallfield width100pt">
-              <mat-label>Max</mat-label>
-              <input
-                matInput
-                type="number"
-                matTooltip="Optional: The entity is identified if the mqttvalue is between min and max."
-                formControlName="max"
-                (change)="onConverterValueChange()"
-              />
-            </mat-form-field>
+                @if (!deviceClassHasUoms()) {
+                  <input matInput type="text" formControlName="uom" (change)="form2Entity()" />
+                } @else {
+                  <mat-select matInput formControlName="uom" (selectionChange)="onConverterValueChange()">
+                    @for (c of numberPropertiesFormGroup.get('deviceClass')!.value.uom; track $index) {
+                      <mat-option [value]="c">{{ c }}</mat-option>
+                    }
+                  </mat-select>
+                }
+              </mat-form-field>
+              <mat-form-field class="smallfield width150pt">
+                <mat-label>State Class</mat-label>
+                <mat-select
+                  matInput
+                  formControlName="stateClass"
+                  [errorStateMatcher]="errorStateMatcher"
+                  (selectionChange)="onConverterValueChange()"
+                  [compareWith]="compareNumber"
+                >
+                  <mat-option [value]="0">None</mat-option>
+                  <mat-option [value]="1">Measurement</mat-option>
+                  <mat-option [value]="2">Total</mat-option>
+                  <mat-option [value]="3">Total increasing</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="flexrows">
+              <mat-form-field class="smallfield width100pt">
+                <mat-label>Multiplier</mat-label>
+                <input #propMultiplier matInput type="number" formControlName="multiplier" (change)="onConverterValueChange()" />
+                @if (numberPropertiesFormGroup.get('multiplier')!.hasError('required')) {
+                  <mat-error> This field is required </mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field class="smallfield width80pt">
+                <mat-label>Offset</mat-label>
+                <input #propOffset matInput type="number" formControlName="offset" (change)="onConverterValueChange()" />
+                @if (numberPropertiesFormGroup.get('offset')!.hasError('required')) {
+                  <mat-error> This field is required </mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field class="smallfield width130pt">
+                <mat-label>Number Format</mat-label>
+                <mat-select
+                  matInput
+                  formControlName="numberFormat"
+                  [errorStateMatcher]="errorStateMatcher"
+                  (selectionChange)="onConverterValueChange()"
+                  [compareWith]="compareNumber"
+                >
+                  <mat-option [value]="0">Unsigned Int 16</mat-option>
+                  <mat-option [value]="2">Signed Int 16</mat-option>
+                  <mat-option [value]="3">Unsigned Int 32</mat-option>
+                  <mat-option [value]="4">Signed Int 32</mat-option>
+                  <mat-option [value]="1">Float 32</mat-option>
+                </mat-select>
+                @if (numberPropertiesFormGroup.get('numberFormat')!.hasError('required')) {
+                  <mat-error> This field is required </mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field class="smallfield width100pt">
+                <mat-label>Decimals</mat-label>
+                <mat-select
+                  matInput
+                  formControlName="decimals"
+                  (selectionChange)="onConverterValueChange()"
+                  [compareWith]="compareNumber"
+                >
+                  <mat-option [value]="-1"></mat-option>
+                  <mat-option [value]="0">0</mat-option>
+                  <mat-option [value]="1">1</mat-option>
+                  <mat-option [value]="2">2</mat-option>
+                  <mat-option [value]="3">3</mat-option>
+                  <mat-option [value]="4">4</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <h3 class="smallfield width150pt">Identification{{ entity.readonly ? '' : '/step' }}</h3>
+            <div class="flexrows">
+              <mat-form-field class="smallfield width100pt">
+                <mat-label>Min</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  matTooltip="Optional: The entity is identified if the mqttvalue is between min and max."
+                  formControlName="min"
+                  (change)="onConverterValueChange()"
+                />
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="smallfield width100pt">
+                <mat-label>Max</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  matTooltip="Optional: The entity is identified if the mqttvalue is between min and max."
+                  formControlName="max"
+                  (change)="onConverterValueChange()"
+                />
+              </mat-form-field>
 
-            <mat-form-field appearance="fill" class="smallfield width100pt" *ngIf="!entity.readonly">
-              <mat-label>Step</mat-label>
-              <input
-                matInput
-                type="number"
-                matTooltip="Optional: increase/decrease step of input field for Discovery."
-                formControlName="step"
+              @if (!entity.readonly) {
+                <mat-form-field appearance="fill" class="smallfield width100pt">
+                  <mat-label>Step</mat-label>
+                  <input
+                    matInput
+                    type="number"
+                    matTooltip="Optional: increase/decrease step of input field for Discovery."
+                    formControlName="step"
+                    (change)="onConverterValueChange()"
+                  />
+                </mat-form-field>
+              }
+            </div>
+            <h3 class="smallfield width150pt">Byte/Word Order</h3>
+            <div class="flexrows">
+              <mat-slide-toggle
+                class="width50 toggleField"
+                formControlName="swapWords"
+                matTooltip="Swap Words in 32 Bit Values"
                 (change)="onConverterValueChange()"
-              />
-            </mat-form-field>
+                >Swap Word</mat-slide-toggle
+              >
+              <mat-slide-toggle
+                class="width50 toggleField"
+                formControlName="swapBytes"
+                matTooltip="Swap Bytes"
+                (change)="onConverterValueChange()"
+                >Swap Bytes</mat-slide-toggle
+              >
+            </div>
           </div>
-          <h3 class="smallfield width150pt">Byte/Word Order</h3>
-          <div class="flexrows">
-            <mat-slide-toggle
-              class="width50 toggleField"
-              formControlName="swapWords"
-              matTooltip="Swap Words in 32 Bit Values"
-              (change)="onConverterValueChange()"
-              >Swap Word</mat-slide-toggle
-            >
-            <mat-slide-toggle
-              class="width50 toggleField"
-              formControlName="swapBytes"
-              matTooltip="Swap Bytes"
-              (change)="onConverterValueChange()"
-              >Swap Bytes</mat-slide-toggle
-            >
-          </div>
-        </div>
-      </form>
-    </mat-expansion-panel>
-    <mat-expansion-panel *ngIf="isConverterSelected() && entity && getParameterTypeFromConverterFormControl() == 'Itext'">
+        </form>
+      </mat-expansion-panel>
+    }
+    @if (isConverterSelected() && entity && getParameterTypeFromConverterFormControl() == 'Itext') {
+      <mat-expansion-panel>
       <mat-expansion-panel-header [matTooltip]="numberPropertiesFormGroup.valid ? '' : 'This panel has errors'">
         <mat-panel-title>
           <p [ngClass]="{ errorText: !numberPropertiesFormGroup.valid }">Text Converter Properties</p>
@@ -378,9 +395,9 @@
         <mat-form-field class="smallfield">
           <mat-label>max. Num Chars.</mat-label>
           <input #propNumChar matInput type="number" formControlName="stringlength" (change)="onConverterValueChange()" />
-          <mat-error *ngIf="stringPropertiesFormGroup.get('stringlength')!.hasError('required')">
-            This field is required
-          </mat-error>
+          @if (stringPropertiesFormGroup.get('stringlength')!.hasError('required')) {
+            <mat-error> This field is required </mat-error>
+          }
         </mat-form-field>
         <mat-form-field class="smallfield">
           <mat-label>Expression for identification</mat-label>
@@ -404,30 +421,35 @@
         </div>
       </form>
     </mat-expansion-panel>
-    <mat-expansion-panel *ngIf="isConverterSelected() && entity && getParameterTypeFromConverterFormControl() == 'Iselect'">
+    }
+    @if (isConverterSelected() && entity && getParameterTypeFromConverterFormControl() == 'Iselect') {
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title> Select Converter Properties </mat-panel-title>
       </mat-expansion-panel-header>
 
       <form [formGroup]="selectPropertiesFormGroup">
         <div cdkDropList (cdkDropListDropped)="dropOptions($event)" class="flexcols">
-          <span cdkDrag *ngFor="let option of getCurrentOptions() ? getCurrentOptions() : []">
-            <div class="inline width150pt">{{ option.key }}</div>
-            <div class="inline width200pt">{{ option.name }}</div>
-            <div class="inline">
-              <button
-                type="button"
-                mat-icon-button
-                class="material-icons app-toolbar-menu delete-button"
-                matTooltip="Delete"
-                color="warn"
-                (click)="deleteOption(option)"
-                *ngIf="entity"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          </span>
+          @for (option of getCurrentOptions() ? getCurrentOptions() : []; track $index) {
+            <span cdkDrag>
+              <div class="inline width150pt">{{ option.key }}</div>
+              <div class="inline width200pt">{{ option.name }}</div>
+              <div class="inline">
+                @if (entity) {
+                  <button
+                    type="button"
+                    mat-icon-button
+                    class="material-icons app-toolbar-menu delete-button"
+                    matTooltip="Delete"
+                    color="warn"
+                    (click)="deleteOption(option)"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </div>
+            </span>
+          }
         </div>
         <div class="flexrows">
           <mat-form-field class="width100pt smallfield">
@@ -439,21 +461,21 @@
               formControlName="optionModbus"
               (keyup.enter)="addOption()"
             />
-            <mat-error *ngIf="selectPropertiesFormGroup!.get('optionModbus')!.hasError('required')">
-              This field is required
-            </mat-error>
-            <mat-error *ngIf="selectPropertiesFormGroup!.get('optionModbus')!.hasError('unique')">
-              The value must be unique in the table
-            </mat-error>
+            @if (selectPropertiesFormGroup!.get('optionModbus')!.hasError('required')) {
+              <mat-error> This field is required </mat-error>
+            }
+            @if (selectPropertiesFormGroup!.get('optionModbus')!.hasError('unique')) {
+              <mat-error> The value must be unique in the table </mat-error>
+            }
           </mat-form-field>
           <mat-form-field class="smallfield">
             <input #propOptionMqtt matInput class="center" type="text" formControlName="optionMqtt" (keyup.enter)="addOption()" />
-            <mat-error *ngIf="selectPropertiesFormGroup!.get('optionMqtt')!.hasError('required')">
-              This field is required
-            </mat-error>
-            <mat-error *ngIf="selectPropertiesFormGroup!.get('optionMqtt')!.hasError('unique')">
-              The value must be unique in the table
-            </mat-error>
+            @if (selectPropertiesFormGroup!.get('optionMqtt')!.hasError('required')) {
+              <mat-error> This field is required </mat-error>
+            }
+            @if (selectPropertiesFormGroup!.get('optionMqtt')!.hasError('unique')) {
+              <mat-error> The value must be unique in the table </mat-error>
+            }
           </mat-form-field>
           <button
             type="button"
@@ -467,17 +489,21 @@
             <mat-icon>add_box</mat-icon>
           </button>
         </div>
-        <mat-form-field class="smallfield" *ngIf="getShowExpertOptions()">
-          <mat-label>Device Class</mat-label>
-          <mat-select matInput formControlName="deviceClass">
-            <mat-option *ngFor="let c of getDeviceClasses()" [value]="c">
-              {{ c.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        @if (getShowExpertOptions()) {
+          <mat-form-field class="smallfield">
+            <mat-label>Device Class</mat-label>
+            <mat-select matInput formControlName="deviceClass">
+              @for (c of getDeviceClasses(); track $index) {
+                <mat-option [value]="c">{{ c.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
       </form>
     </mat-expansion-panel>
-    <mat-expansion-panel *ngIf="!['binary_sensor', 'button'].includes(entity.converter)">
+    }
+    @if (!['binary_sensor', 'button'].includes(entity.converter)) {
+    <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title [matTooltip]="variableFormGroup.valid ? '' : 'This panel has errors'">
           <p [ngClass]="{ errorText: !variableFormGroup.valid }">
@@ -496,9 +522,9 @@
               [compareWith]="compareNumber"
               (selectionChange)="onEntityNameValueChange()"
             >
-              <mat-option *ngFor="let c of variableTypes" [value]="c.id">
-                {{ c.name }}
-              </mat-option>
+              @for (c of variableTypes; track $index) {
+                <mat-option [value]="c.id">{{ c.name }}</mat-option>
+              }
               <mat-option [value]="0"></mat-option>
               <mat-option [value]="5">Serial Number</mat-option>
               <mat-option [value]="6">Software Version</mat-option>
@@ -518,16 +544,17 @@
               [errorStateMatcher]="errorStateMatcher"
               (selectionChange)="onVariableEntityValueChange()"
             >
-              <mat-option *ngFor="let c of xxx" [value]="c.id">
-                {{ c.name ? c.name : c.id }}
-              </mat-option>
+              @for (c of xxx; track $index) {
+                <mat-option [value]="c.id">{{ c.name ? c.name : c.id }}</mat-option>
+              }
             </mat-select>
-            <mat-error *ngIf="entityFormGroup!.get('variableEntity')?.hasError('unique') != null">
-              Referenced Entity and Set Value must be unique
-            </mat-error>
+            @if (entityFormGroup!.get('variableEntity')?.hasError('unique') != null) {
+              <mat-error> Referenced Entity and Set Value must be unique </mat-error>
+            }
           </mat-form-field>
         </div>
       </form>
     </mat-expansion-panel>
+    }
   </mat-card-content>
 </mat-card>
