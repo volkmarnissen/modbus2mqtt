@@ -10,10 +10,10 @@ This document outlines the planned refactorings, their proposed order to minimiz
 
 ## Proposed Order (Low-risk → Higher-impact)
 
-1. SPEC packaging (immediate): Extract `src/specification` into a delivery npm package with minimal dependencies; adapt CI.
-2. Bus TCP bridge change (immediate): Replace enable-flag with explicit port; keep backward compatibility.
+1. SPEC packaging (immediate): Extract `src/specification` into a delivery npm package with minimal dependencies; adapt CI.-> Done
+2. Bus TCP bridge change (immediate): Replace enable-flag with explicit port; keep backward compatibility. -> Done
 3. Replace Alpine build: Use direct Dockerfile build and publish; introduce a new npm package if required by delivery flow.
-4. Directory structure split: Separate `backend`, `frontend`, and `packaging/delivery (root)` clearly.
+4. Directory structure split: Separate `backend`, `frontend`, and `packaging/delivery (root)` clearly.-> Done
 5. Angular 21 migration: Upgrade dependencies and tooling first to enable modern template features.
 6. Modern control flow in templates: Replace `*ngIf`/`*ngFor` with `@if`/`@for` across the app.
 7. Promises → async/await: Convert promise chains to `async/await` with ESLint rules.

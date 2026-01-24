@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "test": "echo '[frontend test] No tests defined' && exit 0",
+    "test:vitest": "vitest --config vitest.config.ts",
     "start:3005": "ng serve --configuration 3005",
     "build": "ng build --configuration production",
     "build:dev": "ng build --configuration development",
@@ -37,6 +38,8 @@
     "@angular-devkit/build-angular": "^20.3.8",
     "@angular/cli": "^20.3.8",
     "@angular/compiler-cli": "^20.3.9",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "jsdom": "^26.0.0"
   }
 }
