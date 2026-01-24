@@ -6,6 +6,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const localhost = '127.0.0.1'
+const frontendRoot = path.join(__dirname, 'frontend')
 var logStartupFlag = false
 var logServersFlag = false
 function logStartup(msg) {
@@ -20,8 +21,14 @@ module.exports = defineConfig({
     devServer: {
       framework: 'angular',
       bundler: 'webpack',
+      options: {
+        project: 'frontend',
+        projectRoot: frontendRoot,
+        angularJsonPath: path.join(frontendRoot, 'angular.json'),
+      },
     },
     specPattern: '**/*.cy.ts',
+    supportFile: 'cypress/support/component.ts',
   },
   retries: {
     // Configure retry attempts for `cypress run`

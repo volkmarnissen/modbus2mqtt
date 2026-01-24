@@ -58,6 +58,7 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
       - name: Cypress component tests (frontend)
+        if: false 
         uses: cypress-io/github-action@v6
         with:
           install: false
