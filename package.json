@@ -26,21 +26,17 @@
   "credits": "multiple choice by Studio 365 from <a href='https://thenounproject.com/browse/icons/term/multiple-choice/' target='_blank' title='multiple choice Icons'>Noun Project</a> (CC BY 3.0)",
   "scripts": {
     "ng": "npx ng",
-    "test": "npm run test",
-    "test:jest": "jest",
-    "test:vitest": "vitest -c vitest.config.ts",
-    "test:vitest:run": "vitest -c vitest.config.ts --run",
-    "migrate:shared": "node scripts/migrate-shared.js",
+    "test": "pushd backend && npm run test && popd && pushd frontend && npm run test && popd && pushd specification && npm run test && popd",
     "cypress": "TS_NODE_PROJECT=frontend/tsconfig.angular.json ;CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress",
     "cypress:open": "npm run cypress -- open",
     "cypress:component": "npm run cypress -- run --component",
     "server": "npm run build && node dist/server/modbus2mqtt.js -s ../ssl -y ../yaml-dir",
     "lint": "eslint --cache --ext .ts,.tsx,.js,.jsx --ignore-pattern 'frontend/**' --format stylish src",
     "lint:fix": "eslint --cache --fix --ext .ts,.tsx,.js,.jsx --ignore-pattern 'frontend/**' --format stylish src",
-    "e2e:start": "npm run build && ./cypress/servers/testall.py startServers",
-    "e2e:restart": "npm run build && ./cypress/servers/testall.py restartServers",
+    "e2e:start": "./cypress/servers/testall.py startServers",
+    "e2e:restart": "./cypress/servers/testall.py restartServers",
     "e2e:stop": "./cypress/servers/testall.py killServers",
-    "e2e:test": "npm run build && ./cypress/servers/testall.py test",
+    "e2e:test": "./cypress/servers/testall.py test",
     "e2e:server.debug.ingress": "npm run e2e:end.debug && mkdir -p  'e2e/modbus2mqtt.temp/modbus2mqtt' && echo 'httpport: 3004\nsupervisor_host: localhost:3006' >e2e/modbus2mqtt.temp/modbus2mqtt/modbus2mqtt.yaml && npm run build ",
     "e2e:server.debug": "npm run e2e:end.debug && mkdir -p  'e2e/modbus2mqtt.temp/modbus2mqtt' && echo 'httpport: 3005' >e2e/modbus2mqtt.temp/modbus2mqtt/modbus2mqtt.yaml && npm run build ",
     "e2e:end.debug": "rm -rf 'e2e/modbus2mqtt.temp'",
@@ -49,7 +45,8 @@
     "build:frontend": "cd frontend && npm run build",
     "prettier": "./scripts/prettier-changed.sh",
     "prettier:write": "prettier --write .",
-    "install-hooks": "mkdir -p .githooks && ln -sf ../scripts/pre-commit.sh .githooks/pre-commit && chmod +x .githooks/pre-commit && git config core.hooksPath .githooks && echo 'Git hooks configured to use .githooks directory and linked to scripts/pre-commit.sh'"
+    "install-hooks": "mkdir -p .githooks && ln -sf ../scripts/pre-commit.sh .githooks/pre-commit && chmod +x .githooks/pre-commit && git config core.hooksPath .githooks && echo 'Git hooks configured to use .githooks directory and linked to scripts/pre-commit.sh'",
+    "test:spec-install": "bash scripts/test-spec-install.sh"
   },
   "dependencies": {
     "@octokit/rest": "^20.1.1",
@@ -97,7 +94,7 @@
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
     "@typescript-eslint/parser": "^8.0.1",
-    "cypress": "^15.6.0",
+    "cypress": "^15.9.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^29.1.0",
@@ -118,6 +115,6 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4",
     "typescript-map": "^0.1.0",
-    "vitest": "^1.6.1"
+    "vitest": "^4.0.12"
   }
 }

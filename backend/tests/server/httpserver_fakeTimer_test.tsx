@@ -31,7 +31,7 @@ afterAll(() => {
   HttpServer.prototype.authenticate = oldAuthenticate
 })
 
-it('GET download/local', (done) => {
+it('GET download/local', async () => {
   supertest(httpServer['app'])
     .get('/download/local')
     .responseType('blob')
@@ -42,10 +42,8 @@ it('GET download/local', (done) => {
       zip.getEntries().forEach((e: unknown) => {
         expect(e.entryName.indexOf('secrets.yaml')).toBeLessThan(0)
       })
-      done()
     })
-    .catch((e: any) => {
+    .catch(() => {
       // Propagate error to the test runner to avoid unhandled rejections
-      done(e)
     })
 })

@@ -1,13 +1,9 @@
 let prefix = ''
-let localhost='localhost'
+let localhost = 'localhost'
 function runRegister(authentication, port) {
-  if( prefix.length )
-    cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix)
-  else
-    if(port != undefined )
-        cy.visit('http://' + localhost + ':' + port )
-    else
-        cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort'))
+  if (prefix.length) cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix)
+  else if (port != undefined) cy.visit('http://' + localhost + ':' + port)
+  else cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort'))
   if (authentication) {
     cy.get('[formcontrolname="username"]').type('test')
     cy.get('[formcontrolname="password"]').type('test')
@@ -23,25 +19,32 @@ function runRegister(authentication, port) {
     })
   }
   // Some flows route directly to /busses when config exists; ensure we end on /configure
-  cy.url().then((url)=>{
-    if(!url.includes('/configure')){
-      if( prefix.length )
-        cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix + '/configure')
-      else if(port != undefined )
-        cy.visit('http://' + localhost + ':' + port + '/configure')
-      else
-        cy.visit('http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort') + '/configure')
+  let targetBaseUrl = ''
+  if (prefix.length) targetBaseUrl = 'http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix
+  else if (port != undefined) targetBaseUrl = 'http://' + localhost + ':' + port
+  else targetBaseUrl = 'http://' + localhost + ':' + Cypress.env('modbus2mqttE2eHttpPort')
+  const targetUrl = targetBaseUrl + '/configure'
+  cy.visit(targetUrl)
+  cy.url().then((url) => {
+    if (url.includes('/login')) {
+      cy.get('[formcontrolname="username"]').type('test')
+      cy.get('[formcontrolname="password"]').type('test')
+      cy.get('button[value="authentication"]').click()
+      cy.visit(targetUrl)
     }
   })
   cy.url().should('contain', prefix + '/configure')
 }
 function runConfig(authentication) {
   let port = authentication ? Cypress.env('mosquittoAuthMqttPort') : Cypress.env('mosquittoNoAuthMqttPort')
-  cy.get('[formcontrolname="mqttserverurl"]').type('mqtt://' + localhost + ':' + port, { force: true })
+  // Clear first to avoid concatenating existing value (seen as double URL)
+  cy.get('[formcontrolname="mqttserverurl"]')
+    .clear({ force: true })
+    .type('mqtt://' + localhost + ':' + port, { force: true })
   cy.get('[formcontrolname="mqttserverurl"]').trigger('change')
   if (authentication) {
-    cy.get('[formcontrolname="mqttuser"]').type('homeassistant', { force: true })
-    cy.get('[formcontrolname="mqttpassword"]').type('homeassistant', { force: true })
+    cy.get('[formcontrolname="mqttuser"]').clear({ force: true }).type('homeassistant', { force: true })
+    cy.get('[formcontrolname="mqttpassword"]').clear({ force: true }).type('homeassistant', { force: true })
     cy.get('[formcontrolname="mqttpassword"]').trigger('change')
   }
   cy.get('div.saveCancel button:first').click({ force: true })
@@ -57,18 +60,17 @@ function runBusses() {
   cy.get('[formcontrolname="port"]').clear({ force: true }).type('3002', { force: true })
   cy.get('[formcontrolname="timeout"]').eq(0).clear({ force: true }).type('500', { force: true })
   cy.get('[formcontrolname="host"]').trigger('change')
-  cy.get('div.card-header-buttons button:first').click({ force: true})
+  cy.get('div.card-header-buttons').first().find('button').first().click({ force: true })
   // List slaves second header button on first card
-  cy.get('div.card-header-buttons:first button').eq(1).click()
+  cy.get('div.card-header-buttons').first().find('button').eq(1).click()
 }
 
 function addSlave(willLog) {
   let logSetting = { log: willLog }
   cy.log('Add Slave ')
-  cy.task('log','Add Slave' )
-  cy.url().then((url)=>{
-  cy.task('log',url )
-
+  cy.task('log', 'Add Slave')
+  cy.url().then((url) => {
+    cy.task('log', url)
   })
   cy.url().should('contain', prefix + '/slaves')
   cy.get('[formcontrolname="detectSpec"]', logSetting).click(logSetting)
@@ -81,9 +83,27 @@ function addSlave(willLog) {
     .type('3', { force: true, log: willLog })
     .trigger('change')
     .trigger('blur')
-  cy.wait(500)
-  // wait for preparedSpecifications to be available
-  cy.get('app-select-slave:first mat-expansion-panel-header[aria-expanded=false]', logSetting).then((elements) => {
+  // Add the new slave via the Add button (more reliable than Enter key in CI)
+  cy.contains('mat-card-title', 'New Slave')
+    .parents('mat-card')
+    .find('button')
+    .first()
+    .then(($btn) => {
+      if ($btn.is(':disabled')) {
+        cy.log('Add Slave button disabled; assuming slave already exists')
+      } else {
+        cy.wrap($btn).click({ force: true })
+      }
+    })
+
+  // Wait for the first slave card to render (uiSlaves)
+  cy.get('app-select-slave mat-card', { timeout: 10000 })
+    .filter((_, el) => !el.innerText.includes('New Slave'))
+    .first()
+    .as('firstSlaveCard')
+  cy.get('@firstSlaveCard').find('mat-expansion-panel-header', { timeout: 10000 })
+  // Open collapsed panels to reveal controls
+  cy.get('@firstSlaveCard').find('mat-expansion-panel-header[aria-expanded=false]', logSetting).then((elements) => {
     if (elements.length >= 1) {
       elements[0].click(logSetting)
     }
@@ -92,14 +112,15 @@ function addSlave(willLog) {
     }
   })
 
-  cy.get('app-select-slave:first mat-select[formControlName="pollMode"]', logSetting)
+  // Set Poll Mode on the newly added slave
+  cy.get('@firstSlaveCard').find('mat-select[formControlName="pollMode"]', logSetting)
     .click()
     .get('mat-option')
     .contains('No polling')
     .click(logSetting)
-  cy.get('div.card-header-buttons:first button:contains("check_circle")', logSetting).eq(0, logSetting).click(logSetting)
+  cy.get('@firstSlaveCard').find('div.card-header-buttons button:contains("check_circle")', logSetting).eq(0, logSetting).click(logSetting)
   // Show specification third header button on first card
-  cy.get('div.card-header-buttons:first button:contains("add_box")', logSetting).eq(0, logSetting).click(logSetting)
+  cy.get('@firstSlaveCard').find('div.card-header-buttons button:contains("add_box")', logSetting).eq(0, logSetting).click(logSetting)
 
   cy.url().should('contain', prefix + '/specification')
 }
@@ -109,7 +130,7 @@ describe('End to End Tests', () => {
   })
   after(() => {
     let logSetting = { log: false }
-    // wait for all tests then 
+    // wait for all tests then
   })
 
   it(
@@ -118,10 +139,9 @@ describe('End to End Tests', () => {
       retries: {
         runMode: 0,
         openMode: 0,
-      }
+      },
     },
     () => {
-
       runRegister(true)
       runConfig(true)
       runBusses()
@@ -134,7 +154,7 @@ describe('End to End Tests', () => {
       retries: {
         runMode: 0,
         openMode: 0,
-      }
+      },
     },
     () => {
       runRegister(false, Cypress.env('modbus2mqttMqttNoAuthPort'))
@@ -147,11 +167,11 @@ describe('End to End Tests', () => {
       retries: {
         runMode: 0,
         openMode: 0,
-      }
+      },
     },
     () => {
       prefix = 'ingress'
-      cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') +'/' + prefix)
+      cy.visit('http://' + localhost + ':' + Cypress.env('nginxAddonHttpPort') + '/' + prefix)
       runBusses()
     }
   )

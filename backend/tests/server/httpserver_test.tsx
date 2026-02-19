@@ -209,41 +209,36 @@ it('GET local files', async () => {
   }
 })
 
-xit('register,login validate fails on github', (done) => {
-  let token = ''
-  supertest(httpServer['app'])
-    .get('/user/reqister?name=test&password=test123')
-    .then(() => {
-      supertest(httpServer['app'])
-        .get('/user/login?name=test&password=test123')
-        .expect(200)
-        .then((response) => {
-          token = response.body.token
-          const hdrs: Headers = new Map<string, string>() as any
-          hdrs.set('Authorization', 'Bearer ' + token)
-          expect(response.body.token.length).toBeGreaterThan(0)
-          const req: any = {
-            url: '/noauthorization needed',
-          }
-          const res: any = {}
-          oldAuthenticate.bind(httpServer)(req, res, () => {
-            req.url = '/api/Needs authorization'
-            req['header'] = (key: string): string => {
-              expect(key).toBe('Authorization')
-              return 'Bearer ' + token
-            }
-            oldAuthenticate.bind(httpServer)(req, undefined, () => {
-              done()
-            })
-          })
-        })
-        .catch(() => {
-          expect(false).toBeTruthy()
-        })
-    })
-    .catch(() => {
-      expect(false).toBeTruthy()
-    })
+xit('register,login validate fails on github', async () => {
+  await supertest(httpServer['app']).get('/user/reqister?name=test&password=test123')
+  const response = await supertest(httpServer['app']).get('/user/login?name=test&password=test123').expect(200)
+  const token = response.body.token
+  const hdrs: Headers = new Map<string, string>() as any
+  hdrs.set('Authorization', 'Bearer ' + token)
+  expect(response.body.token.length).toBeGreaterThan(0)
+
+  await new Promise<void>((resolve, reject) => {
+    const req: any = {
+      url: '/noauthorization needed',
+    }
+    const res: any = {}
+    try {
+      oldAuthenticate.bind(httpServer)(req, res, () => {
+        req.url = '/api/Needs authorization'
+        req['header'] = (key: string): string => {
+          expect(key).toBe('Authorization')
+          return 'Bearer ' + token
+        }
+        try {
+          oldAuthenticate.bind(httpServer)(req, undefined, () => resolve())
+        } catch (e) {
+          reject(e)
+        }
+      })
+    } catch (e) {
+      reject(e)
+    }
+  })
 })
 
 it('supervisor login', async () => {

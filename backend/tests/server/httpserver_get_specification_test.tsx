@@ -15,9 +15,9 @@ import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'
 let httpServer: HttpServer
 
-beforeAll(() => {
-  return new Promise<void>((resolve, reject) => {
-    // fake MQTT: avoid reconnect
+beforeAll(async() => {
+ 
+  // fake MQTT: avoid reconnect
     setConfigsDirsBackendTCPForTest()
 
     const conn = new MqttConnector()
@@ -29,55 +29,42 @@ beforeAll(() => {
     }
     new ConfigSpecification().readYaml()
     const cfg = new Config()
-    cfg.readYamlAsync().then(() => {
+    await cfg.readYamlAsync()
       ConfigBus.readBusses()
       initBussesForTest()
       HttpServer.prototype.authenticate = (req, res, next) => {
         next()
       }
-      startModbusTCPserver(ConfigSpecification.configDir, ConfigSpecification.dataDir, 0)
-        .then(() => {
+    await startModbusTCPserver(ConfigSpecification.configDir, ConfigSpecification.dataDir, 0)
           httpServer = new HttpServer(join(ConfigSpecification.configDir, 'angular'))
           httpServer.setModbusCacheAvailable()
           httpServer.init()
-          resolve()
-        })
-        .catch((e) => {
-          reject(e)
-        })
-    })
-  })
 })
 afterAll(() => {
   stopModbusTCPServer()
 })
 
-it('Discrete Inputs definition provided check', (done) => {
-  if (httpServer)
-    supertest(httpServer['app'])
+it('Discrete Inputs definition provided check', async () => {
+  if (httpServer){
+    const response = await supertest(httpServer['app'])
       .get(apiUri.modbusSpecification + '?busid=0&slaveid=3&spec=lc-technology-relay-input')
       .expect(HttpErrorsEnum.OK)
-      .then((response) => {
-        const spec: ImodbusSpecification = response.body
-
+    const spec: ImodbusSpecification = response.body  
         expect(spec.entities).toBeDefined()
         expect(spec.entities.length).toEqual(16)
         expect(spec.entities[0].registerType).toEqual(2)
-        done()
-      })
+  }
 })
 
-it('Coils definition provided check', (done) => {
-  if (httpServer)
-    supertest(httpServer['app'])
+it('Coils definition provided check', async () => {
+  if (httpServer){
+    const response = await supertest(httpServer['app'])
       .get(apiUri.modbusSpecification + '?busid=0&slaveid=3&spec=lc-technology-relay-input')
       .expect(HttpErrorsEnum.OK)
-      .then((response) => {
         const spec: ImodbusSpecification = response.body
 
-        expect(spec.entities).toBeDefined()
-        expect(spec.entities.length).toEqual(16)
-        expect(spec.entities[8].registerType).toEqual(1)
-        done()
-      })
+    expect(spec.entities).toBeDefined()
+    expect(spec.entities.length).toEqual(16)
+    expect(spec.entities[8].registerType).toEqual(1)
+  }
 })

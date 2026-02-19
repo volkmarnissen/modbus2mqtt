@@ -33,7 +33,7 @@ it('prepare', () => {
   expect(preparedAddresses.addresses[2].registerType).toBe(ModbusRegisterType.HoldingRegister)
 })
 
-it('execute', (done) => {
+it('execute', async () => {
   const addresses = new Set<ImodbusAddress>()
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 0, 4)
   addAddresses(addresses, ModbusRegisterType.HoldingRegister, 7, 9)
@@ -41,19 +41,7 @@ it('execute', (done) => {
 
   const queue = new ModbusRTUQueue()
   const modbusProcessor = new ModbusRTUProcessor(queue)
-  modbusProcessor.execute(1, addresses, { task: ModbusTasks.deviceDetection, errorHandling: { retry: true } }).then((result) => {
-    expect(result.coils.size).toBe(4)
-    result.coils.forEach((res) => {
-      expect(res.error).not.toBeDefined()
-      expect(res.data).toBeDefined()
-    })
-    expect(result.holdingRegisters.size).toBe(9)
-    result.holdingRegisters.forEach((res) => {
-      expect(res.error).toBeDefined()
-      expect(res.data).not.toBeDefined()
-    })
-    done()
-  })
+  const resultPromise = modbusProcessor.execute(1, addresses, { task: ModbusTasks.deviceDetection, errorHandling: { retry: true } })
   // Wait for queue to be ready
   setTimeout(() => {
     const entries = queue.getEntries()
@@ -67,4 +55,15 @@ it('execute', (done) => {
       }
     })
   }, 100)
+  const result = await resultPromise
+  expect(result.coils.size).toBe(4)
+  result.coils.forEach((res) => {
+    expect(res.error).not.toBeDefined()
+    expect(res.data).toBeDefined()
+  })
+  expect(result.holdingRegisters.size).toBe(9)
+  result.holdingRegisters.forEach((res) => {
+    expect(res.error).toBeDefined()
+    expect(res.data).not.toBeDefined()
+  })
 })

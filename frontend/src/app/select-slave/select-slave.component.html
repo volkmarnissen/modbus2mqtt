@@ -10,7 +10,7 @@
       >
     </p>
     <div class="flexrows">
-      <ng-container *ngFor="let uislave of uiSlaves; let i = index">
+      @for (uislave of uiSlaves; track $index; let i = $index) {
         <mat-card class="width550pt card">
           <form (keydown.enter)="keyDown($event, uislave.slaveForm)" [formGroup]="uislave.slaveForm">
             <mat-card-header
@@ -18,7 +18,7 @@
                 uislave.label
               }}</mat-card-title>
               <div class="card-header-buttons">
-                <ng-container *ngIf="needsSaving(i)">
+                @if (needsSaving(i)) {
                   <button
                     mat-icon-button
                     class="material-icons app-toolbar-menu save-button"
@@ -39,9 +39,9 @@
                   >
                     <mat-icon>cancel</mat-icon>
                   </button>
-                </ng-container>
+                }
 
-                <ng-container *ngIf="!needsSaving(i)">
+                @if (!needsSaving(i)) {
                   <button
                     mat-icon-button
                     class="material-icons app-toolbar-menu delete-button"
@@ -60,17 +60,18 @@
                   >
                     <mat-icon>add_box</mat-icon>
                   </button>
-                  <button
-                    *ngIf="uislave.slave.specificationid != undefined"
-                    mat-icon-button
-                    class="material-icons app-toolbar-menu delete-button"
-                    matTooltip="Edit Specification"
-                    color="primary"
-                    (click)="editSpecification(uislave.slave)"
-                  >
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                </ng-container>
+                  @if (uislave.slave.specificationid != undefined) {
+                    <button
+                      mat-icon-button
+                      class="material-icons app-toolbar-menu delete-button"
+                      matTooltip="Edit Specification"
+                      color="primary"
+                      (click)="editSpecification(uislave.slave)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                  }
+                }
               </div>
             </mat-card-header>
             <mat-card-content>
@@ -83,24 +84,24 @@
                   (selectionChange)="onSpecificationChange(uislave)"
                   [compareWith]="compareSpecificationIdentification"
                 >
-                  <ng-container *ngIf="uislave.specsObservable | async as identSpecs; else undetectedTemplate">
-                    <ng-container *ngFor="let ispec of identSpecs">
+                  @if (uislave.specsObservable | async; as identSpecs) {
+                    @for (ispec of identSpecs; track $index) {
                       <mat-option [value]="ispec">
                         <mat-icon [matTooltip]="statusTooltip(ispec ? ispec.status : 3)">{{
                           statusIcon(ispec ? ispec.status : 3)
                         }}</mat-icon>
-                        <mat-icon
-                          *ngIf="ispec?.identified != -1"
-                          [color]="ispec?.identified == 1 ? 'primary' : 'warn'"
-                          [matTooltip]="identifiedTooltip(ispec.identified)"
-                          >{{ identifiedIcon(ispec.identified) }}</mat-icon
-                        >
+                        @if (ispec?.identified != -1) {
+                          <mat-icon
+                            [color]="ispec?.identified == 1 ? 'primary' : 'warn'"
+                            [matTooltip]="identifiedTooltip(ispec.identified)"
+                            >{{ identifiedIcon(ispec.identified) }}</mat-icon
+                          >
+                        }
                         {{ ispec !== null ? ispec.name : 'unknown' }}
                       </mat-option>
-                    </ng-container>
-                  </ng-container>
-                  <ng-template #undetectedTemplate>
-                    <ng-container *ngFor="let ispec of preparedIdentSpecs">
+                    }
+                  } @else {
+                    @for (ispec of preparedIdentSpecs; track $index) {
                       <mat-option [value]="ispec">
                         <mat-icon [matTooltip]="statusTooltip(ispec ? ispec.status : 3)">{{
                           statusIcon(ispec ? ispec.status : 3)
@@ -108,8 +109,8 @@
                         {{ ispec !== null ? ispec.name : 'unknown' }}
                         {{ ispec !== null ? ispec.name : 'unknown' }}
                       </mat-option>
-                    </ng-container>
-                  </ng-template>
+                    }
+                  }
                 </mat-select>
               </mat-form-field>
               <mat-expansion-panel>
@@ -131,12 +132,16 @@
                     formControlName="name"
                     [errorStateMatcher]="errorStateMatcher"
                   />
-                  <mat-error *ngIf="uislave.slaveForm.get('name')!.hasError('duplicates') != null"> Must be unique </mat-error>
+                  @if (uislave.slaveForm.get('name')!.hasError('duplicates') != null) {
+                    <mat-error> Must be unique </mat-error>
+                  }
                 </mat-form-field>
-                <mat-form-field class="width150pt" *ngIf="[0, 2].includes(uislave.slaveForm.get('pollMode')!.value)">
-                  <mat-label>Poll Interval [ms]</mat-label>
-                  <input matInput formControlName="pollInterval" type="number" placeholder="1000" />
-                </mat-form-field>
+                @if ([0, 2].includes(uislave.slaveForm.get('pollMode')!.value)) {
+                  <mat-form-field class="width150pt">
+                    <mat-label>Poll Interval [ms]</mat-label>
+                    <input matInput formControlName="pollInterval" type="number" placeholder="1000" />
+                  </mat-form-field>
+                }
                 <mat-form-field class="width150pt">
                   <mat-label>Poll Mode</mat-label>
                   <mat-select matInput formControlName="pollMode">
@@ -147,135 +152,144 @@
                   </mat-select>
                 </mat-form-field>
               </mat-expansion-panel>
-              <mat-expansion-panel *ngIf="uislave.slave.specificationid as specid">
-                <mat-expansion-panel-header>
-                  <mat-panel-title> MQTT Topics </mat-panel-title>
-                </mat-expansion-panel-header>
-                <h2>Quality of Service</h2>
-                <mat-form-field class="width200pt">
-                  <mat-label>Quality of Service</mat-label>
-                  <mat-select
-                    matTooltipClass="tooltip-class"
-                    formControlName="qos"
-                    matTooltip="Optional: 
-                      
-                      Auto: If the slave has only read only entities, Quality of Service is not set
-                      
-                      1 - at least once: Every publication of states or subscription to this slave will at be transfered at least one time
-                      
-                      2 - exactly once:Every publication of states or subscription to this slave will at be transfered exactly one time"
-                  >
-                    <mat-option [value]="-1">Auto</mat-option>
-                    <mat-option [value]="1">1 - at least once</mat-option>
-                    <mat-option [value]="2">2 - exactly once</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <h2>Root Topic</h2>
-                <mat-form-field class="width150pt">
-                  <mat-label>Root Topic Name</mat-label>
-                  <input
-                    matInput
-                    matTooltipClass="tooltip-class"
-                    formControlName="rootTopic"
-                    (change)="onRootTopicChange(uislave)"
-                    matTooltip='Optional: 
-                      
-                      Sets the first part of the MQTT state and command topics. 
-                      
-                      E.g. a root topic "heatpump" will generate a state topic "heatpump/state" all command topics will be named "heatpump/set/<mqtt name of entity>"
-                      command topics for modbus values will be name "heatpump/modbus/<mqttname>"
+              @if (uislave.slave.specificationid; as specid) {
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title> MQTT Topics </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <h2>Quality of Service</h2>
+                  <mat-form-field class="width200pt">
+                    <mat-label>Quality of Service</mat-label>
+                    <mat-select
+                      matTooltipClass="tooltip-class"
+                      formControlName="qos"
+                      matTooltip="Optional: 
                         
-                      It is in the responsibility of the user to make sure, that there are no duplicates in MQTT topic names'
-                  />
-                </mat-form-field>
-                <h2>State Topic</h2>
+                        Auto: If the slave has only read only entities, Quality of Service is not set
+                        
+                        1 - at least once: Every publication of states or subscription to this slave will at be transfered at least one time
+                        
+                        2 - exactly once:Every publication of states or subscription to this slave will at be transfered exactly one time"
+                    >
+                      <mat-option [value]="-1">Auto</mat-option>
+                      <mat-option [value]="1">1 - at least once</mat-option>
+                      <mat-option [value]="2">2 - exactly once</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <h2>Root Topic</h2>
+                  <mat-form-field class="width150pt">
+                    <mat-label>Root Topic Name</mat-label>
+                    <input
+                      matInput
+                      matTooltipClass="tooltip-class"
+                      formControlName="rootTopic"
+                      (change)="onRootTopicChange(uislave)"
+                      matTooltip='Optional: 
+                        
+                        Sets the first part of the MQTT state and command topics. 
+                        
+                        E.g. a root topic "heatpump" will generate a state topic "heatpump/state" all command topics will be named "heatpump/set/<mqtt name of entity>"
+                        command topics for modbus values will be name "heatpump/modbus/<mqttname>"
+                          
+                        It is in the responsibility of the user to make sure, that there are no duplicates in MQTT topic names'
+                    />
+                  </mat-form-field>
+                  <h2>State Topic</h2>
 
-                <div *ngIf="config.rootUrl != undefined" matTooltip="Use this URL inside of Home Assistant Addons (E.g.Nodered)">
-                  Web Service Root: <strong>{{ config.rootUrl }}</strong>
-                </div>
-                <mat-slide-toggle
-                  *ngIf="config.rootUrl != undefined"
-                  class="width50"
-                  formControlName="showUrl"
-                  matTooltip="Use this URL inside of Home Assistant Addons (E.g.Nodered)"
-                  >Show REST API Url instead of MQTT Topics</mat-slide-toggle
-                >
+                  @if (config.rootUrl != undefined) {
+                    <div matTooltip="Use this URL inside of Home Assistant Addons (E.g.Nodered)">
+                      Web Service Root: <strong>{{ config.rootUrl }}</strong>
+                    </div>
+                    <mat-slide-toggle
+                      class="width50"
+                      formControlName="showUrl"
+                      matTooltip="Use this URL inside of Home Assistant Addons (E.g.Nodered)"
+                      >Show REST API Url instead of MQTT Topics</mat-slide-toggle
+                    >
+                  }
 
-                <div>
-                  {{ getStateTopic(uislave)
-                  }}<button
-                    mat-icon-button
-                    mat-small-icon-button
-                    class="material-icons app-toolbar-menu save-button"
-                    matTooltip="Copy to Clipboard"
-                    (click)="copy2Clipboard(getStateTopic(uislave))"
-                    color="primary"
+                  <div>
+                    {{ getStateTopic(uislave)
+                    }}<button
+                      mat-icon-button
+                      mat-small-icon-button
+                      class="material-icons app-toolbar-menu save-button"
+                      matTooltip="Copy to Clipboard"
+                      (click)="copy2Clipboard(getStateTopic(uislave))"
+                      color="primary"
+                    >
+                      <mat-icon>content_copy</mat-icon>
+                    </button>
+                  </div>
+                  <h2>State Payload Example</h2>
+                  <textarea id="w3review" name="w3review" rows="10" cols="20">
+                        {{ getStatePayload(uislave) }}
+                      </textarea
                   >
-                    <mat-icon>content_copy</mat-icon>
-                  </button>
-                </div>
-                <h2>State Payload Example</h2>
-                <textarea id="w3review" name="w3review" rows="10" cols="20">
-                      {{ getStatePayload(uislave) }}
-                    </textarea
-                >
-                <h2 *ngIf="[1, 2].includes(uislave.slaveForm.get('pollMode')!.value)">Trigger Poll Topic</h2>
-                <div *ngIf="[1, 2].includes(uislave.slaveForm.get('pollMode')!.value)">
-                  {{ getTriggerPollTopic(uislave)
-                  }}<button
-                    mat-icon-button
-                    mat-small-icon-button
-                    class="material-icons app-toolbar-menu save-button"
-                    matTooltip="Copy to Clipboard"
-                    (click)="copy2Clipboard(getTriggerPollTopic(uislave))"
-                    color="primary"
-                  >
-                    <mat-icon>content_copy</mat-icon>
-                  </button>
-                </div>
-                <h2>Command Topics</h2>
-                <dl>
-                  <ng-container *ngFor="let commandEntity of uislave.commandEntities">
-                    <dt>{{ getSpecEntityName(uislave, commandEntity.entityId) }}</dt>
-                    <dd>
-                      {{ getCommandTopic(uislave, commandEntity) }}
-                      <button
+                  @if ([1, 2].includes(uislave.slaveForm.get('pollMode')!.value)) {
+                    <h2>Trigger Poll Topic</h2>
+                    <div>
+                      {{ getTriggerPollTopic(uislave)
+                      }}<button
                         mat-icon-button
                         mat-small-icon-button
                         class="material-icons app-toolbar-menu save-button"
-                        (click)="copy2Clipboard(getCommandTopic(uislave, commandEntity))"
+                        matTooltip="Copy to Clipboard"
+                        (click)="copy2Clipboard(getTriggerPollTopic(uislave))"
                         color="primary"
                       >
                         <mat-icon>content_copy</mat-icon>
                       </button>
-                    </dd>
-                    <dd *ngIf="getModbusCommandTopic(uislave, commandEntity) != ''">
-                      .../set/modbus/
-                      <!--<button mat-icon-button matTooltipClass="tooltip-class" mat-small-icon-button class="material-icons app-toolbar-menu save-button"
-                         (click)="copy2Clipboard(commandEntity.modbusCommandTopic)" color="primary">
-                        <mat-icon>content_copy</mat-icon>
-                    </button> does not work seems to be an angular bug -->
-                    </dd>
-                  </ng-container>
-                </dl>
-              </mat-expansion-panel>
-              <mat-expansion-panel *ngIf="uislave.slave.specificationid as specid">
-                <mat-expansion-panel-header>
-                  <mat-panel-title> MQTT Discovery Filter </mat-panel-title>
-                </mat-expansion-panel-header>
-                <mat-slide-toggle
-                  class="width550"
-                  formControlName="noDiscovery"
-                  (toggleChange)="disableDiscoverEntitiesList(uislave)"
-                  >{{ getNoDiscoveryText(uislave) }}<br />Click to toggle</mat-slide-toggle
-                >
-                <h2>Deselect to exclude from Discovery</h2>
-                <mat-selection-list #noDiscovery formControlName="discoverEntitiesList">
-                  <mat-list-option *ngFor="let selected of uislave.selectedEntitites" [value]="selected.id">{{
-                    selected.name
-                  }}</mat-list-option>
-                </mat-selection-list>
-              </mat-expansion-panel>
+                    </div>
+                  }
+                  <h2>Command Topics</h2>
+                  <dl>
+                    @for (commandEntity of uislave.commandEntities; track $index) {
+                      <dt>{{ getSpecEntityName(uislave, commandEntity.entityId) }}</dt>
+                      <dd>
+                        {{ getCommandTopic(uislave, commandEntity) }}
+                        <button
+                          mat-icon-button
+                          mat-small-icon-button
+                          class="material-icons app-toolbar-menu save-button"
+                          (click)="copy2Clipboard(getCommandTopic(uislave, commandEntity))"
+                          color="primary"
+                        >
+                          <mat-icon>content_copy</mat-icon>
+                        </button>
+                      </dd>
+                      @if (getModbusCommandTopic(uislave, commandEntity) != '') {
+                        <dd>
+                          .../set/modbus/
+                          <!--<button mat-icon-button matTooltipClass="tooltip-class" mat-small-icon-button class="material-icons app-toolbar-menu save-button"
+                             (click)="copy2Clipboard(commandEntity.modbusCommandTopic)" color="primary">
+                            <mat-icon>content_copy</mat-icon>
+                        </button> does not work seems to be an angular bug -->
+                        </dd>
+                      }
+                    }
+                  </dl>
+                </mat-expansion-panel>
+              }
+              @if (uislave.slave.specificationid; as specid) {
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title> MQTT Discovery Filter </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <mat-slide-toggle
+                    class="width550"
+                    formControlName="noDiscovery"
+                    (toggleChange)="disableDiscoverEntitiesList(uislave)"
+                    >{{ getNoDiscoveryText(uislave) }}<br />Click to toggle</mat-slide-toggle
+                  >
+                  <h2>Deselect to exclude from Discovery</h2>
+                  <mat-selection-list #noDiscovery formControlName="discoverEntitiesList">
+                    @for (selected of uislave.selectedEntitites; track $index) {
+                      <mat-list-option [value]="selected.id">{{ selected.name }}</mat-list-option>
+                    }
+                  </mat-selection-list>
+                </mat-expansion-panel>
+              }
               <mat-expansion-panel>
                 <mat-expansion-panel-header>
                   <mat-panel-title>Modbus Status &amp;Errors </mat-panel-title>
@@ -285,7 +299,7 @@
             </mat-card-content>
           </form>
         </mat-card>
-      </ng-container>
+      }
       <mat-card class="width550pt card">
         <form (keydown.enter)="keyDown($event, slaveNewForm)" [formGroup]="slaveNewForm">
           <mat-card-header

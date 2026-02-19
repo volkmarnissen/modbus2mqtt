@@ -1,0 +1,93 @@
+name: 'On schedule: Cleanup'
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: 'Delete runs older than this many days'
+        required: false
+        type: number
+        default: 30
+      keep_last_per_workflow:
+        description: 'Keep at least this many latest runs per workflow'
+        required: false
+        type: number
+        default: 30
+  schedule:
+    - cron: '17 3 * * 0' # Weekly on Sundays 03:17 UTC
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup-on-schedule:
+    name: 'On schedule: Cleanup'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup old workflow runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const maxAgeDays = Number(core.getInput('max_age_days')) || 30
+            const keepLast = Number(core.getInput('keep_last_per_workflow')) || 30
+            const now = new Date()
+            const threshold = new Date(now.getTime() - maxAgeDays * 24 * 60 * 60 * 1000)
+
+            core.info(`Threshold date: ${threshold.toISOString()} | Keep last per workflow: ${keepLast}`)
+
+            // Get all workflows in the repo
+            const workflows = await github.paginate(github.rest.actions.listRepoWorkflows, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            })
+
+            for (const wf of workflows) {
+              const wfId = wf.id
+              const wfName = wf.name
+              core.startGroup(`Workflow: ${wfName} (${wfId})`)
+
+              // List runs, newest first
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: wfId,
+                per_page: 100,
+              })
+
+              core.info(`Found ${runs.length} runs for ${wfName}`)
+              if (runs.length <= keepLast) {
+                core.info(`Skipping deletion for ${wfName}: runs <= keepLast (${keepLast})`)
+                core.endGroup()
+                continue
+              }
+
+              // Keep the newest `keepLast`, consider deleting the rest if older than threshold or completed
+              const candidates = runs.slice(keepLast)
+              let deleted = 0
+              for (const run of candidates) {
+                const createdAt = new Date(run.created_at)
+                const status = run.status
+                const conclusion = run.conclusion
+                const id = run.id
+
+                // Only delete completed runs and older than threshold
+                const isCompleted = status === 'completed'
+                const isOld = createdAt < threshold
+                if (isCompleted && isOld) {
+                  try {
+                    await github.rest.actions.deleteWorkflowRun({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      run_id: id,
+                    })
+                    deleted++
+                  } catch (err) {
+                    core.warning(`Failed to delete run ${id} of ${wfName}: ${err.message}`)
+                  }
+                }
+              }
+              core.info(`Deleted ${deleted} old completed runs for ${wfName}`)
+              core.endGroup()
+            }

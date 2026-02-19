@@ -3,7 +3,6 @@ import { IQueueEntry, ModbusRTUQueue } from './modbusRTUqueue.js'
 import { ImodbusAddress, ModbusTasks } from '../shared/server/index.js'
 import { ModbusRegisterType } from '../shared/specification/index.js'
 import { Logger, LogLevelEnum } from '../specification/index.js'
-import { Config } from './config.js'
 import Debug from 'debug'
 
 const log = new Logger('tcprtubridge')
@@ -76,11 +75,7 @@ function queueOneRegister<T>(
 
 export class ModbusTcpRtuBridge {
   serverTCP: ServerTCP | undefined = undefined
-  constructor(private queue: ModbusRTUQueue) {}
-
-  static getDefaultPort(): number {
-    return Config.getConfiguration().tcpBridgePort!
-  }
+  constructor(private queue: ModbusRTUQueue) { }
   private static resultMapperNumber(inp: number): number {
     return inp
   }
@@ -191,7 +186,10 @@ export class ModbusTcpRtuBridge {
       )
     },
   }
-  async startServer(port: number = ModbusTcpRtuBridge.getDefaultPort()): Promise<ServerTCP> {
+  async startServer(port: number): Promise<ServerTCP> {
+    if (!Number.isFinite(port) || port <= 0) {
+      throw new Error('Invalid TCP bridge port: ' + port)
+    }
     const rc = new Promise<ServerTCP>((resolve) => {
       this.serverTCP = new ServerTCP(this.vector, {
         host: '0.0.0.0',

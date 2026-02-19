@@ -9,16 +9,17 @@
   >
     <mat-icon>check_circle</mat-icon>
   </button>
-  <button
-    mat-icon-button
-    class="material-icons app-toolbar-menu cancel-button"
-    matTooltip="Cancel Changes"
-    color="warn"
-    (click)="closeAndBack()"
-    *ngIf="currentSpecification != undefined"
-  >
-    <mat-icon>cancel</mat-icon>
-  </button>
+  @if (currentSpecification != undefined) {
+    <button
+      mat-icon-button
+      class="material-icons app-toolbar-menu cancel-button"
+      matTooltip="Cancel Changes"
+      color="warn"
+      (click)="closeAndBack()"
+    >
+      <mat-icon>cancel</mat-icon>
+    </button>
+  }
 </div>
 
 <div class="flexrowsWrapWhenSmall">
@@ -33,34 +34,40 @@
     </mat-card-header>
     <mat-card-content>
       <p class="messages">
-        <mat-list *ngFor="let message of validationMessages">
-          <mat-list-item class="message"
-            ><a [routerLink]="" (click)="jump2Message(message)" class="message">{{
-              getValidationMessage(message)
-            }}</a></mat-list-item
-          >
-        </mat-list>
+        @for (message of validationMessages; track $index) {
+          <mat-list>
+            <mat-list-item class="message"
+              ><a [routerLink]="" (click)="jump2Message(message)" class="message">{{
+                getValidationMessage(message)
+              }}</a></mat-list-item
+            >
+          </mat-list>
+        }
       </p>
 
       <p>
-        <mat-expansion-panel *ngFor="let message of errorMessages">
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              <p class="message">Modbus error: {{ message }}</p>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          <p>Please check the following:</p>
-          <ul *ngIf="message == 'Timed out'">
-            <li>
-              1. The modbus timeout for the modbus controller in <a routerLink="/busses">Busses</a> is too short. Increase the
-              value. Values in the range of 300-1000 are recommended for RTU based controllers.
-            </li>
-            <li>
-              2. Check the RS485 connection cable and end resistors. If the device doesn't respond, the controller will get a
-              timeout.
-            </li>
-          </ul>
-        </mat-expansion-panel>
+        @for (message of errorMessages; track $index) {
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <p class="message">Modbus error: {{ message }}</p>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Please check the following:</p>
+            @if (message == 'Timed out') {
+              <ul>
+                <li>
+                  1. The modbus timeout for the modbus controller in <a routerLink="/busses">Busses</a> is too short. Increase the
+                  value. Values in the range of 300-1000 are recommended for RTU based controllers.
+                </li>
+                <li>
+                  2. Check the RS485 connection cable and end resistors. If the device doesn't respond, the controller will get a
+                  timeout.
+                </li>
+              </ul>
+            }
+          </mat-expansion-panel>
+        }
       </p>
       <div class="margins">
         <app-upload-files [specification]="currentSpecification" (updateDocumentation)="updateDocuments($event)" />

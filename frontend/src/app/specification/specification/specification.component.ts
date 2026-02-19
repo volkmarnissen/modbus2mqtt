@@ -42,7 +42,7 @@ import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } fr
 import { MatList, MatListItem } from '@angular/material/list'
 import { MatSlideToggle, MatSlideToggleChange } from '@angular/material/slide-toggle'
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
-import { NgIf, NgFor } from '@angular/common'
+
 import { MatIcon } from '@angular/material/icon'
 import { MatTooltip } from '@angular/material/tooltip'
 import { MatIconButton } from '@angular/material/button'
@@ -57,12 +57,10 @@ import { MatIconButton } from '@angular/material/button'
     MatIconButton,
     MatTooltip,
     MatIcon,
-    NgIf,
     MatCard,
     MatCardHeader,
     MatCardTitle,
     MatCardContent,
-    NgFor,
     MatList,
     MatListItem,
     RouterLink,
@@ -77,8 +75,8 @@ import { MatIconButton } from '@angular/material/button'
     MatInput,
     TranslationComponent,
     EntityComponent,
-    MatSlideToggle,
-  ],
+    MatSlideToggle
+],
 })
 export class SpecificationComponent extends SessionStorage implements OnInit, OnDestroy {
   slaveid: number | undefined = undefined
@@ -568,7 +566,7 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
     return this.entitiesTouched || this.i18nTouched || !this.enterSpecNameFormGroup.pristine
   }
 
-  @HostListener('window:beforeunload', ['$event'])
+  @HostListener('window:beforeunload')
   canDeactivate(): boolean {
     if (this.isTouched() && !this.router.url.includes('tokenWasExpired')) {
       const result = window.confirm('There are unsaved changes! Are you sure?')

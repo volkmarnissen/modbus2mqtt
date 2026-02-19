@@ -3,7 +3,10 @@ const EventEmitter = require('node:events')
 
 const MqttHelper = require('./cypress/functions/mqtt')
 const fs = require('fs')
+const os = require('os')
+const path = require('path')
 const localhost = '127.0.0.1'
+const frontendRoot = path.join(__dirname, 'frontend')
 var logStartupFlag = false
 var logServersFlag = false
 function logStartup(msg) {
@@ -18,8 +21,14 @@ module.exports = defineConfig({
     devServer: {
       framework: 'angular',
       bundler: 'webpack',
+      options: {
+        project: 'frontend',
+        projectRoot: frontendRoot,
+        angularJsonPath: path.join(frontendRoot, 'angular.json'),
+      },
     },
     specPattern: '**/*.cy.ts',
+    supportFile: 'cypress/support/component.ts',
   },
   retries: {
     // Configure retry attempts for `cypress run`
@@ -97,17 +106,47 @@ module.exports = defineConfig({
         },
         getTempDir(args) {
           return new Promise((resolve, reject) => {
-            var data = fs.readFileSync('cypress/servers/tmpfiles', 'utf-8')
-            if (!data) {
-              reject(new Error('tmpfiles not found'))
-              return
+            const tmpfilePath = 'cypress/servers/tmpfiles'
+            let data = ''
+            try {
+              data = fs.readFileSync(tmpfilePath, 'utf-8')
+            } catch (e) {
+              if (e && e.code !== 'ENOENT') {
+                return reject(e)
+              }
+              // If file is missing, create it and generate a temp dir for this args
+              try {
+                fs.mkdirSync(path.dirname(tmpfilePath), { recursive: true })
+                const gen = fs.mkdtempSync(path.join(os.tmpdir(), 'm2m-cy-'))
+                fs.writeFileSync(tmpfilePath, `${args} ${gen}\n`, { flag: 'a' })
+                return resolve(gen)
+              } catch (e2) {
+                return reject(e2)
+              }
             }
-            var re = new RegExp(args + ' (.*)\n')
-            var matches = re.exec(data)
-            if (matches && matches.length > 1) resolve(matches[1])
-            else {
-              reject(new Error('getTempDir: args not found in tmpfiles ' + args + ' '))
-              return
+
+            if (!data) {
+              // File exists but empty — generate and append
+              try {
+                const gen = fs.mkdtempSync(path.join(os.tmpdir(), 'm2m-cy-'))
+                fs.writeFileSync(tmpfilePath, `${args} ${gen}\n`, { flag: 'a' })
+                return resolve(gen)
+              } catch (e3) {
+                return reject(e3)
+              }
+            }
+
+            const re = new RegExp(args + ' (.*)\n')
+            const matches = re.exec(data)
+            if (matches && matches.length > 1) return resolve(matches[1])
+
+            // Not found — generate and append then return
+            try {
+              const gen = fs.mkdtempSync(path.join(os.tmpdir(), 'm2m-cy-'))
+              fs.writeFileSync(tmpfilePath, `${args} ${gen}\n`, { flag: 'a' })
+              return resolve(gen)
+            } catch (e4) {
+              return reject(e4)
             }
           })
         },

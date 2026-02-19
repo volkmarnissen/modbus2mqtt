@@ -402,3 +402,22 @@ export class TempConfigDirHelper {
     }
   }
 }
+import { createServer } from 'net'
+
+export const getAvailablePort = async (): Promise<number> => {
+  return await new Promise<number>((resolve, reject) => {
+    const server = createServer()
+    server.once('error', (err) => {
+      reject(err)
+    })
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address()
+      if (address && typeof address === 'object') {
+        const port = address.port
+        server.close(() => resolve(port))
+      } else {
+        server.close(() => reject(new Error('Unable to determine free port')))
+      }
+    })
+  })
+}

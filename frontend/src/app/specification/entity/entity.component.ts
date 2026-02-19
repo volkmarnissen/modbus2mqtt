@@ -48,7 +48,7 @@ import { EntityValueControlComponent } from '../entity-value-control/entity-valu
 import { MatIcon } from '@angular/material/icon'
 import { MatTooltip } from '@angular/material/tooltip'
 import { MatIconButton } from '@angular/material/button'
-import { NgIf, NgClass, NgFor, AsyncPipe } from '@angular/common'
+import { NgClass, AsyncPipe } from '@angular/common';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
 
 const nameFormControlName = 'name'
@@ -85,7 +85,6 @@ const newEntity: ImodbusEntityWithName = {
     MatCard,
     MatCardHeader,
     MatCardTitle,
-    NgIf,
     MatIconButton,
     MatTooltip,
     MatIcon,
@@ -103,12 +102,11 @@ const newEntity: ImodbusEntityWithName = {
     MatError,
     MatSlideToggle,
     MatSelect,
-    NgFor,
     MatOption,
     CdkDropList,
     CdkDrag,
-    AsyncPipe,
-  ],
+    AsyncPipe
+],
 })
 export class EntityComponent extends SessionStorage implements AfterViewInit, OnChanges, OnDestroy {
   onMqttValueChange(_event: any, _entity: ImodbusEntity) {

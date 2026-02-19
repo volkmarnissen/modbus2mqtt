@@ -9,39 +9,35 @@
         </mat-panel-title>
         <mat-panel-description>
           <div class="flexcolumns" dragndropDirective (fileDropped)="onDocumentationDropped($event)">
-            <a
-              *ngIf="documentUrls.length > 0; else noElements"
-              class="nodistance clickable"
-              target="_blank"
-              rel="noopener noreferrer"
-              [href]="documentUrls[0].url"
-              >{{ getBaseFilename(documentUrls[0].url) }}</a
-            >
-            <ng-template #noElements> No Documenation available </ng-template>
+            @if (documentUrls.length > 0) {
+              <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="documentUrls[0].url">
+                {{ getBaseFilename(documentUrls[0].url) }}
+              </a>
+            } @else {
+              <ng-container>No Documenation available</ng-container>
+            }
           </div>
         </mat-panel-description>
       </mat-expansion-panel-header>
       <div dragndropDirective (fileDropped)="onDocumentationDropped($event)">
-        <div
-          class="bordervisible"
-          *ngFor="let doc of documentUrls"
-          dragndropDirective
-          (fileDropped)="onDocumentationDropped($event)"
-        >
-          <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="doc.url">{{
-            getBaseFilename(doc.url)
-          }}</a>
-          <button
-            mat-icon-button
-            class="material-icons app-toolbar-menu"
-            matTooltip="Delete attached Document or Link"
-            color="warn"
-            (click)="deleteFile(doc)"
-            *ngIf="currentSpecification != undefined"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
+        @for (doc of documentUrls; track $index) {
+          <div class="bordervisible" dragndropDirective (fileDropped)="onDocumentationDropped($event)">
+            <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="doc.url">
+              {{ getBaseFilename(doc.url) }}
+            </a>
+            @if (currentSpecification != undefined) {
+              <button
+                mat-icon-button
+                class="material-icons app-toolbar-menu"
+                matTooltip="Delete attached Document or Link"
+                color="warn"
+                (click)="deleteFile(doc)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </div>
+        }
       </div>
       <div class="margins">
         <input
@@ -101,23 +97,26 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div class="bordervisible" dragndropDirective (fileDropped)="onImageDropped($event)">
-        <div class="nodistance" *ngFor="let image of imageUrls" dragndropDirective (fileDropped)="onImageDropped($event)">
-          <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="image.url">{{
-            getBaseFilename(image.url)
-          }}</a>
-          <button
-            mat-icon-button
-            class="material-icons app-toolbar-menu"
-            matTooltip="Delete attached Document or Link"
-            color="warn"
-            dragndropDirective
-            (fileDropped)="onImageDropped($event)"
-            (click)="deleteFile(image)"
-            *ngIf="currentSpecification != undefined"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
+        @for (image of imageUrls; track $index) {
+          <div class="nodistance" dragndropDirective (fileDropped)="onImageDropped($event)">
+            <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="image.url">
+              {{ getBaseFilename(image.url) }}
+            </a>
+            @if (currentSpecification != undefined) {
+              <button
+                mat-icon-button
+                class="material-icons app-toolbar-menu"
+                matTooltip="Delete attached Document or Link"
+                color="warn"
+                dragndropDirective
+                (fileDropped)="onImageDropped($event)"
+                (click)="deleteFile(image)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </div>
+        }
       </div>
       <div class="margins">
         <input

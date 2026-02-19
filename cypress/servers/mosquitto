@@ -18,7 +18,12 @@ if [ -r "/opt/homebrew/sbin/mosquitto" ]
 then
   EXEC=/opt/homebrew/sbin/mosquitto
 fi
-$EXEC -c $TMPDIR/mosquitto.conf &
+mkdir -p cypress/servers/logs
+logfile=cypress/servers/logs/mosquitto.out
+# Stable symlink to latest mosquitto log
+ln -sf "$logfile" cypress/servers/logs/mosquitto.log
+
+$EXEC -c $TMPDIR/mosquitto.conf >>"$logfile" 2>&1 &
 MPID=$!  
 
 wait $MPID

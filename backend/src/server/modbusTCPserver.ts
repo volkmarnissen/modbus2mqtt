@@ -115,7 +115,7 @@ const vector: IServiceVector = {
       if (v) {
         v.value = value
         resolve()
-      } else reject(new Error('Modbus error 2'))
+      } else reject({ modbusErrorCode: 2, msg: 'Illegal address' })
     })
   },
   setCoil: (addr: number, value: boolean, unitID: number, cb: FCallbackVal<boolean>): void => {
@@ -124,7 +124,7 @@ const vector: IServiceVector = {
       v.value = value
       cb(null, value)
     } else {
-      cb(new Error('Modbus error 2'), false)
+      cb({ modbusErrorCode: 2, msg: 'Illegal address' } as unknown as Error, false)
       return
     }
   },
@@ -240,17 +240,15 @@ export function logValues() {
   })
 }
 let server: ModbusServer | undefined = undefined
-export function runModbusServer(port: number = 8502): void {
+export async function runModbusServer(port: number = 8502): Promise<void> {
   server = new ModbusServer()
-  server
-    .startServer(port)
-    .then(() => {
-      log.log(LogLevelEnum.info, 'listening')
-    })
-    .catch((e) => {
-      log.log(LogLevelEnum.error, 'Unable to start ' + e.message)
-      process.exit(1)
-    })
+  try {
+    await server.startServer(port)
+    log.log(LogLevelEnum.info, 'listening')
+  } catch (e: any) {
+    log.log(LogLevelEnum.error, 'Unable to start ' + e.message)
+    process.exit(1)
+  }
 }
 process.on('SIGINT', () => {
   stopModbusTCPServer()

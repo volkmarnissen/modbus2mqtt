@@ -28,7 +28,7 @@
       </mat-card-content>
     </mat-card>
     <div [ngClass]="{ waitCursor: contributing }">
-      <ng-container *ngFor="let spec of specifications">
+      @for (spec of specifications; track $index) {
         <mat-card class="width350pt card">
           <mat-card-header>
             <mat-card-title matTooltip="Contribute Specification" class="width200pt"
@@ -73,15 +73,19 @@
             </div>
             <a [href]="generateDownloadLink(spec.filename)" download>Download</a>
             <p>
-              <a *ngIf="spec.pullUrl != undefined" [href]="spec.pullUrl" target="_blank">View Pull Request on Github</a>
+              @if (spec.pullUrl != undefined) {
+                <a [href]="spec.pullUrl" target="_blank">View Pull Request on Github</a>
+              }
             </p>
 
-            <div *ngFor="let message of spec.messages">
-              <p class="message errorTextNoBlink">{{ getValidationMessage(spec, message) }}</p>
-            </div>
+            @for (message of spec.messages; track $index) {
+              <div>
+                <p class="message errorTextNoBlink">{{ getValidationMessage(spec, message) }}</p>
+              </div>
+            }
           </mat-card-content>
         </mat-card>
-      </ng-container>
+      }
     </div>
   </div>
 </div>

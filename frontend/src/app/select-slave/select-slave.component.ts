@@ -54,7 +54,7 @@ import { MatIconButton } from '@angular/material/button'
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
 import { MatIconButtonSizesModule } from 'mat-icon-button-sizes'
 
-import { NgFor, NgIf, AsyncPipe } from '@angular/common'
+import { AsyncPipe } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip'
 import { MatSlideToggle } from '@angular/material/slide-toggle'
 import { ModbusErrorComponent } from '../modbus-error/modbus-error.component'
@@ -80,7 +80,6 @@ interface IuiSlave {
     MatTooltip,
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
     MatCard,
     MatCardHeader,
     MatCardTitle,
@@ -90,7 +89,6 @@ interface IuiSlave {
     MatIconButtonSizesModule,
     MatButtonModule,
     MatIcon,
-    NgIf,
     MatCardContent,
     MatFormField,
     MatLabel,
@@ -102,8 +100,8 @@ interface IuiSlave {
     MatExpansionPanelTitle,
     MatInput,
     MatError,
-    AsyncPipe,
-  ],
+    AsyncPipe
+],
 })
 export class SelectSlaveComponent extends SessionStorage implements OnInit {
   preparedIdentSpecs: IidentificationSpecification[] | undefined

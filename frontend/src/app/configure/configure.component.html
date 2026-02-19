@@ -32,35 +32,43 @@
         <mat-form-field class="width250pt">
           <mat-label>MQTT server URL</mat-label>
           <input matInput formControlName="mqttserverurl" (change)="onChangekMqttConfig()" placeholder="mqtt://mosquitto:1883" />
-          <mat-error *ngIf="configureMqttFormGroup.hasError('invalidConnection') != null"> Invalid Connection Data </mat-error>
-          <mat-error *ngIf="configureMqttFormGroup.get('mqttserverurl')?.hasError('required') != null">
-            This field is reqired
-          </mat-error> </mat-form-field
+          @if (configureMqttFormGroup.hasError('invalidConnection') != null) {
+            <mat-error> Invalid Connection Data </mat-error>
+          }
+          @if (configureMqttFormGroup.get('mqttserverurl')?.hasError('required') != null) {
+            <mat-error> This field is reqired </mat-error>
+          }
+        </mat-form-field
         ><br />
         <mat-form-field class="width250pt">
           <mat-label>User</mat-label>
           <input matInput formControlName="mqttuser" (change)="onChangekMqttConfig()" />
-          <mat-error *ngIf="configureMqttFormGroup.get('mqttuser')?.hasError('required') != null">
-            This field is reqired
-          </mat-error> </mat-form-field
+          @if (configureMqttFormGroup.get('mqttuser')?.hasError('required') != null) {
+            <mat-error> This field is reqired </mat-error>
+          }
+        </mat-form-field
         ><br />
         <mat-form-field class="width250pt">
           <mat-label>Password</mat-label>
           <input matInput formControlName="mqttpassword" (change)="onChangekMqttConfig()" />
-          <mat-error *ngIf="configureMqttFormGroup.get('mqttpassword')?.hasError('required') != null">
-            This field is reqired
-          </mat-error>
+          @if (configureMqttFormGroup.get('mqttpassword')?.hasError('required') != null) {
+            <mat-error> This field is reqired </mat-error>
+          }
         </mat-form-field>
         <mat-form-field class="width250pt">
           <mat-label>CA certificate File (located in HA ssl directory)</mat-label>
           <mat-select matInput formControlName="mqttcafile" (selectionChange)="onChangekMqttConfig()">
-            <mat-option *ngFor="let c of sslFiles" [value]="c">{{ c }} </mat-option>
+            @for (c of sslFiles; track $index) {
+              <mat-option [value]="c">{{ c }} </mat-option>
+            }
           </mat-select>
         </mat-form-field>
         <mat-form-field class="width250pt">
           <mat-label>Client key (located in HA ssl directory) for client authentication</mat-label>
           <mat-select matInput formControlName="mqttkeyfile" (selectionChange)="onChangekMqttConfig()">
-            <mat-option *ngFor="let c of sslFiles" [value]="c">{{ c }} </mat-option>
+            @for (c of sslFiles; track $index) {
+              <mat-option [value]="c">{{ c }} </mat-option>
+            }
           </mat-select>
         </mat-form-field>
         <mat-form-field class="width250pt">

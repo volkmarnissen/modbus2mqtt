@@ -1,0 +1,38 @@
+@if (announcements.length > 0) {
+  <div class="announcement-container">
+    @for (announcement of announcements; track announcement.id) {
+      <mat-card @slideDown [class]="'announcement-card ' + getSeverityClass(announcement.severity)">
+        <mat-card-content>
+          <div class="announcement-row">
+            <div class="announcement-icon">
+              @if (announcement.severity === 'breaking') {
+                <mat-icon class="severity-icon breaking-icon">error</mat-icon>
+              } @else if (announcement.severity === 'warning') {
+                <mat-icon class="severity-icon warning-icon">warning</mat-icon>
+              } @else {
+                <mat-icon class="severity-icon info-icon">info</mat-icon>
+              }
+            </div>
+            <div class="announcement-content">
+              <strong>{{ announcement.title }}</strong>
+              <span class="announcement-date">{{ announcement.date }}</span>
+              <div class="announcement-message" [innerHTML]="announcement.messageHtml"></div>
+            </div>
+            <div class="announcement-close">
+              <button mat-icon-button matTooltip="Dismiss" (click)="dismiss(announcement.id)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+    @if (announcements.length > 1) {
+      <div class="dismiss-all">
+        <button mat-icon-button matTooltip="Dismiss all announcements" (click)="dismissAll()">
+          <mat-icon>done_all</mat-icon>
+        </button>
+      </div>
+    }
+  </div>
+}

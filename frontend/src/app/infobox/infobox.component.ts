@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core'
 import { trigger, transition, state, animate, style, AnimationEvent } from '@angular/animations'
 import { Observable } from 'rxjs'
-import { NgIf } from '@angular/common'
+
 const animationDuration = 1250
 @Component({
   selector: 'app-infobox',
@@ -29,7 +29,7 @@ const animationDuration = 1250
       transition('close => open', [animate((animationDuration / 1000).toFixed(1) + 's')]),
     ]),
   ],
-  imports: [NgIf],
+  imports: [],
   templateUrl: './infobox.component.html',
   styleUrl: './infobox.component.css',
 })

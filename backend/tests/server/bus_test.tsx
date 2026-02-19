@@ -68,16 +68,6 @@ it('read slaves/delete slave/addSlave/read slave', () => {
     expect(slavesAfter.length).toBeGreaterThanOrEqual(oldLength)
   }
 })
-// it('getAvailableModusData with empty busses array', (done) => {
-//    Config['yamlDir'] = "emptyYaml";
-
-//    new Config().readYaml();
-
-//    Bus.getAllAvailableModusData().subscribe(() => {
-
-//       done();
-//    })
-// })
 
 let readConfig = new Config()
 let prepared: boolean = false

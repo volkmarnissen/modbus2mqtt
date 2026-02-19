@@ -14,21 +14,22 @@ def main():
     parser.add_argument("-r", "--restart", help="Start modbus2mqtt and mosquitto",  action='store_true')
     args, unknownargs = parser.parse_known_args()
     try:
-        match args.test:
-            case "test":
-                testall("server")
-            case  "restartServers":
-                killRequiredApps(args.permanent, args.restart)
-                startRequiredApps(args.permanent, args.restart)
-                pass
-            case  "startServers":
-                startRequiredApps(args.permanent, args.restart)
-                pass
-            case "killServers":
-                killRequiredApps(args.permanent, args.restart)
-                killDockerContainer()
-            case "startdocker":
-                startDockerServers(args.docker_image)
+        # Use if/elif to support Python < 3.10
+        if args.test == "test":
+            testall("server")
+        elif args.test == "restartServers":
+            killRequiredApps(args.permanent, args.restart)
+            startRequiredApps(args.permanent, args.restart)
+        elif args.test == "startServers":
+            startRequiredApps(args.permanent, args.restart)
+        elif args.test == "killServers":
+            killRequiredApps(args.permanent, args.restart)
+            killDockerContainer()
+        elif args.test == "startdocker":
+            startDockerServers(args.docker_image)
+        else:
+            print(f"Unknown command: {args.test}", file=sys.stderr)
+            exit(2)
     except Exception as err:
         print(str(err), file=sys.stderr)
         exit(2)

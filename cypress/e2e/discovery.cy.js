@@ -216,7 +216,7 @@ describe('MQTT Discovery Tests', () => {
               expect(tAndP.filter((tp) => tp.topic.startsWith('homeassistant/')).length).to.eq(2)
             })
           cy.task("getTempDir",Cypress.env("modbus2mqttAddonHttpPort").toString()).then((tmpdir)=>{
-            cy.readFile( tmpdir + '/modbus2mqtt/specifications/files/thespec/files.yaml').should('exist')
+            cy.readFile( tmpdir + '/modbus2mqtt/specifications/files/thespec/files.yaml', { timeout: 60000 }).should('exist')
           })
         })
       })

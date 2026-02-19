@@ -28,8 +28,7 @@ import { MatIcon } from '@angular/material/icon'
 import { MatIconButton } from '@angular/material/button'
 import { MatTooltip } from '@angular/material/tooltip'
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
-import { NgFor, NgIf } from '@angular/common'
-import { MatSlideToggle } from '@angular/material/slide-toggle'
+
 
 @Component({
   selector: 'app-select-modbus',
@@ -38,13 +37,10 @@ import { MatSlideToggle } from '@angular/material/slide-toggle'
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
     MatCard,
     MatCardHeader,
     MatCardTitle,
-    MatSlideToggle,
     MatTooltip,
-    NgIf,
     MatIconButton,
     MatIcon,
     MatCardContent,
@@ -54,8 +50,8 @@ import { MatSlideToggle } from '@angular/material/slide-toggle'
     MatLabel,
     MatInput,
     MatSelect,
-    MatOption,
-  ],
+    MatOption
+],
 })
 export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   constructor(
@@ -117,7 +113,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   readBussesFromServer(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.bussesObservable.subscribe((results) => {
-        ;(results as (IBus | null)[]).push(null)
+        ; (results as (IBus | null)[]).push(null)
         this.busses.data = results
         if (this.bussesFormArray != undefined) {
           this.bussesFormArray.clear()
@@ -144,7 +140,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
         const serialport = (bus.connectionData as IRTUConnection).serialport
         const baudRate = (bus.connectionData as IRTUConnection).baudrate
         const timeout = (bus.connectionData as IRTUConnection).timeout
-        const tcpBridge = (bus.connectionData as IRTUConnection).tcpBridge
+        const tcpBridgePort = (bus.connectionData as IRTUConnection).tcpBridgePort
 
         const sd = this.getBusFormGroup(idx).get(['rtu', 'serial']) as FormControl<string>
         sd.setValue(serialport)
@@ -153,8 +149,8 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
         if (br) br.setValue(baudRate)
         const to = fg.get(['rtu', 'timeout'])
         if (to) to.setValue(timeout)
-        const tbp = fg.get(['rtu', 'tcpBridge'])
-        if (tbp) tbp.setValue(tcpBridge)
+        const tbp = fg.get(['rtu', 'tcpBridgePort'])
+        if (tbp) tbp.setValue(tcpBridgePort ?? null)
       } else {
         const host = (bus.connectionData as ITCPConnection).host
         const port = (bus.connectionData as ITCPConnection).port
@@ -215,13 +211,23 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
           null != (baudrate = fg.get(['rtu', 'selectBaudRate']) as FormControl) &&
           null != (serial = fg.get(['rtu', 'serial']) as FormControl)
         ) {
-          ;(connectionData as IRTUConnection).baudrate = baudrate.value
-          ;(connectionData as IRTUConnection).serialport = serial.value
-          ;(connectionData as IRTUConnection).timeout = timeout.value
+          ; (connectionData as IRTUConnection).baudrate = baudrate.value
+            ; (connectionData as IRTUConnection).serialport = serial.value
+            ; (connectionData as IRTUConnection).timeout = timeout.value
         }
         // Optional BridgePort
-        const tcpBridge = fg.get(['rtu', 'tcpBridge'])
-        if (null != tcpBridge) (connectionData as IRTUConnection).tcpBridge = tcpBridge.value
+        const tcpBridgePort = fg.get(['rtu', 'tcpBridgePort']) as FormControl
+        if (tcpBridgePort) {
+          const portValue = tcpBridgePort.value
+          if (portValue !== null && portValue !== undefined && String(portValue).trim() !== '') {
+            const parsedPort = Number(portValue)
+            if (!Number.isNaN(parsedPort)) (connectionData as IRTUConnection).tcpBridgePort = parsedPort
+          } else {
+            delete (connectionData as IRTUConnection).tcpBridgePort
+          }
+        }
+
+        delete (connectionData as any).tcpBridge
 
         delete (connectionData as any).host
         delete (connectionData as any).port
@@ -231,9 +237,9 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
           undefined != (timeout = fg.get(['tcp', 'timeout']) as FormControl) &&
           undefined != (port = fg.get(['tcp', 'port']) as FormControl)
         ) {
-          ;(connectionData as ITCPConnection).host = host.value
-          ;(connectionData as ITCPConnection).port = port.value
-          ;(connectionData as ITCPConnection).timeout = timeout.value
+          ; (connectionData as ITCPConnection).host = host.value
+            ; (connectionData as ITCPConnection).port = port.value
+            ; (connectionData as ITCPConnection).timeout = timeout.value
         }
         delete (connectionData as any).serialport
         delete (connectionData as any).baudrate
@@ -249,7 +255,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
     // Remove serialport names, which are already configured
     const devices = structuredClone(this.serialDevices)
     let didx
-    for (didx = 0; didx < devices.length; ) {
+    for (didx = 0; didx < devices.length;) {
       const sd = devices[didx]
       const idx = this.busses.data.findIndex(
         (b) =>
@@ -283,7 +289,7 @@ export class SelectModbusComponent implements AfterViewInit, OnDestroy {
         serial: [null, this.serialValidator],
         selectBaudRate: [9600, Validators.required],
         timeout: [BUS_TIMEOUT_DEFAULT, Validators.required],
-        tcpBridge: [false],
+        tcpBridgePort: [null],
       }),
       tcp: this._formBuilder.group({
         host: ['', Validators.required],

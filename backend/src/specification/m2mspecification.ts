@@ -93,90 +93,63 @@ export class M2mSpecification implements IspecificationValidator {
     })
     return errors
   }
-  contribute(note: string | undefined): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      try {
-        const language = ConfigSpecification.mqttdiscoverylanguage
-        let messages: Imessage[] = []
+  async contribute(note: string | undefined): Promise<number> {
+    const language = ConfigSpecification.mqttdiscoverylanguage
+    let messages: Imessage[] = []
 
-        if (language == undefined)
-          messages.push({ type: MessageTypes.noMqttDiscoveryLanguage, category: MessageCategories.configuration })
-        else messages = this.validate(language)
-        const errors: string = M2mSpecification.messages2Text(this.settings as IbaseSpecification, messages)
+    if (language == undefined)
+      messages.push({ type: MessageTypes.noMqttDiscoveryLanguage, category: MessageCategories.configuration })
+    else messages = this.validate(language)
+    const errors: string = M2mSpecification.messages2Text(this.settings as IbaseSpecification, messages)
 
-        if (errors.length > 0) {
-          throw new Error('Validation failed with errors: ' + errors)
-        }
+    if (errors.length > 0) {
+      throw new Error('Validation failed with errors: ' + errors)
+    }
 
-        if (errors.length == 0 && messages.length > 0 && (!note || note.length == 0))
-          throw new Error('Validation failed with warning, but no note text available')
-        const fileList = this.getSpecificationsFilesList(ConfigSpecification.getLocalDir())
-        const spec = this.settings as IbaseSpecification
-        let title = ''
-        let message = ''
-        switch (spec.status) {
-          case SpecificationStatus.added: {
-            title = 'Add specification '
-            message = this.generateAddedContributionMessage()
-            break
-          }
-          case SpecificationStatus.cloned: {
-            title = 'Update specification '
-            //if (spec.publicSpecification)
-            //  message = this.isEqual(spec.publicSpecification)
-            const pub = (spec as unknown as { publicSpecification?: IfileSpecification }).publicSpecification
-            message = this.generateClonedContributionMessage(note, pub)
-            break
-          }
-        }
-        title = title + getSpecificationI18nName(spec, language!)
-        if (ConfigSpecification.githubPersonalToken && ConfigSpecification.githubPersonalToken.length) {
-          const github = new M2mGitHub(ConfigSpecification.githubPersonalToken, ConfigSpecification.getPublicDir())
-          const restore = function (spec: IbaseSpecification, github: M2mGitHub, reject: (e: unknown) => void, e: unknown) {
-            if (spec.status == SpecificationStatus.contributed)
-              new ConfigSpecification().changeContributionStatus(spec.filename, SpecificationStatus.added)
-            github
-              .deleteSpecBranch(spec.filename)
-              .then(() => {
-                reject(e)
-              })
-              .catch((e1) => {
-                log.log(LogLevelEnum.error, 'delete branch: ' + e1.message)
-                reject(e)
-              })
-          }
-          github
-            .init()
-            .then(() => {
-              github
-                .commitFiles(ConfigSpecification.getLocalDir(), spec.filename, fileList, title, message)
-                .then(() => {
-                  github
-                    .createPullrequest(title, message, spec.filename)
-                    .then((issue) => {
-                      new ConfigSpecification().changeContributionStatus(
-                        (this.settings as IbaseSpecification).filename,
-                        SpecificationStatus.contributed,
-                        issue
-                      )
-                      resolve(issue)
-                    })
-                    .catch((e) => {
-                      restore(this.settings as IbaseSpecification, github, reject, e)
-                    })
-                })
-                .catch((e) => {
-                  restore(this.settings as IbaseSpecification, github, reject, e)
-                })
-            })
-            .catch((e) => {
-              restore(this.settings as IbaseSpecification, github, reject, e)
-            })
-        } else throw new Error('Github connection is not configured. Set Github Personal Acces Token in configuration UI first')
-      } catch (e) {
-        reject(e)
+    if (errors.length == 0 && messages.length > 0 && (!note || note.length == 0))
+      throw new Error('Validation failed with warning, but no note text available')
+    const fileList = this.getSpecificationsFilesList(ConfigSpecification.getLocalDir())
+    const spec = this.settings as IbaseSpecification
+    let title = ''
+    let message = ''
+    switch (spec.status) {
+      case SpecificationStatus.added: {
+        title = 'Add specification '
+        message = this.generateAddedContributionMessage()
+        break
       }
-    })
+      case SpecificationStatus.cloned: {
+        title = 'Update specification '
+        const pub = (spec as unknown as { publicSpecification?: IfileSpecification }).publicSpecification
+        message = this.generateClonedContributionMessage(note, pub)
+        break
+      }
+    }
+    title = title + getSpecificationI18nName(spec, language!)
+    if (!ConfigSpecification.githubPersonalToken || !ConfigSpecification.githubPersonalToken.length) {
+      throw new Error('Github connection is not configured. Set Github Personal Acces Token in configuration UI first')
+    }
+    const github = new M2mGitHub(ConfigSpecification.githubPersonalToken, ConfigSpecification.getPublicDir())
+    try {
+      await github.init()
+      await github.commitFiles(ConfigSpecification.getLocalDir(), spec.filename, fileList, title, message)
+      const issue = await github.createPullrequest(title, message, spec.filename)
+      new ConfigSpecification().changeContributionStatus(
+        (this.settings as IbaseSpecification).filename,
+        SpecificationStatus.contributed,
+        issue
+      )
+      return issue
+    } catch (e: unknown) {
+      if (spec.status == SpecificationStatus.contributed)
+        new ConfigSpecification().changeContributionStatus(spec.filename, SpecificationStatus.added)
+      try {
+        await github.deleteSpecBranch(spec.filename)
+      } catch (e1: unknown) {
+        log.log(LogLevelEnum.error, 'delete branch: ' + (e1 as Error).message)
+      }
+      throw e
+    }
   }
 
   private generateAddedContributionMessage(): string {
@@ -317,56 +290,39 @@ export class M2mSpecification implements IspecificationValidator {
     if (!notBackwardCompatible) return ' This will break compatibilty with previous version'
     return msg
   }
-  private static handleCloseContributionError(msg: string, reject: (e: unknown) => void): void {
+  private static throwCloseContributionError(msg: string): never {
     log.log(LogLevelEnum.error, msg)
     const e = new Error(msg) as Error & { step?: string }
     e.step = 'closeContribution'
-    reject(e)
+    throw e
   }
-  static closeContribution(spec: IfileSpecification): Promise<IpullRequest> {
-    return new Promise<IpullRequest>((resolve, reject) => {
-      if (undefined == ConfigSpecification.githubPersonalToken) {
-        this.handleCloseContributionError(
-          'No Github Personal Access Token configured. Unable to close contribution ' + spec.filename,
-          reject
-        )
-        return
+  static async closeContribution(spec: IfileSpecification): Promise<IpullRequest> {
+    if (undefined == ConfigSpecification.githubPersonalToken) {
+      this.throwCloseContributionError(
+        'No Github Personal Access Token configured. Unable to close contribution ' + spec.filename
+      )
+    }
+    if (spec.pullNumber == undefined) {
+      this.throwCloseContributionError('No Pull Number in specification. Unable to close contribution ' + spec.filename)
+    }
+    const gh = new M2mGitHub(ConfigSpecification.githubPersonalToken!, join(ConfigSpecification.getPublicDir()))
+    try {
+      await gh.init()
+      const pullStatus = await gh.getPullRequest(spec.pullNumber!)
+      const cspec = new ConfigSpecification()
+      if (pullStatus.merged) {
+        cspec.changeContributionStatus(spec.filename, SpecificationStatus.published, undefined)
+      } else if (pullStatus.closed_at != null) {
+        cspec.changeContributionStatus(spec.filename, SpecificationStatus.added, undefined)
       }
-      if (spec.pullNumber == undefined) {
-        this.handleCloseContributionError('No Pull Number in specification. Unable to close contribution ' + spec.filename, reject)
-        return
-      }
-      const gh = new M2mGitHub(ConfigSpecification.githubPersonalToken!, join(ConfigSpecification.getPublicDir()))
-      gh.init()
-        .then(() => {
-          gh.getPullRequest(spec.pullNumber!)
-            .then((pullStatus) => {
-              try {
-                const cspec = new ConfigSpecification()
-                if (pullStatus.merged) {
-                  cspec.changeContributionStatus(spec.filename, SpecificationStatus.published, undefined)
-                } else if (pullStatus.closed_at != null) {
-                  cspec.changeContributionStatus(spec.filename, SpecificationStatus.added, undefined)
-                }
-                spec = ConfigSpecification.getSpecificationByFilename(spec.filename)!
-                if (spec.status != SpecificationStatus.contributed) gh.deleteSpecBranch(spec.filename)
-                gh.fetchPublicFiles()
-                resolve({ merged: pullStatus.merged, closed: pullStatus.closed_at != null, pullNumber: spec.pullNumber! })
-              } catch (e: unknown) {
-                const msg = e instanceof Error ? e.message : String(e)
-                this.handleCloseContributionError('closeContribution: ' + msg, reject)
-              }
-            })
-            .catch((e: unknown) => {
-              const msg = e instanceof Error ? e.message : String(e)
-              this.handleCloseContributionError('closeContribution: ' + msg, reject)
-            })
-        })
-        .catch((e: unknown) => {
-          const msg = e instanceof Error ? e.message : String(e)
-          this.handleCloseContributionError('closeContribution: ' + msg, reject)
-        })
-    })
+      spec = ConfigSpecification.getSpecificationByFilename(spec.filename)!
+      if (spec.status != SpecificationStatus.contributed) gh.deleteSpecBranch(spec.filename)
+      gh.fetchPublicFiles()
+      return { merged: pullStatus.merged, closed: pullStatus.closed_at != null, pullNumber: spec.pullNumber! }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      this.throwCloseContributionError('closeContribution: ' + msg)
+    }
   }
   getSpecificationsFilesList(localDir: string): string[] {
     const files: string[] = []
@@ -946,7 +902,9 @@ export class M2mSpecification implements IspecificationValidator {
       return
 
     if (contribution == undefined) {
-      M2mSpecification.handleCloseContributionError('Unexpected undefined contribution', error)
+      const msg = 'Unexpected undefined contribution'
+      log.log(LogLevelEnum.error, msg)
+      error(new Error(msg))
     } else {
       if (
         contribution.pollCount >

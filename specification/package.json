@@ -9,11 +9,13 @@
   ],
   "bugs": "https://github.com/modbus2mqtt/server/issues",
   "type": "module",
+  "main": "./dist/specification/validate.js",
+  "bin": {
+    "m2m-validate": "./bin/m2m-validate.js"
+  },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./dist/specification/validate.js",
+    "./shared/specification": "./dist/shared/specification/index.js"
   },
   "author": "Volkmar Nissen <volkmar.nissen@gmail.com>",
   "license": "MIT",
@@ -22,8 +24,7 @@
     "url": "https://github.com/modbus2mqtt/specification"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepare": "npm run build"
+    "test": "bash ./test-spec-install.sh"
   },
   "dependencies": {
     "@octokit/rest": "^20.1.1",
@@ -32,9 +33,15 @@
     "commander": "^14.0.2",
     "debug": "^4.3.7",
     "rxjs": "^7.8.2",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.0",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
-  }
+  },
+  "files": [
+    "dist",
+    "shared/specification/index.js",
+    "bin/m2m-validate.js"
+  ]
 }

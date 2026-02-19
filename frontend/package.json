@@ -5,6 +5,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "test": "echo '[frontend test] No tests defined' && exit 0",
+    "test:vitest": "vitest --config vitest.config.ts",
     "start:3005": "ng serve --configuration 3005",
     "build": "ng build --configuration production",
     "build:dev": "ng build --configuration development",
@@ -12,17 +14,17 @@
     "lint:fix": "sh -c 'cd .. && eslint frontend --ext .ts,.tsx --fix'"
   },
   "dependencies": {
-    "@angular/cdk": "^20.2.11",
-    "@angular/animations": "^20.3.9",
-    "@angular/common": "^20.3.9",
-    "@angular/compiler": "^20.3.9",
-    "@angular/core": "^20.3.9",
-    "@angular/forms": "^20.3.9",
-    "@angular/localize": "^20.3.9",
-    "@angular/material": "^20.2.11",
-    "@angular/platform-browser": "^20.3.9",
-    "@angular/platform-browser-dynamic": "^20.3.9",
-    "@angular/router": "^20.3.9",
+    "@angular/cdk": "^21.1.5",
+    "@angular/animations": "^21.1.5",
+    "@angular/common": "^21.1.5",
+    "@angular/compiler": "^21.1.5",
+    "@angular/core": "^21.1.5",
+    "@angular/forms": "^21.1.5",
+    "@angular/localize": "^21.1.5",
+    "@angular/material": "^21.1.5",
+    "@angular/platform-browser": "^21.1.5",
+    "@angular/platform-browser-dynamic": "^21.1.5",
+    "@angular/router": "^21.1.5",
     "@ngx-translate/core": "^17.0.0",
     "bootstrap": "^5.3.3",
     "@popperjs/core": "^2.11.8",
@@ -33,9 +35,11 @@
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^20.3.8",
-    "@angular/cli": "^20.3.8",
-    "@angular/compiler-cli": "^20.3.9",
-    "typescript": "^5.9.3"
+    "@angular-devkit/build-angular": "^21.1.4",
+    "@angular/cli": "^21.1.4",
+    "@angular/compiler-cli": "^21.1.5",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "jsdom": "^26.0.0"
   }
 }

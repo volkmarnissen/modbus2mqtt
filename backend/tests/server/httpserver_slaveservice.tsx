@@ -96,46 +96,31 @@ function prepareMqttDiscover(): MockMqttSubsctription {
   MqttSubscriptions['instance'] = mockDiscover as any as MqttSubscriptions
   return mockDiscover
 }
-it('GET state topic', (done) => {
+it('GET state topic', async () => {
   const mockDiscover = prepareMqttDiscover()
 
-  supertest(httpServer['app'])
-    .get('/' + mockDiscover.slave.getStateTopic())
-    .expect(200)
-    .then((response) => {
-      expect(response.text.indexOf('waterleveltransmitter')).not.toBe(-1)
-      done()
-    })
-    .catch(() => {
-      log.log(LogLevelEnum.error, 'error')
-      expect(1).toBeFalsy()
-    })
+  const response = await supertest(httpServer['app']).get('/' + mockDiscover.slave.getStateTopic()).expect(200)
+  expect(response.text.indexOf('waterleveltransmitter')).not.toBe(-1)
 })
 
-test('GET command Entity topic', (done) => {
+test('GET command Entity topic', async () => {
   const mockDiscover = prepareMqttDiscover()
   ConfigBus.addSpecification(mockDiscover.slave['slave'])
   const spec = mockDiscover.slave.getSpecification()
   let url = '/' + mockDiscover.slave.getEntityCommandTopic(spec!.entities[2] as any)!.commandTopic
   url = url + '20.2'
-  supertest(httpServer['app'])
+  await supertest(httpServer['app'])
     .get(url)
     //.send("{hotwatertargettemperature: 20.2}")
     // .send("20.2")
     .expect(200)
-    .then(() => {
-      done()
-    })
 })
-test('POST command topic', (done) => {
+test('POST command topic', async () => {
   const mockDiscover = prepareMqttDiscover()
   const url = '/' + mockDiscover.slave.getCommandTopic()
-  supertest(httpServer['app'])
+  await supertest(httpServer['app'])
     .post(url)
     .send({ hotwatertargettemperature: 20.2 })
     // .send("20.2")
     .expect(200)
-    .then(() => {
-      done()
-    })
 })
