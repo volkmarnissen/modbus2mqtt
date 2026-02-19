@@ -19,7 +19,7 @@ const debug = Debug('bustest')
 setConfigsDirsForTest()
 
 let tempHelper: TempConfigDirHelper
-beforeAll(() => {
+beforeAll(async () => {
   vi.restoreAllMocks()
   vi.clearAllMocks()
   initBussesForTest()
@@ -28,14 +28,7 @@ beforeAll(() => {
   tempHelper = new TempConfigDirHelper('modbusAPI_test')
   tempHelper.setup()
   new ConfigSpecification().readYaml()
-  return new Promise<void>((resolve, reject) => {
-    new Config()
-      .readYamlAsync()
-      .then(() => {
-        resolve()
-      })
-      .catch(reject)
-  })
+  await new Config().readYamlAsync()
 })
 afterAll(() => {
   if (tempHelper) tempHelper.cleanup()
@@ -52,112 +45,65 @@ afterAll(() => {
 //    })
 // })
 
-function testRead(
+async function testRead(
   address: number,
   address2: number,
   value1: number,
   value2: number,
-  fc: (slaveid: number, address: number, length: any) => Promise<IModbusResultOrError>
+  fc: (slaveid: number, address: number, length: number) => Promise<IModbusResultOrError>
 ): Promise<void> {
-  return new Promise<void>((resolve) => {
-    const tcpServer = new ModbusServer()
-    const bus = Bus.getBus(1)
-    if (bus) {
-      tcpServer
-        .startServer((bus.properties.connectionData as any)['port'])
-        .then(() => {
-          debug('Connected to TCP server')
-          const modbusAPI = new ModbusAPI(bus!)
-          modbusAPI.initialConnect().then(() => {
-            fc.bind(modbusAPI)(XYslaveid, address, 2)
-              .then((value) => {
-                expect(value!.data![0]).toBe(value1)
-                expect(value!.data![1]).toBe(value2)
-                fc.bind(modbusAPI)(XYslaveid, address2, 2)
-                  .then(() => {
-                    // Unexpected success: close cleanly first, then fail the test
-                    modbusAPI['closeRTU']('test', () => {
-                      tcpServer.stopServer(resolve)
-                    })
-                    expect(true).toBeFalsy()
-                  })
-                  .catch((e) => {
-                    modbusAPI['closeRTU']('test', () => {
-                      tcpServer.stopServer(resolve)
-                    })
-                    expect(e.modbusCode).toBe(2)
-                  })
-              })
-              .catch((e) => {
-                console.error(e)
-                modbusAPI['closeRTU']('test', () => {
-                  tcpServer.stopServer(resolve)
-                })
-              })
-          })
-        })
-        .catch((e) => {
-          // Start failed (e.g., EADDRINUSE) – mark test and finish
-          debug(e.message)
-          expect(true).toBeFalsy()
-          resolve()
-        })
+  const tcpServer = new ModbusServer()
+  const bus = Bus.getBus(1)
+  expect(bus).toBeDefined()
+  await tcpServer.startServer((bus!.properties.connectionData as any)['port'])
+  debug('Connected to TCP server')
+  const modbusAPI = new ModbusAPI(bus!)
+  try {
+    await modbusAPI.initialConnect()
+    const value = await fc.bind(modbusAPI)(XYslaveid, address, 2)
+    expect(value!.data![0]).toBe(value1)
+    expect(value!.data![1]).toBe(value2)
+    try {
+      await fc.bind(modbusAPI)(XYslaveid, address2, 2)
+      expect(true).toBeFalsy() // should not reach here
+    } catch (e: any) {
+      expect(e.modbusCode).toBe(2)
     }
-  })
+  } finally {
+    await new Promise<void>((resolve) => {
+      modbusAPI['closeRTU']('test', () => {
+        tcpServer.stopServer(resolve)
+      })
+    })
+  }
 }
-function testWrite(
+async function testWrite(
   address: number,
   address2: number,
   value: number,
-  fc: (slaveid: number, address: number, length: any) => Promise<void>
+  fc: (slaveid: number, address: number, data: number[]) => Promise<void>
 ): Promise<void> {
-  return new Promise<void>((resolve) => {
-    const tcpServer = new ModbusServer()
-    const bus = Bus.getBus(1)
-    if (bus) {
-      tcpServer
-        .startServer((bus.properties.connectionData as any)['port'])
-        .then(() => {
-          const bus = Bus.getBus(1)
-          const modbusAPI = new ModbusAPI(bus!)
-          modbusAPI.initialConnect().then(() => {
-            fc.bind(modbusAPI)(XYslaveid, address, { data: [value], buffer: [0] })
-              .then(() => {
-                fc.bind(modbusAPI)(XYslaveid, address2, {
-                  data: [value],
-                  buffer: [0],
-                })
-                  .then(() => {
-                    // Unexpected success: close cleanly first, then fail the test
-                    expect(true).toBeFalsy()
-                    modbusAPI['closeRTU']('test', () => {
-                      tcpServer.stopServer(resolve)
-                    })
-                  })
-                  .catch((e) => {
-                    expect(e.modbusCode).toBe(2)
-                    modbusAPI['closeRTU']('test', () => {
-                      tcpServer.stopServer(resolve)
-                    })
-                  })
-              })
-              .catch((e) => {
-                // Ensure at least one assertion if the first write fails unexpectedly
-                expect(e).toBeDefined()
-                modbusAPI['closeRTU']('test', () => {
-                  tcpServer.stopServer(resolve)
-                })
-              })
-          })
-        })
-        .catch((e) => {
-          // Start failed (e.g., EADDRINUSE) – mark test and finish
-          debug(e.message)
-          expect(true).toBeFalsy()
-          resolve()
-        })
+  const tcpServer = new ModbusServer()
+  const bus = Bus.getBus(1)
+  expect(bus).toBeDefined()
+  await tcpServer.startServer((bus!.properties.connectionData as any)['port'])
+  const modbusAPI = new ModbusAPI(bus!)
+  try {
+    await modbusAPI.initialConnect()
+    await fc.bind(modbusAPI)(XYslaveid, address, [value])
+    try {
+      await fc.bind(modbusAPI)(XYslaveid, address2, [value])
+      expect(true).toBeFalsy() // should not reach here
+    } catch (e: any) {
+      expect(e.modbusCode).toBe(2)
     }
-  })
+  } finally {
+    await new Promise<void>((resolve) => {
+      modbusAPI['closeRTU']('test', () => {
+        tcpServer.stopServer(resolve)
+      })
+    })
+  }
 }
 let readConfig = new Config()
 let prepared: boolean = false
@@ -237,7 +183,7 @@ describe('ServerTCP based', () => {
   })
   it('writeHoldingRegisters success, Illegal Address', async () => {
     expect.hasAssertions()
-    await singleMutex.runExclusive(() => testWrite(1, 2, 10, ModbusAPI.prototype.writeHoldingRegisters))
+    await singleMutex.runExclusive(() => testWrite(0x0101, 0x0109, 10, ModbusAPI.prototype.writeHoldingRegisters))
   })
   it('writeCoils success, Illegal Address', async () => {
     expect.hasAssertions()

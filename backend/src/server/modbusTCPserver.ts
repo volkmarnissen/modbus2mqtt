@@ -115,7 +115,7 @@ const vector: IServiceVector = {
       if (v) {
         v.value = value
         resolve()
-      } else reject(new Error('Modbus error 2'))
+      } else reject({ modbusErrorCode: 2, msg: 'Illegal address' })
     })
   },
   setCoil: (addr: number, value: boolean, unitID: number, cb: FCallbackVal<boolean>): void => {
@@ -124,7 +124,7 @@ const vector: IServiceVector = {
       v.value = value
       cb(null, value)
     } else {
-      cb(new Error('Modbus error 2'), false)
+      cb({ modbusErrorCode: 2, msg: 'Illegal address' } as unknown as Error, false)
       return
     }
   },
