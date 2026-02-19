@@ -34,6 +34,7 @@ import { HttpServerBase } from './httpServerBase.js'
 import { Writable } from 'stream'
 import { ConfigBus } from './configbus.js'
 import { MqttConnector } from './mqttconnector.js'
+import { MqttDiscover } from './mqttdiscover.js'
 import { MqttSubscriptions } from './mqttsubscriptions.js'
 const debug = Debug('httpserver')
 const log = new Logger('httpserver')
@@ -866,5 +867,54 @@ export class HttpServer extends HttpServerBase {
         this.returnResult(req, res, HttpErrorsEnum.OK, '')
       }
     })
+
+    // E2E test reset endpoint - only available when MODBUS2MQTT_E2E env var is set
+    if (process.env.MODBUS2MQTT_E2E) {
+      this.post(apiUri.e2eReset, async (req: ExpressRequest, res: http.ServerResponse) => {
+        try {
+          await this.resetForE2E()
+          this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify({ result: 'OK' }))
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e)
+          log.log(LogLevelEnum.error, 'E2E reset failed: ' + msg)
+          this.returnResult(req, res, HttpErrorsEnum.SrvErrInternalServerError, msg)
+        }
+      })
+    }
+  }
+
+  private async resetForE2E(): Promise<void> {
+    log.log(LogLevelEnum.info, 'E2E reset: starting')
+
+    // Phase 1: Stop active processes
+    Bus.resetForE2E()
+    MqttDiscover.resetInstance()
+    MqttSubscriptions.resetInstance()
+    MqttConnector.resetInstance()
+
+    // Phase 2: Clear config state
+    ConfigBus.resetForE2E()
+    ConfigSpecification.resetForE2E()
+
+    // Phase 3: Clean filesystem
+    const localDir = Config.getLocalDir()
+    const bussesDir = localDir + '/busses'
+    const specsDir = localDir + '/specifications'
+    if (fs.existsSync(bussesDir)) fs.rmSync(bussesDir, { recursive: true })
+    if (fs.existsSync(specsDir)) fs.rmSync(specsDir, { recursive: true })
+
+    // Phase 4: Reset config (preserves httpport/supervisor_host, rewrites minimal YAML)
+    Config.resetForE2E()
+
+    // Phase 5: Re-initialize from (now clean) disk
+    await new Config().readYamlAsync()
+    new ConfigSpecification().readYaml()
+    ConfigBus.readBusses()
+
+    // Phase 6: Re-create MqttDiscover singleton to re-register ConfigBus listeners
+    // (addSlave, deleteSlave, updateSlave, deleteBus events for MQTT discovery)
+    MqttDiscover.getInstance()
+
+    log.log(LogLevelEnum.info, 'E2E reset: complete')
   }
 }

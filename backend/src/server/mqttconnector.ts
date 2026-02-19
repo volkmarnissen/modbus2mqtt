@@ -26,6 +26,14 @@ export class MqttConnector {
     return MqttConnector.instance
   }
 
+  static resetInstance(): void {
+    if (MqttConnector.instance?.client) {
+      MqttConnector.instance.client.removeAllListeners()
+      MqttConnector.instance.client.end(true)
+    }
+    MqttConnector.instance = undefined
+  }
+
   constructor() {
     this.onConnectCallbacks = []
   }
@@ -99,7 +107,7 @@ export class MqttConnector {
         }
         iopts.clean = false
         iopts.reconnectPeriod = 1000
-        iopts.keepalive = 50000
+        iopts.keepalive = 60
         iopts.clientId = Config.getConfiguration().mqttbasetopic
         if (iopts.ca == undefined) delete iopts.ca
         if (iopts.key == undefined) delete iopts.key

@@ -4,7 +4,7 @@
   "configurations": [
     {
       "name": "Launch Program test",
-      "program": "${workspaceFolder}/cypress/servers/test.js",
+      "program": "${workspaceFolder}/e2e/servers/test.js",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
@@ -12,7 +12,7 @@
     {
       "address": "TCP/IP address of process to be debugged",
       "localRoot": "${workspaceFolder}",
-      "name": "cypress/servers/test.js",
+      "name": "e2e/servers/test.js",
       "port": 9229,
       "remoteRoot": "Absolute path to the remote directory containing the program",
       "request": "attach",
@@ -162,7 +162,7 @@
       "preLaunchTask": "npm: build.dev",
       "timeout": 10000,
       "program": "${workspaceFolder}/dist/server/server/runModbusTCPserver.js",
-      "args": ["-y", "cypress/servers/modbustcp.conf/yaml-dir", "--busid", "0"],
+      "args": ["-y", "e2e/servers/modbustcp.conf/yaml-dir", "--busid", "0"],
       "console": "integratedTerminal",
       "env": {
         "program": "${workspaceFolder}/dist/server/runModbusTCPserver.js",

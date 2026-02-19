@@ -28,6 +28,10 @@ export class MqttSubscriptions {
 
     return MqttSubscriptions.instance
   }
+
+  static resetInstance(): void {
+    MqttSubscriptions.instance = undefined
+  }
   // bus/slave name:entity id:payload
   getSlaveBaseTopics(): string[] {
     return this.subscribedSlaves.map<string>((value) => value.getBaseTopic())

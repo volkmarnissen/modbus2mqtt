@@ -2,12 +2,16 @@ import { Injectable } from '@angular/core'
 import { ANNOUNCEMENTS, Announcement } from './announcements'
 
 const STORAGE_KEY = 'modbus2mqtt.dismissedAnnouncements'
+const SUPPRESS_KEY = 'modbus2mqtt.suppressBanner'
 
 @Injectable({
   providedIn: 'root',
 })
 export class AnnouncementService {
   getActiveAnnouncements(): Announcement[] {
+    if (localStorage.getItem(SUPPRESS_KEY)) {
+      return []
+    }
     const dismissed = this.getDismissedIds()
     return ANNOUNCEMENTS.filter((a) => !dismissed.has(a.id))
   }

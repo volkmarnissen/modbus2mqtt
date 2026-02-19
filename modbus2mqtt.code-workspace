@@ -1,13 +1,12 @@
 {
   "folders": [
     { "path": "." },
-    { "path": "src" },
-    { "path": "__tests__" },
+    { "path": "backend" },
+    { "path": "frontend" },
     { "path": "cypress" },
-    { "path": "angular" },
     { "path": "scripts" },
     { "path": "docs" },
-    { "path": "validator" },
+    { "path": "../lxc-manager" },
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",
@@ -40,17 +39,13 @@
       "e2e/modbus2mqtt.temp": true,
     },
 
-    "jest.jestCommandLine": "npx jest --config jest.config.cjs --runInBand --detectOpenHandles --watchAll=false",
-    "jest.rootPath": ".",
-
     "cypress.configFile": "cypress.config.js",
   },
   "extensions": {
     "recommendations": [
       "dbaeumer.vscode-eslint",
       "esbenp.prettier-vscode",
-      "Orta.vscode-jest",
-      "firsttris.vscode-jest-runner",
+      "vitest.explorer",
       "Angular.ng-template",
       "cypress.cypress",
       "streetsidesoftware.code-spell-checker",

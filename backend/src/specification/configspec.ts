@@ -123,6 +123,10 @@ export class ConfigSpecification {
 
   private static specifications: IfileSpecification[] = []
 
+  static resetForE2E(): void {
+    ConfigSpecification.specifications = []
+  }
+
   static dataDir: string = ''
   static configDir: string = ''
 

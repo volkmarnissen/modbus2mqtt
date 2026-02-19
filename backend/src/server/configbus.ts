@@ -49,6 +49,11 @@ export class ConfigBus {
     })
   }
 
+  static resetForE2E(): void {
+    ConfigBus.busses = []
+    ConfigBus.listeners = []
+  }
+
   static getBussesProperties(): IBus[] {
     return ConfigBus.busses
   }

@@ -1,0 +1,157 @@
+import { describe, it, expect, afterEach } from 'vitest'
+import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing'
+import { provideNoopAnimations } from '@angular/platform-browser/animations'
+import { ActivatedRoute, provideRouter } from '@angular/router'
+import { EventEmitter } from '@angular/core'
+import { from } from 'rxjs'
+import { SelectSlaveComponent } from './select-slave.component'
+import { ensureAngularTesting } from '../../test-setup'
+import configurationFixture from '../../test-fixtures/configuration.json'
+import busFixture from '../../test-fixtures/bus.json'
+import slavesFixture from '../../test-fixtures/slaves.json'
+import specificationsFixture from '../../test-fixtures/specifications.json'
+
+ensureAngularTesting()
+
+describe('Select Slave tests (vitest)', () => {
+  let fixture: ComponentFixture<SelectSlaveComponent>
+  let httpMock: HttpTestingController
+  let ev: EventEmitter<number | undefined>
+
+  /** detectChanges that tolerates NG0100 from cascading synchronous subscribes */
+  function safeDetectChanges(): void {
+    try {
+      fixture.detectChanges()
+    } catch (e: any) {
+      if (!e.message?.includes('NG0100')) throw e
+    }
+  }
+
+  async function mount(): Promise<void> {
+    ;(window as any).configuration = { rootUrl: '/' }
+    ev = new EventEmitter<number | undefined>()
+
+    await TestBed.configureTestingModule({
+      imports: [SelectSlaveComponent],
+      providers: [
+        provideNoopAnimations(),
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { params: from([{ busid: 1 }]) },
+        },
+      ],
+    }).compileComponents()
+
+    httpMock = TestBed.inject(HttpTestingController)
+    fixture = TestBed.createComponent(SelectSlaveComponent)
+    fixture.componentInstance.slaveidEventEmitter = ev
+
+    // Trigger ngOnInit
+    safeDetectChanges()
+
+    // Flush cascading HTTP requests
+    httpMock.expectOne((r) => r.url.includes('/api/configuration')).flush(configurationFixture)
+    httpMock.expectOne((r) => r.url.includes('/api/specifications')).flush(specificationsFixture)
+    httpMock.expectOne((r) => r.url.includes('/api/bus')).flush(busFixture)
+    httpMock.expectOne((r) => r.url.includes('/api/slaves')).flush(slavesFixture)
+
+    // Multiple change detection cycles to stabilize
+    safeDetectChanges()
+    safeDetectChanges()
+    safeDetectChanges()
+  }
+
+  afterEach(() => {
+    fixture?.destroy()
+  })
+
+  it('mount and interact with slave', async () => {
+    await mount()
+
+    const component = fixture.componentInstance
+    const el = fixture.nativeElement as HTMLElement
+
+    // Verify slaves are populated
+    expect(component.uiSlaves.length).toBe(1)
+    expect(component.uiSlaves[0].slave.slaveid).toBe(1)
+
+    const uiSlave = component.uiSlaves[0]
+
+    // Set specificationid to the correct IidentificationSpecification object
+    const secondSpec = { filename: 'second', name: 'Second', status: 0, identified: 1, entities: [] }
+    uiSlave.slaveForm.get('specificationid')!.setValue(secondSpec)
+    uiSlave.slaveForm.markAsTouched()
+    safeDetectChanges()
+
+    // Flush any modbus specification requests triggered by the change
+    httpMock.match((r) => r.url.includes('/api/modbus/specification')).forEach((r) =>
+      r.flush({
+        filename: 'second',
+        name: 'Second',
+        status: 0,
+        entities: [{ id: 1, name: 'second.entity1', readonly: true, mqttname: 'se1' }],
+        i18n: [{ lang: 'en', texts: [{ textId: 'name', text: 'Second' }] }],
+      })
+    )
+    safeDetectChanges()
+
+    // Set pollMode to "Interval" (0)
+    uiSlave.slaveForm.get('pollMode')!.setValue(0)
+    safeDetectChanges()
+
+    // Call saveSlave directly (button might not render in jsdom due to @if timing)
+    component.saveSlave(uiSlave)
+    safeDetectChanges()
+
+    // Flush any intermediate GET requests
+    httpMock.match((r) => r.method === 'GET').forEach((r) => r.flush([]))
+
+    // Verify the POST request
+    const postReq = httpMock.expectOne((r) => r.method === 'POST' && r.url.includes('/api/slave'))
+    expect(postReq.request.body.slaveid).toBe(1)
+    expect(postReq.request.body.pollMode).toBe(0)
+    expect(postReq.request.body.specificationid).toBe('second')
+    postReq.flush(postReq.request.body)
+    safeDetectChanges()
+
+    // Flush the slaves reload after save
+    httpMock.match((r) => r.url.includes('/api/slaves')).forEach((r) => r.flush(slavesFixture))
+    safeDetectChanges()
+
+    // Flush any remaining requests
+    httpMock.match(() => true).forEach((r) => r.flush([]))
+  })
+
+  it('add slave', async () => {
+    await mount()
+
+    const component = fixture.componentInstance
+    const el = fixture.nativeElement as HTMLElement
+
+    // Type new slave ID
+    const slaveIdInput = el.querySelector('input[name="slaveId"]') as HTMLInputElement
+    slaveIdInput.value = '2'
+    slaveIdInput.dispatchEvent(new Event('input'))
+    safeDetectChanges()
+
+    // Click add button
+    const addButton = el.querySelector('button[mattooltip="Add Modbus Slave"]') as HTMLButtonElement
+    addButton?.click()
+    safeDetectChanges()
+
+    // Verify the POST request for adding slave
+    const postReq = httpMock.expectOne((r) => r.method === 'POST' && r.url.includes('/api/slave'))
+    expect(postReq.request.body.slaveid).toBe(2)
+    postReq.flush(postReq.request.body)
+    safeDetectChanges()
+
+    // Flush any subsequent requests (slaves reload, etc.)
+    const remaining = httpMock.match(() => true)
+    remaining.forEach((r) => r.flush([]))
+  })
+})

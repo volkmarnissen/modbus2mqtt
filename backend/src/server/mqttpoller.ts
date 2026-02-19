@@ -123,6 +123,13 @@ export class MqttPoller {
       }, 100)
     }
   }
+
+  stopPolling(): void {
+    if (this.interval) {
+      clearInterval(this.interval)
+      this.interval = undefined
+    }
+  }
   private error(msg: Error | string): void {
     const message = "MQTT: Can't connect to " + Config.getConfiguration().mqttconnect.mqttserverurl + ' ' + msg.toString()
     if (message !== this.lastMessage) log.log(LogLevelEnum.error, message)

@@ -84,6 +84,13 @@ export class MqttDiscover {
 
     return MqttDiscover.instance
   }
+
+  static resetInstance(): void {
+    if (MqttDiscover.instance?.client) {
+      MqttDiscover.instance.client.end()
+    }
+    MqttDiscover.instance = undefined
+  }
   constructor(
     private connector: MqttConnector,
     private subscriptions: MqttSubscriptions

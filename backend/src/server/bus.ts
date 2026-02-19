@@ -374,8 +374,28 @@ export class Bus implements IModbusConfiguration {
   public static cleanupCaches() {
     Bus.getBusses().forEach((bus) => bus.modbusAPI.cleanupCache())
   }
+  private poller?: MqttPoller
+
   startPolling() {
-    const poller = new MqttPoller(MqttConnector.getInstance())
-    poller.startPolling(this)
+    this.poller = new MqttPoller(MqttConnector.getInstance())
+    this.poller.startPolling(this)
+  }
+
+  stopPolling(): void {
+    if (this.poller) {
+      this.poller.stopPolling()
+      this.poller = undefined
+    }
+  }
+
+  static resetForE2E(): void {
+    if (Bus.busses) {
+      Bus.busses.forEach((bus) => {
+        bus.stopPolling()
+        if (bus.tcprtuBridge) bus.tcprtuBridge.stopServer()
+      })
+    }
+    Bus.busses = []
+    Bus.allSpecificationsModbusAddresses = undefined
   }
 }
