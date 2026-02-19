@@ -10,6 +10,7 @@
     "validation"
   ],
   "bugs": "https://github.com/modbus2mqtt/server/issues",
+  "packageManager": "pnpm@10.28.2",
   "type": "module",
   "bin": {
     "modbus2mqtt": "bin/modbus2mqtt"
