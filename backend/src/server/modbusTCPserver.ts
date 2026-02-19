@@ -240,17 +240,15 @@ export function logValues() {
   })
 }
 let server: ModbusServer | undefined = undefined
-export function runModbusServer(port: number = 8502): void {
+export async function runModbusServer(port: number = 8502): Promise<void> {
   server = new ModbusServer()
-  server
-    .startServer(port)
-    .then(() => {
-      log.log(LogLevelEnum.info, 'listening')
-    })
-    .catch((e) => {
-      log.log(LogLevelEnum.error, 'Unable to start ' + e.message)
-      process.exit(1)
-    })
+  try {
+    await server.startServer(port)
+    log.log(LogLevelEnum.info, 'listening')
+  } catch (e: any) {
+    log.log(LogLevelEnum.error, 'Unable to start ' + e.message)
+    process.exit(1)
+  }
 }
 process.on('SIGINT', () => {
   stopModbusTCPServer()

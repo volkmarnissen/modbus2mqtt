@@ -16,7 +16,7 @@ This document outlines the planned refactorings, their proposed order to minimiz
 4. Directory structure split: Separate `backend`, `frontend`, and `packaging/delivery (root)` clearly.-> Done
 5. Angular 21 migration: Upgrade dependencies and tooling first to enable modern template features.-> Done
 6. Modern control flow in templates: Replace `*ngIf`/`*ngFor` with `@if`/`@for` across the app.-> Done
-7. Promises → async/await: Convert promise chains to `async/await` with ESLint rules.
+7. Promises → async/await: Convert promise chains to `async/await` with ESLint rules.-> Done
 8. Split large classes: Decompose `config`, `httpserver`, etc., into cohesive modules.
 9. File uploads as base64 in specification: Store images/documents embedded in the specification model.
 10. More backend tests: Expand coverage continuously, prioritizing changed areas (ongoing alongside steps above).

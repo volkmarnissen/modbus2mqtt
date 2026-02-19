@@ -34,123 +34,97 @@ export class M2mGitHub {
   private static forking: boolean = false
   private isRunning = false
   private waitFinished: Subject<void> = new Subject<void>()
-  private findOrCreateOwnModbus2MqttRepo(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      debug('findOrCreateOwnModbus2MqttRepo')
-      if (this.ownOwner && this.octokit)
-        this.octokit.repos
-          .listForUser({
-            username: this.ownOwner,
-            type: 'all',
-          })
-          .then((repos) => {
-            const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
-            if (found == null && !M2mGitHub.forking) this.createOwnModbus2MqttRepo().then(resolve).catch(reject)
-            else {
-              if (found != null) M2mGitHub.forking = false
-              resolve()
-            }
-          })
-          .catch(reject)
-    })
-  }
-  hasSpecBranch(branch: string): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else
-        this.octokit.git
-          .getRef({
-            owner: this.ownOwner!,
-            repo: exports.githubPublicNames.modbus2mqttRepo,
-            ref: 'heads/' + branch,
-          })
-          .then(() => {
-            resolve(true)
-          })
-          .catch((e: unknown) => {
-            if (e instanceof Error) debug('get Branch' + e.message)
-            const status = typeof e === 'object' && e && 'status' in e ? (e as { status?: number }).status : undefined
-            if (status != undefined && status == 404) resolve(false)
-            else reject(e)
-          })
-    })
-  }
-  deleteSpecBranch(branch: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else
-        this.hasSpecBranch(branch)
-          .then((hasBranch) => {
-            if (hasBranch)
-              this.octokit!.git.deleteRef({
-                owner: this.ownOwner!,
-                repo: githubPublicNames.modbus2mqttRepo,
-                ref: 'heads/' + branch,
-              })
-                .then(() => {
-                  resolve()
-                })
-                .catch(reject)
-            else resolve()
-          })
-          .catch(reject)
-    })
-  }
-  private createOwnModbus2MqttRepo(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      debug('createOwnModbus2MqttRepo')
 
-      M2mGitHub.forking = true
-      if (githubPublicNames.publicModbus2mqttOwner)
-        this.octokit!.repos.createFork({
+  private async findOrCreateOwnModbus2MqttRepo(): Promise<void> {
+    debug('findOrCreateOwnModbus2MqttRepo')
+    if (this.ownOwner && this.octokit) {
+      const repos = await this.octokit.repos.listForUser({
+        username: this.ownOwner,
+        type: 'all',
+      })
+      const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
+      if (found == null && !M2mGitHub.forking) {
+        await this.createOwnModbus2MqttRepo()
+      } else {
+        if (found != null) M2mGitHub.forking = false
+      }
+    }
+  }
+
+  async hasSpecBranch(branch: string): Promise<boolean> {
+    if (null == this.octokit) throw new Error('No Github token configured')
+    try {
+      await this.octokit.git.getRef({
+        owner: this.ownOwner!,
+        repo: exports.githubPublicNames.modbus2mqttRepo,
+        ref: 'heads/' + branch,
+      })
+      return true
+    } catch (e: unknown) {
+      if (e instanceof Error) debug('get Branch' + e.message)
+      const status = typeof e === 'object' && e && 'status' in e ? (e as { status?: number }).status : undefined
+      if (status != undefined && status == 404) return false
+      throw e
+    }
+  }
+
+  async deleteSpecBranch(branch: string): Promise<void> {
+    if (null == this.octokit) throw new Error('No Github token configured')
+    const hasBranch = await this.hasSpecBranch(branch)
+    if (hasBranch) {
+      await this.octokit.git.deleteRef({
+        owner: this.ownOwner!,
+        repo: githubPublicNames.modbus2mqttRepo,
+        ref: 'heads/' + branch,
+      })
+    }
+  }
+
+  private async createOwnModbus2MqttRepo(): Promise<void> {
+    debug('createOwnModbus2MqttRepo')
+    M2mGitHub.forking = true
+    try {
+      if (githubPublicNames.publicModbus2mqttOwner) {
+        await this.octokit!.repos.createFork({
           owner: githubPublicNames.publicModbus2mqttOwner,
           repo: githubPublicNames.modbus2mqttRepo,
           default_branch_only: true,
         })
-          .then(() => {
-            resolve()
-          })
-          .catch((e) => {
-            M2mGitHub.forking = false
-            reject(e)
-          })
-    })
+      }
+    } catch (e) {
+      M2mGitHub.forking = false
+      throw e
+    }
   }
 
-  private checkRepo(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else if (this.ownOwner)
-        this.octokit.repos
-          .listForUser({
-            username: this.ownOwner,
-            type: 'all',
-          })
-          .then((repos) => {
-            const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
-            if (found) {
-              debug('checkRepo: sync fork')
-              M2mGitHub.forking = false
-              this.octokit!.request(`POST /repos/${this.ownOwner}/${githubPublicNames.modbus2mqttRepo}/merge-upstream`, {
-                branch: githubPublicNames.modbus2mqttBranch,
-              })
-                .then(() => {
-                  resolve(true)
-                })
-                .catch((e: StepError) => {
-                  const e1 = new Error(e.message ?? '') as Error & { step?: string; status?: number; code?: number }
-                  e1.step = e.step
-                  e1.stack = e.stack
-                  if (e.code === 422)
-                    // prettier-ignore
-                    e1.message = (e.message ?? '') + '\n Permission denied for the github token. Please sync Repository in github.com.'
-                  reject(e1)
-                })
-            }
-          })
-      else resolve(false)
+  private async checkRepo(): Promise<boolean> {
+    if (null == this.octokit) throw new Error('No Github token configured')
+    if (!this.ownOwner) return false
+    const repos = await this.octokit.repos.listForUser({
+      username: this.ownOwner,
+      type: 'all',
     })
+    const found = repos.data.find((repo) => repo.name == githubPublicNames.modbus2mqttRepo)
+    if (!found) return false
+    debug('checkRepo: sync fork')
+    M2mGitHub.forking = false
+    try {
+      await this.octokit.request(`POST /repos/${this.ownOwner}/${githubPublicNames.modbus2mqttRepo}/merge-upstream`, {
+        branch: githubPublicNames.modbus2mqttBranch,
+      })
+      return true
+    } catch (e: unknown) {
+      const se = e as StepError
+      const e1 = new Error(se.message ?? '') as Error & { step?: string; status?: number; code?: number }
+      e1.step = se.step
+      e1.stack = se.stack
+      if (se.code === 422)
+        // prettier-ignore
+        e1.message = (se.message ?? '') + '\n Permission denied for the github token. Please sync Repository in github.com.'
+      throw e1
+    }
   }
+
   private waitForOwnModbus2MqttRepo(): Promise<void> {
     if (this.isRunning) {
       // some other process is waiting already.
@@ -241,61 +215,52 @@ export class M2mGitHub {
   static getPullRequestUrl(pullNumber: number): string {
     return `https://github.com/${githubPublicNames.publicModbus2mqttOwner}/${githubPublicNames.modbus2mqttRepo}/pull/${pullNumber}`
   }
-  createPullrequest(title: string, content: string, branchName: string): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else
-        this.octokit.rest.issues
-          .create({
-            owner: githubPublicNames.publicModbus2mqttOwner,
-            repo: githubPublicNames.modbus2mqttRepo,
-            title: title,
-            body: content,
-            labels: ['automerge'],
-          })
-          .then((res) => {
-            this.octokit!.rest.pulls.create({
-              owner: githubPublicNames.publicModbus2mqttOwner,
-              body: content + '\nCloses #' + res.data.number,
-              repo: githubPublicNames.modbus2mqttRepo,
-              issue: res.data.number,
-              head: this.ownOwner + ':' + branchName,
-              base: githubPublicNames.modbus2mqttBranch,
-            })
-              .then((res) => {
-                resolve(res.data.number)
-              })
-              .catch((e: StepError) => {
-                e.step = 'create pull'
-                reject(e)
-              })
-          })
-          .catch((e: StepError) => {
-            e.step = 'create issue'
-            reject(e)
-          })
-    })
+
+  async createPullrequest(title: string, content: string, branchName: string): Promise<number> {
+    if (null == this.octokit) throw new Error('No Github token configured')
+    let res
+    try {
+      res = await this.octokit.rest.issues.create({
+        owner: githubPublicNames.publicModbus2mqttOwner,
+        repo: githubPublicNames.modbus2mqttRepo,
+        title: title,
+        body: content,
+        labels: ['automerge'],
+      })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'create issue'
+      throw e
+    }
+    try {
+      const pullRes = await this.octokit.rest.pulls.create({
+        owner: githubPublicNames.publicModbus2mqttOwner,
+        body: content + '\nCloses #' + res.data.number,
+        repo: githubPublicNames.modbus2mqttRepo,
+        issue: res.data.number,
+        head: this.ownOwner + ':' + branchName,
+        base: githubPublicNames.modbus2mqttBranch,
+      })
+      return pullRes.data.number
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'create pull'
+      throw e
+    }
   }
 
-  getPullRequest(pullNumber: number): Promise<IPullRequestStatusInfo> {
-    return new Promise<IPullRequestStatusInfo>((resolve, reject) => {
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else
-        this.octokit.pulls
-          .get({
-            owner: githubPublicNames.publicModbus2mqttOwner,
-            repo: githubPublicNames.modbus2mqttRepo,
-            pull_number: pullNumber,
-          })
-          .then((pull) => {
-            resolve(pull.data)
-          })
-          .catch((e: StepError) => {
-            if (e.step == undefined) e.step = 'downloadFile'
-            debug(JSON.stringify(e))
-            reject(e)
-          })
-    })
+  async getPullRequest(pullNumber: number): Promise<IPullRequestStatusInfo> {
+    if (null == this.octokit) throw new Error('No Github token configured')
+    try {
+      const pull = await this.octokit.pulls.get({
+        owner: githubPublicNames.publicModbus2mqttOwner,
+        repo: githubPublicNames.modbus2mqttRepo,
+        pull_number: pullNumber,
+      })
+      return pull.data
+    } catch (e: unknown) {
+      if ((e as StepError).step == undefined) (e as StepError).step = 'downloadFile'
+      debug(JSON.stringify(e))
+      throw e
+    }
   }
   getInfoFromError(e: unknown) {
     const err = e as StepError
@@ -307,87 +272,60 @@ export class M2mGitHub {
     return msg
   }
 
-  private uploadFileAndCreateTreeParameter(root: string, filename: string): Promise<ITreeParam> {
-    return new Promise<ITreeParam>((resolve, reject) => {
-      debug('uploadFileAndCreateTreeParameter')
-      const encoding: BufferEncoding = filename.endsWith('.yaml') ? 'utf8' : 'base64'
-      const params = {
-        owner: this.ownOwner!,
-        repo: githubPublicNames.modbus2mqttRepo,
-        encoding: encoding == 'utf8' ? 'utf-8' : encoding,
-        content: fs.readFileSync(join(root, filename)).toString(encoding),
+  private async uploadFileAndCreateTreeParameter(root: string, filename: string): Promise<ITreeParam> {
+    debug('uploadFileAndCreateTreeParameter')
+    const encoding: BufferEncoding = filename.endsWith('.yaml') ? 'utf8' : 'base64'
+    const params = {
+      owner: this.ownOwner!,
+      repo: githubPublicNames.modbus2mqttRepo,
+      encoding: encoding == 'utf8' ? 'utf-8' : encoding,
+      content: fs.readFileSync(join(root, filename)).toString(encoding),
+    }
+    if (null == this.octokit) throw new Error('No Github token configured')
+    try {
+      const res = await this.octokit.git.createBlob(params)
+      return {
+        path: filename,
+        mode: '100644',
+        type: 'blob',
+        sha: res.data.sha,
       }
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else
-        this.octokit.git
-          .createBlob(params)
-          .then((res) => {
-            resolve({
-              path: filename,
-              mode: '100644',
-              type: 'blob',
-              sha: res.data.sha,
-            })
-          })
-          .catch((e: StepError) => {
-            e.step = 'createBlob'
-            reject(e)
-          })
-    })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'createBlob'
+      throw e
+    }
   }
-  init(): Promise<boolean> {
+
+  async init(): Promise<boolean> {
     // checks if fork from public repository is available
     // Otherwise it creates it, but doesn't wait for creation
     // fetches all files from public repo (Works also if no personal repo is available yet)
-    return new Promise<boolean>((resolve, reject) => {
-      debug('init')
-      try {
-        this.fetchPublicFiles()
-      } catch (e) {
-        reject(e)
-      }
-      if (null == this.octokit) resolve(false)
-      else if (!this.ownOwner) {
-        this.octokit.users
-          .getAuthenticated()
-          .then((user) => {
-            this.ownOwner = user.data.login
-            this.findOrCreateOwnModbus2MqttRepo()
-              .then(() => {
-                resolve(true)
-              })
-              .catch((e: StepError) => {
-                this.ownOwner = undefined
-                reject(e)
-              })
-          })
-          .catch(reject)
-      } else
-        this.findOrCreateOwnModbus2MqttRepo()
-          .then(() => {
-            resolve(true)
-          })
-          .catch((e: StepError) => {
-            this.ownOwner = undefined
-            reject(e)
-          })
-    })
+    debug('init')
+    this.fetchPublicFiles()
+    if (null == this.octokit) return false
+    if (!this.ownOwner) {
+      const user = await this.octokit.users.getAuthenticated()
+      this.ownOwner = user.data.login
+    }
+    try {
+      await this.findOrCreateOwnModbus2MqttRepo()
+      return true
+    } catch (e: unknown) {
+      this.ownOwner = undefined
+      throw e
+    }
   }
-  deleteRepository(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      if (null == this.octokit) reject(new Error('No Github token configured'))
-      else if (this.ownOwner)
-        this.octokit.repos
-          .delete({
-            owner: this.ownOwner,
-            repo: githubPublicNames.modbus2mqttRepo,
-          })
-          .then(() => {
-            resolve()
-          })
-          .catch(reject)
-    })
+
+  async deleteRepository(): Promise<void> {
+    if (null == this.octokit) throw new Error('No Github token configured')
+    if (this.ownOwner) {
+      await this.octokit.repos.delete({
+        owner: this.ownOwner,
+        repo: githubPublicNames.modbus2mqttRepo,
+      })
+    }
   }
+
   private checkFiles(root: string, files: string[]): Promise<ITreeParam>[] {
     const all: Promise<ITreeParam>[] = []
     files.forEach((file) => {
@@ -404,132 +342,125 @@ export class M2mGitHub {
     })
     return all
   }
-  commitFiles(root: string, branchName: string, files: string[], title: string, message: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      this.waitForOwnModbus2MqttRepo()
-        .then(() => {
-          this.hasSpecBranch(branchName)
-            .then((hasBranch) => {
-              if (hasBranch)
-                reject(
-                  new Error(
-                    'There is already a branch named ' +
-                      branchName +
-                      ' Please delete it in your github repository ' +
-                      this.ownOwner +
-                      '/' +
-                      githubPublicNames.modbus2mqttRepo +
-                      ' at github.com'
-                  )
-                )
-              else {
-                debug('start committing')
-                // list of blob creations
-                try {
-                  const all = this.checkFiles(root, files)
 
-                  Promise.all(all!)
-                    .then((trees) => {
-                      debug('get Branch')
-                      this.octokit!.git.getRef({
-                        owner: this.ownOwner!,
-                        repo: githubPublicNames.modbus2mqttRepo,
-                        ref: 'heads/' + githubPublicNames.modbus2mqttBranch,
-                      })
-                        .then((ref) => {
-                          // base sha is used by API calls below
-                          // create a new branch
-                          this.octokit!.git.createRef({
-                            owner: this.ownOwner!,
-                            repo: githubPublicNames.modbus2mqttRepo,
-                            ref: 'refs/heads/' + branchName,
-                            sha: ref.data.object.sha,
-                          })
-                            .then((branch) => {
-                              //this.octokit.git.getTree()
-                              this.octokit!.request(
-                                `GET /repos/${this.ownOwner}/${githubPublicNames.modbus2mqttRepo}/git/trees/${githubPublicNames.modbus2mqttBranch}`
-                              )
-                                .then((tree) => {
-                                  debug('createTree')
-                                  this.octokit!.git.createTree({
-                                    owner: this.ownOwner!,
-                                    repo: githubPublicNames.modbus2mqttRepo,
-                                    tree: trees,
-                                    base_tree: tree.data.sha,
-                                  })
-                                    .then((result) => {
-                                      debug('createCommit')
-                                      this.octokit!.git.createCommit({
-                                        owner: this.ownOwner!,
-                                        repo: githubPublicNames.modbus2mqttRepo,
-                                        message: title + '\n' + message,
-                                        tree: result.data.sha,
-                                        parents: [branch.data.object.sha],
-                                      })
-                                        .then((_result) => {
-                                          debug('updateRef')
-                                          this.octokit!.git.updateRef({
-                                            owner: this.ownOwner!,
-                                            repo: githubPublicNames.modbus2mqttRepo,
-                                            ref: 'heads/' + branchName,
-                                            sha: _result.data.sha,
-                                          })
-                                            .then(() => {
-                                              debug('updated')
-                                              resolve(_result.data.sha)
-                                            })
-                                            .catch((e: StepError) => {
-                                              e.step = 'updateRef'
-                                              reject(e)
-                                            })
-                                        })
-                                        .catch((e: StepError) => {
-                                          e.step = 'createCommit'
-                                          reject(e)
-                                        })
-                                    })
-                                    .catch((e: StepError) => {
-                                      e.step = 'create Tree'
-                                      reject(e)
-                                    })
-                                })
-                                .catch((e: StepError) => {
-                                  e.step = 'get base tree'
-                                  reject(e)
-                                })
-                            })
-                            .catch((e: StepError) => {
-                              e.step = 'create branch'
-                              reject(e)
-                            })
-                        })
-                        .catch((e: StepError) => {
-                          e.step = 'get branch'
-                          reject(e)
-                        })
-                    })
-                    .catch((e: StepError) => {
-                      e.step = 'create blobs'
-                      reject(e)
-                    })
-                } catch (e: unknown) {
-                  ;(e as StepError).step = 'waiting for all failed'
-                  reject(e as StepError)
-                  return
-                }
-              }
-            })
-            .catch((e: StepError) => {
-              e.step = 'hasSpecBranch'
-              reject(e)
-            })
-        })
-        .catch((e: StepError) => {
-          e.step = 'waitForOwnModbus2MqttRepo'
-          reject(e)
-        })
-    })
+  async commitFiles(root: string, branchName: string, files: string[], title: string, message: string): Promise<string> {
+    try {
+      await this.waitForOwnModbus2MqttRepo()
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'waitForOwnModbus2MqttRepo'
+      throw e
+    }
+
+    let hasBranch: boolean
+    try {
+      hasBranch = await this.hasSpecBranch(branchName)
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'hasSpecBranch'
+      throw e
+    }
+
+    if (hasBranch) {
+      throw new Error(
+        'There is already a branch named ' +
+          branchName +
+          ' Please delete it in your github repository ' +
+          this.ownOwner +
+          '/' +
+          githubPublicNames.modbus2mqttRepo +
+          ' at github.com'
+      )
+    }
+
+    debug('start committing')
+    let trees: ITreeParam[]
+    try {
+      const all = this.checkFiles(root, files)
+      trees = await Promise.all(all)
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'create blobs'
+      throw e
+    }
+
+    let ref
+    try {
+      debug('get Branch')
+      ref = await this.octokit!.git.getRef({
+        owner: this.ownOwner!,
+        repo: githubPublicNames.modbus2mqttRepo,
+        ref: 'heads/' + githubPublicNames.modbus2mqttBranch,
+      })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'get branch'
+      throw e
+    }
+
+    let branch
+    try {
+      branch = await this.octokit!.git.createRef({
+        owner: this.ownOwner!,
+        repo: githubPublicNames.modbus2mqttRepo,
+        ref: 'refs/heads/' + branchName,
+        sha: ref.data.object.sha,
+      })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'create branch'
+      throw e
+    }
+
+    let tree
+    try {
+      tree = await this.octokit!.request(
+        `GET /repos/${this.ownOwner}/${githubPublicNames.modbus2mqttRepo}/git/trees/${githubPublicNames.modbus2mqttBranch}`
+      )
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'get base tree'
+      throw e
+    }
+
+    let treeResult
+    try {
+      debug('createTree')
+      treeResult = await this.octokit!.git.createTree({
+        owner: this.ownOwner!,
+        repo: githubPublicNames.modbus2mqttRepo,
+        tree: trees,
+        base_tree: tree.data.sha,
+      })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'create Tree'
+      throw e
+    }
+
+    let commitResult
+    try {
+      debug('createCommit')
+      commitResult = await this.octokit!.git.createCommit({
+        owner: this.ownOwner!,
+        repo: githubPublicNames.modbus2mqttRepo,
+        message: title + '\n' + message,
+        tree: treeResult.data.sha,
+        parents: [branch.data.object.sha],
+      })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'createCommit'
+      throw e
+    }
+
+    try {
+      debug('updateRef')
+      await this.octokit!.git.updateRef({
+        owner: this.ownOwner!,
+        repo: githubPublicNames.modbus2mqttRepo,
+        ref: 'heads/' + branchName,
+        sha: commitResult.data.sha,
+      })
+    } catch (e: unknown) {
+      ;(e as StepError).step = 'updateRef'
+      throw e
+    }
+
+    debug('updated')
+    return commitResult.data.sha
     // commits the given files with message to own repository
     // creates an issue in the public repository
     // creates a pull request to the public repository

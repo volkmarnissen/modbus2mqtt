@@ -57,39 +57,32 @@ export class Modbus {
     } else throw new Error('Entity not found in Specification entityid: ' + entityid + JSON.stringify(spec))
   }
 
-  readEntityFromModbus(
+  async readEntityFromModbus(
     modbusAPI: IconsumerModbusAPI,
     slaveid: number,
     spec: Ispecification,
     entityId: number
   ): Promise<ImodbusEntity> {
-    return new Promise((resolve, reject) => {
-      const entity = spec.entities.find((ent) => ent.id == entityId)
-      if (entity && entity.modbusAddress && entity.registerType) {
-        const converter = ConverterMap.getConverter(entity)
-        if (converter) {
-          const addresses = new Set<ImodbusAddress>()
-          for (let i = entity.modbusAddress; i < entity.modbusAddress + converter.getModbusLength(entity); i++)
-            addresses.add({ address: i, registerType: entity.registerType })
+    const entity = spec.entities.find((ent) => ent.id == entityId)
+    if (entity && entity.modbusAddress && entity.registerType) {
+      const converter = ConverterMap.getConverter(entity)
+      if (converter) {
+        const addresses = new Set<ImodbusAddress>()
+        for (let i = entity.modbusAddress; i < entity.modbusAddress + converter.getModbusLength(entity); i++)
+          addresses.add({ address: i, registerType: entity.registerType })
 
-          const rcf = (results: ImodbusValues) => {
-            const em = M2mSpecification.copyModbusDataToEntity(spec, entity!.id, results)
-            if (em) resolve(em)
-            else reject(new Error('Unable to copy ModbusData to Entity'))
-          }
-          if (Config.getConfiguration().fakeModbus) submitGetHoldingRegisterRequest(slaveid, addresses).then(rcf).catch(reject)
-          else
-            modbusAPI
-              .readModbusRegister(slaveid, addresses, { task: ModbusTasks.entity, errorHandling: { retry: true } })
-              .then(rcf)
-              .catch(reject)
-        }
-      } else {
-        const msg = 'Bus ' + modbusAPI.getName() + ' has no configured Specification'
-        log.log(LogLevelEnum.info, msg)
-        reject(new Error(msg))
+        const results = Config.getConfiguration().fakeModbus
+          ? await submitGetHoldingRegisterRequest(slaveid, addresses)
+          : await modbusAPI.readModbusRegister(slaveid, addresses, { task: ModbusTasks.entity, errorHandling: { retry: true } })
+
+        const em = M2mSpecification.copyModbusDataToEntity(spec, entity.id, results)
+        if (em) return em
+        throw new Error('Unable to copy ModbusData to Entity')
       }
-    })
+    }
+    const msg = 'Bus ' + modbusAPI.getName() + ' has no configured Specification'
+    log.log(LogLevelEnum.info, msg)
+    throw new Error(msg)
   }
 
   /*
@@ -108,30 +101,28 @@ export class Modbus {
     const mspec = M2mSpecification.fileToModbusSpecification(specification!, values)
     if (mspec) sub.next(mspec)
   }
-  static getModbusSpecificationFromData(
+  static async getModbusSpecificationFromData(
     task: ModbusTasks,
     modbusAPI: IconsumerModbusAPI,
     slaveid: number,
     specification: IfileSpecification,
     sub: Subject<ImodbusSpecification>
-  ): void {
+  ): Promise<void> {
     const addresses = new Set<ImodbusAddress>()
     ConfigSpecification.clearModbusData(specification)
     const info = '(' + modbusAPI.getName() + ',' + slaveid + ')'
     Bus.getModbusAddressesForSpec(specification, addresses)
 
     debugAction('getModbusSpecificationFromData start read from modbus')
-    modbusAPI
-      .readModbusRegister(slaveid, addresses, { task: task, errorHandling: { retry: true } })
-      .then((values) => {
-        debugAction('getModbusSpecificationFromData end read from modbus')
-        Modbus.populateEntitiesForSpecification(specification!, values, sub)
-      })
-      .catch((e) => {
-        // read modbus data failed.
-        log.log(LogLevelEnum.error, 'Modbus Read ' + info + ' failed: ' + e.message)
-        Modbus.populateEntitiesForSpecification(specification!, emptyModbusValues(), sub)
-      })
+    try {
+      const values = await modbusAPI.readModbusRegister(slaveid, addresses, { task: task, errorHandling: { retry: true } })
+      debugAction('getModbusSpecificationFromData end read from modbus')
+      Modbus.populateEntitiesForSpecification(specification!, values, sub)
+    } catch (e: any) {
+      // read modbus data failed.
+      log.log(LogLevelEnum.error, 'Modbus Read ' + info + ' failed: ' + e.message)
+      Modbus.populateEntitiesForSpecification(specification!, emptyModbusValues(), sub)
+    }
   }
   static getModbusSpecification(
     task: ModbusTasks,
