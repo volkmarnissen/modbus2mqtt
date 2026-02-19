@@ -28,7 +28,7 @@ import { MatIcon } from '@angular/material/icon'
 import { MatIconButton } from '@angular/material/button'
 import { MatTooltip } from '@angular/material/tooltip'
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
-import { NgFor, NgIf } from '@angular/common'
+
 
 @Component({
   selector: 'app-select-modbus',
@@ -37,12 +37,10 @@ import { NgFor, NgIf } from '@angular/common'
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    NgFor,
     MatCard,
     MatCardHeader,
     MatCardTitle,
     MatTooltip,
-    NgIf,
     MatIconButton,
     MatIcon,
     MatCardContent,
@@ -52,8 +50,8 @@ import { NgFor, NgIf } from '@angular/common'
     MatLabel,
     MatInput,
     MatSelect,
-    MatOption,
-  ],
+    MatOption
+],
 })
 export class SelectModbusComponent implements AfterViewInit, OnDestroy {
   constructor(

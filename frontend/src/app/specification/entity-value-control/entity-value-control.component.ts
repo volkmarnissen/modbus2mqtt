@@ -8,7 +8,7 @@ import { MatOption } from '@angular/material/core'
 import { MatSelect } from '@angular/material/select'
 import { MatInput } from '@angular/material/input'
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field'
-import { NgIf, NgFor } from '@angular/common'
+
 
 @Component({
   selector: 'app-entity-value-control',
@@ -16,7 +16,6 @@ import { NgIf, NgFor } from '@angular/common'
   styleUrl: './entity-value-control.component.css',
   standalone: true,
   imports: [
-    NgIf,
     MatFormField,
     MatLabel,
     MatInput,
@@ -24,10 +23,9 @@ import { NgIf, NgFor } from '@angular/common'
     ReactiveFormsModule,
     MatError,
     MatSelect,
-    NgFor,
     MatOption,
-    MatSlideToggle,
-  ],
+    MatSlideToggle
+],
 })
 export class EntityValueControlComponent implements OnInit, OnDestroy, OnChanges {
   @Input({ required: true }) entity: ImodbusEntityWithName | undefined

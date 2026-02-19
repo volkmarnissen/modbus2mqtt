@@ -17,7 +17,7 @@ import { MatFormField, MatLabel } from '@angular/material/form-field'
 import { MatIcon } from '@angular/material/icon'
 import { MatTooltip } from '@angular/material/tooltip'
 import { DragndropDirective } from '../dragndrop/dragndrop.directive'
-import { NgClass, NgIf, NgFor } from '@angular/common'
+import { NgClass } from '@angular/common';
 import {
   MatAccordion,
   MatExpansionPanel,
@@ -39,8 +39,6 @@ import {
     NgClass,
     MatExpansionPanelDescription,
     DragndropDirective,
-    NgIf,
-    NgFor,
     MatIconButton,
     MatTooltip,
     MatIcon,
@@ -49,8 +47,8 @@ import {
     MatInput,
     FormsModule,
     ReactiveFormsModule,
-    GalleryComponent,
-  ],
+    GalleryComponent
+],
 })
 export class UploadFilesComponent implements OnInit, OnChanges {
   constructor(

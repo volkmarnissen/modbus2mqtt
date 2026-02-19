@@ -16,7 +16,7 @@ import { Observable } from 'rxjs'
 import { ActivatedRoute, Router } from '@angular/router'
 import { MatOption } from '@angular/material/core'
 import { MatSelect } from '@angular/material/select'
-import { NgIf, NgFor, NgClass } from '@angular/common'
+import { NgClass } from '@angular/common';
 import { MatInput } from '@angular/material/input'
 import { MatFormField, MatLabel, MatError } from '@angular/material/form-field'
 import { MatStepLabel } from '@angular/material/stepper'
@@ -43,13 +43,11 @@ import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/m
     MatFormField,
     MatLabel,
     MatInput,
-    NgIf,
     MatError,
     MatSelect,
-    NgFor,
     MatOption,
-    NgClass,
-  ],
+    NgClass
+],
   standalone: true,
 })
 export class ConfigureComponent implements OnInit {

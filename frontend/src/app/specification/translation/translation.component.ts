@@ -22,7 +22,7 @@ import { MatFormField, MatLabel } from '@angular/material/form-field'
 import { MatButton } from '@angular/material/button'
 import { MatSlideToggle } from '@angular/material/slide-toggle'
 import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion'
-import { NgIf, NgClass, NgFor } from '@angular/common'
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-translation',
@@ -30,7 +30,6 @@ import { NgIf, NgClass, NgFor } from '@angular/common'
   styleUrls: ['./translation.component.css'],
   standalone: true,
   imports: [
-    NgIf,
     MatExpansionPanel,
     MatExpansionPanelHeader,
     MatExpansionPanelTitle,
@@ -42,9 +41,8 @@ import { NgIf, NgClass, NgFor } from '@angular/common'
     MatFormField,
     MatInput,
     CdkTextareaAutosize,
-    MatLabel,
-    NgFor,
-  ],
+    MatLabel
+],
 })
 export class TranslationComponent implements OnInit, OnDestroy {
   @Input()

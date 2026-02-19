@@ -16,7 +16,7 @@ import { Iconfiguration, IUserAuthenticationStatus } from '../../shared/server'
 import { GalleryItem, ImageItem } from 'ng-gallery'
 import { MatIcon } from '@angular/material/icon'
 import { MatTooltip } from '@angular/material/tooltip'
-import { NgClass, NgFor, NgIf } from '@angular/common'
+import { NgClass } from '@angular/common';
 import { MatButton, MatIconButton } from '@angular/material/button'
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/material/card'
 import { SessionStorage } from '../services/SessionStorage'
@@ -36,14 +36,12 @@ interface ImodbusSpecificationWithMessages extends ImodbusSpecification {
     MatCardTitle,
     MatCardContent,
     MatButton,
-    NgFor,
     MatTooltip,
     MatIcon,
     MatIconButton,
-    NgIf,
     NgClass,
-    InfoboxComponent,
-  ],
+    InfoboxComponent
+],
 })
 export class SpecificationsComponent implements OnInit {
   config: Iconfiguration | undefined

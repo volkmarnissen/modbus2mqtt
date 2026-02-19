@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs'
 import { MatButton } from '@angular/material/button'
 import { MatCardActions } from '@angular/material/card'
 import { MatIcon } from '@angular/material/icon'
-import { NgIf } from '@angular/common'
+
 import { MatInput } from '@angular/material/input'
 import { MatFormField, MatLabel, MatError, MatSuffix } from '@angular/material/form-field'
 import { MatDialogTitle } from '@angular/material/dialog'
@@ -31,13 +31,12 @@ import { MatDialogTitle } from '@angular/material/dialog'
     MatFormField,
     MatLabel,
     MatInput,
-    NgIf,
     MatError,
     MatIcon,
     MatSuffix,
     MatCardActions,
-    MatButton,
-  ],
+    MatButton
+],
 })
 export class LoginComponent implements OnInit, AfterViewInit {
   hide: boolean = true

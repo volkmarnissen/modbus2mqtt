@@ -1,4 +1,4 @@
-import { NgFor, NgTemplateOutlet } from '@angular/common'
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core'
 import { MatIconModule } from '@angular/material/icon'
 import { ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
@@ -8,7 +8,7 @@ import { ModbusRegisterType } from '../../shared/specification'
 const oneMinuteInMs = 60 * 1000
 @Component({
   selector: 'app-modbus-error-component',
-  imports: [MatIconModule, NgFor, NgTemplateOutlet, MatExpansionModule],
+  imports: [MatIconModule, NgTemplateOutlet, MatExpansionModule],
   standalone: true,
   templateUrl: './modbus-error.component.html',
   styleUrl: './modbus-error.component.css',
