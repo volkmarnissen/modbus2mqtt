@@ -43,7 +43,7 @@
     },
     {
       "groupName": "Core dependencies (quarterly)",
-      "matchPackageNames": ["typescript", "@types/*", "vitest", "@analogjs/*", "cypress"],
+      "matchPackageNames": ["typescript", "@types/*", "vitest", "@analogjs/*", "@playwright/test"],
       "schedule": ["before 10am on the 1st day of the quarter"]
     },
     {
