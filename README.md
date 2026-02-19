@@ -1,75 +1,10 @@
-# modbus2mqtt
+# modbus2mqtt.config
 
-[![GitHub release](https://img.shields.io/github/release/modbus2mqtt/server.svg)](https://github.com/modbus2mqtt/server/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Modbus2mqtt provides an easy way for smart home systems to interact with all kinds of modbus devices.
 
-Bridge between Modbus devices and MQTT with automatic Home Assistant discovery.
+It uses "specifications" to describe the mapping from modbus data to mqtt data.
+An end user can select the specification and will then get the modbus data via mqtt into the smart home system.
 
-## Overview
+A more experienced user can create own specifications.
 
-modbus2mqtt enables seamless integration of Modbus devices (RTU/TCP) into your smart home system via MQTT. It features a user-friendly web interface, automatic Home Assistant discovery, and community-driven device specifications.
-
-**Key Features:**
-
-- Web-based configuration UI
-- Modbus RTU & TCP support
-- MQTT integration with Home Assistant discovery
-- Community device specifications
-- Real-time monitoring
-
-## Quick Start
-
-### Installation
-
-Choose your preferred method:
-
-- **[Home Assistant Add-on](docs/installation-homeassistant.md)**
-- **[Docker](docs/installation-docker.md)** - Recommended for most users
-- **[Proxmox LXC](docs/installation-proxmox.md)** - Alpine Linux package for Proxmox containers
-
-### Usage
-
-After installation, access the web interface at `http://localhost:3000` and follow the [Getting Started Guide](docs/getting-started.md).
-
-## Documentation
-
-- **[Getting Started](docs/getting-started.md)** - First steps and basic configuration
-- **[Contributing](docs/contributing.md)** - How to contribute to the project
-- **Installation Guides:**
-  - **[Home Assistant Add-on](docs/installation-homeassistant.md)**
-  - **[Docker](docs/installation-docker.md)**
-  - **[Proxmox LXC](docs/installation-proxmox.md)**
-
-For complete documentation, see the [docs/](docs/) directory.
-
-## Contributing
-
-We welcome contributions! See the [Contributing Guide](docs/contributing.md) for details on:
-
-- Setting up your development environment ([Development Guide](docs/development.md))
-- Code style and testing requirements
-- Submitting pull requests
-
-Quick start for developers:
-
-```bash
-git clone https://github.com/modbus2mqtt/server.git
-cd server
-npm install
-npm run build.dev
-npm test
-```
-
-## Support
-
-- **[Documentation](docs/)** - Comprehensive guides
-- **[GitHub Issues](https://github.com/modbus2mqtt/server/issues)** - Bug reports and feature requests
-- **[GitHub Discussions](https://github.com/modbus2mqtt/server/discussions)** - Community support
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-Built with ❤️ by the modbus2mqtt community
+This repository will contain specifications published by experienced users.

@@ -1,0 +1,8 @@
+version: "0.1"
+files:
+  - url: specifications/files/_new/SDM630_MODBUS_Protocol.pdf
+    fileLocation: 0
+    usage: doc
+  - url: specifications/files/_new/eastronsdm630-modbus.jpg
+    fileLocation: 0
+    usage: img

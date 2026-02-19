@@ -1,0 +1,874 @@
+entities:
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 0
+    id: 2
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: l1toneutralvolts
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 2
+    id: 3
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 300
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: l2toneutralvolts
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 4
+    id: 4
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: l3toneutralvolts
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 6
+    id: 5
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: l1current
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 8
+    id: 6
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: l2current
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 10
+    id: 7
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: l3current
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 12
+    id: 8
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: l1power
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 14
+    id: 9
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: l2power
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 16
+    id: 10
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: l3power
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 18
+    id: 11
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: apparent_power
+      uom: VA
+    valid: true
+    mqttname: l1voltamps
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 20
+    id: 12
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: apparent_power
+      uom: VA
+    valid: true
+    mqttname: l2voltamps
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 22
+    id: 13
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: apparent_power
+      uom: VA
+    valid: true
+    mqttname: l3voltamps
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 24
+    id: 14
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: reactive_power
+      uom: var
+    valid: true
+    mqttname: l1reactivepower
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 24
+    id: 15
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: reactive_power
+      uom: var
+    valid: true
+    mqttname: l2reactivepower
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 26
+    id: 16
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: reactive_power
+      uom: var
+    valid: true
+    mqttname: l3reactivepower
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 30
+    id: 17
+    converterParameters:
+      multiplier: 100
+      offset: 0
+      decimals: 0
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: power_factor
+      uom: "%"
+    valid: true
+    mqttname: l1powerfactor
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 32
+    id: 18
+    converterParameters:
+      multiplier: 100
+      offset: 0
+      decimals: 0
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: power_factor
+      uom: "%"
+    valid: true
+    mqttname: l2powerfactor
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 34
+    id: 19
+    converterParameters:
+      multiplier: 100
+      offset: 0
+      decimals: 0
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: power_factor
+      uom: "%"
+    valid: true
+    mqttname: l3powerfactor
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 42
+    id: 21
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: 0
+        max: 500
+      device_class: voltage
+      uom: V
+    valid: true
+    mqttname: averagelinetoneutralvolts
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 46
+    id: 22
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: averagelinecurrent
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 48
+    id: 23
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: sumoflinecurrents
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 52
+    id: 24
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 0
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: power
+      uom: W
+    valid: true
+    mqttname: totalsystempower
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 56
+    id: 25
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: apparent_power
+      uom: VA
+    valid: true
+    mqttname: totalsystemvoltamps
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 60
+    id: 26
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 3
+      numberFormat: 1
+      identification:
+        min: -50000
+        max: 50000
+      device_class: reactive_power
+      uom: var
+    valid: true
+    mqttname: totalsystemvar
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 62
+    id: 27
+    converterParameters:
+      multiplier: 100
+      offset: 0
+      decimals: 0
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: power_factor
+      uom: "%"
+    valid: true
+    mqttname: totalsystempowerfactor
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 70
+    id: 29
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 2
+      numberFormat: 1
+      identification:
+        min: 40
+        max: 100
+      device_class: frequency
+      uom: Hz
+    valid: true
+    mqttname: frequencyofsupplyvoltages
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 72
+    id: 30
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 2
+      numberFormat: 1
+      device_class: energy
+      state_class: 3
+      uom: kWh
+    valid: true
+    mqttname: totalimportedkwh
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 74
+    id: 31
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 2
+      numberFormat: 1
+      device_class: energy
+      state_class: 3
+      uom: kWh
+    valid: true
+    mqttname: totalexportedkwh
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 258
+    id: 32
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: l1currentdemand
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 260
+    id: 33
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: l2currentdemand
+    entityCategory: diagnostic
+  - registerType: 4
+    readonly: true
+    converter:
+      name: number
+      registerTypes:
+        - 3
+        - 4
+    modbusAddress: 262
+    id: 34
+    converterParameters:
+      multiplier: 1
+      offset: 0
+      decimals: 1
+      numberFormat: 1
+      identification:
+        min: -100
+        max: 100
+      device_class: current
+      uom: A
+    valid: true
+    mqttname: l3currentdemand
+    entityCategory: diagnostic
+i18n:
+  - lang: en
+    texts:
+      - textId: e2
+        text: L1 to neutral volts
+      - textId: name
+        text: Eastron SDM630-Modbus
+      - textId: e3
+        text: L2 to neutral volts
+      - textId: e4
+        text: L3 to neutral volts
+      - textId: e5
+        text: L1 current
+      - textId: e6
+        text: L2 current
+      - textId: e7
+        text: L3 current
+      - textId: e8
+        text: L1 power
+      - textId: e9
+        text: L2 power
+      - textId: e10
+        text: L3 power
+      - textId: e11
+        text: L1 volt amps
+      - textId: e12
+        text: L2 volt amps
+      - textId: e13
+        text: L3 volt amps
+      - textId: e14
+        text: L1 reactive power
+      - textId: e15
+        text: L2 reactive power
+      - textId: e16
+        text: L3 reactive power
+      - textId: e17
+        text: L1 power factor
+      - textId: e18
+        text: L2 power factor
+      - textId: e19
+        text: L3 power factor
+      - textId: e21
+        text: Average line to neutral volts
+      - textId: e22
+        text: Average line current
+      - textId: e23
+        text: Sum of line currents
+      - textId: e24
+        text: Total system power
+      - textId: e25
+        text: Total system volt amps
+      - textId: e26
+        text: Total system VAr
+      - textId: e27
+        text: Total system power factor
+      - textId: e29
+        text: Frequency of supply voltages
+      - textId: e30
+        text: Total imported kWh
+      - textId: e31
+        text: Total exported kWh
+      - textId: e32
+        text: L1 current demand
+      - textId: e33
+        text: L2 current demand
+      - textId: e34
+        text: L3 current demand
+filename: eastronsdm630-modbus
+nextEntityId: 35
+model: SDM630-Modbus
+manufacturer: Eastron
+version: "0.3"
+testdata:
+  analogInputs:
+    - address: 0
+      value: 17264
+    - address: 1
+      value: 1791
+    - address: 2
+      value: 17266
+    - address: 3
+      value: 1977
+    - address: 4
+      value: 17260
+    - address: 5
+      value: 4198
+    - address: 6
+      value: 16308
+    - address: 7
+      value: 34729
+    - address: 8
+      value: 16451
+    - address: 9
+      value: 21239
+    - address: 10
+      value: 16650
+    - address: 11
+      value: 9688
+    - address: 12
+      value: 49953
+    - address: 13
+      value: 20488
+    - address: 14
+      value: 50225
+    - address: 15
+      value: 65394
+    - address: 16
+      value: 17660
+    - address: 17
+      value: 63196
+    - address: 18
+      value: 17321
+    - address: 19
+      value: 17437
+    - address: 20
+      value: 17464
+    - address: 21
+      value: 43601
+    - address: 22
+      value: 17662
+    - address: 23
+      value: 51067
+    - address: 24
+      value: 50017
+    - address: 25
+      value: 17950
+    - address: 24
+      value: 50017
+    - address: 25
+      value: 17950
+    - address: 26
+      value: 49853
+    - address: 27
+      value: 46738
+    - address: 30
+      value: 48883
+    - address: 31
+      value: 63643
+    - address: 32
+      value: 49017
+    - address: 33
+      value: 40752
+    - address: 34
+      value: 16254
+    - address: 35
+      value: 11559
+    - address: 42
+      value: 17263
+    - address: 43
+      value: 24501
+    - address: 46
+      value: 16523
+    - address: 47
+      value: 45661
+    - address: 48
+      value: 16721
+    - address: 49
+      value: 35723
+    - address: 52
+      value: 17550
+    - address: 53
+      value: 64092
+    - address: 56
+      value: 17730
+    - address: 57
+      value: 46806
+    - address: 60
+      value: 50177
+    - address: 61
+      value: 51193
+    - address: 62
+      value: 16059
+    - address: 63
+      value: 64220
+    - address: 70
+      value: 16967
+    - address: 71
+      value: 64372
+    - address: 72
+      value: 17985
+    - address: 73
+      value: 15496
+    - address: 74
+      value: 17957
+    - address: 75
+      value: 25341
+    - address: 258
+      value: 16330
+    - address: 259
+      value: 22865
+    - address: 260
+      value: 16324
+    - address: 261
+      value: 62934
+    - address: 262
+      value: 16449
+    - address: 263
+      value: 39289
