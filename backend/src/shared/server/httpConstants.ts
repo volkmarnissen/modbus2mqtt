@@ -27,4 +27,5 @@ export const enum apiUri {
   nextCheck = '/api/nextGithubMergeCheck',
   download = '/download/:what',
   uploadSpec = '/api/uploadspec',
+  e2eReset = '/api/e2e/reset',
 }

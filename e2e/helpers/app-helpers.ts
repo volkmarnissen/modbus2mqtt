@@ -78,8 +78,8 @@ export async function runConfig(
   const prefix = options.prefix ?? '';
   const port = options.authentication ? PORTS.mosquittoAuth : PORTS.mosquittoNoAuth;
 
-  // Wait for the config API response to populate the form before filling
-  await expect(page.locator('[formcontrolname="mqttserverurl"]')).toHaveValue(/mqtt:\/\//, { timeout: 10000 });
+  // Wait for the configure form to be visible
+  await expect(page.locator('[formcontrolname="mqttserverurl"]')).toBeVisible({ timeout: 10000 });
 
   await page.locator('[formcontrolname="mqttserverurl"]').fill(`mqtt://${LOCALHOST}:${port}`);
   await page.locator('[formcontrolname="mqttserverurl"]').dispatchEvent('change');

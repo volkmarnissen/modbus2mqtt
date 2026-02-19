@@ -26,6 +26,14 @@ export class MqttConnector {
     return MqttConnector.instance
   }
 
+  static resetInstance(): void {
+    if (MqttConnector.instance?.client) {
+      MqttConnector.instance.client.removeAllListeners()
+      MqttConnector.instance.client.end(true)
+    }
+    MqttConnector.instance = undefined
+  }
+
   constructor() {
     this.onConnectCallbacks = []
   }

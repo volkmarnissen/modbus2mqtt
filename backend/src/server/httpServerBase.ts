@@ -159,6 +159,11 @@ export class HttpServerBase {
   }
   validate() {}
   authenticate(req: Request, res: http.ServerResponse, next: NextFunction) {
+    // E2E reset endpoint bypasses auth when enabled
+    if (process.env.MODBUS2MQTT_E2E && req.url === apiUri.e2eReset) {
+      next()
+      return
+    }
     //  req.header('')
     // All api calls and a user registration when a user is already registered needs authorization
     debugUrl('authenticate' + req.url)

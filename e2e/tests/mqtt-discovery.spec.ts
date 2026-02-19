@@ -4,8 +4,13 @@ import { MqttHelper } from '../helpers/mqtt-helper';
 import { PORTS, LOCALHOST, MQTT_AUTH_CONFIG } from '../helpers/ports';
 import { runBusses, addSlave, addEntity, setUrls, saveSpecification, dismissAnnouncements } from '../helpers/app-helpers';
 import { getTempDir } from '../helpers/temp-dir';
+import { resetServer } from '../helpers/reset-helper';
 
 test.describe('MQTT Discovery Tests', () => {
+  test.beforeEach(async () => {
+    await resetServer(PORTS.modbus2mqttAddon);
+  });
+
   test('mqtt hassio addon discovery', async ({ page }) => {
     test.setTimeout(120_000);
 

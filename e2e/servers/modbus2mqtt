@@ -60,6 +60,7 @@ EOF
   fi
   echo "Starting modbus2mqtt in new tmpdir $TMPDIR"
    # Use local workspace binary instead of distprod package
+  export MODBUS2MQTT_E2E=1
   node bin/modbus2mqtt -c "$TMPDIR"  -d "$TMPDIR" -s "$TMPDIR" &
   MPID=$!
 fi

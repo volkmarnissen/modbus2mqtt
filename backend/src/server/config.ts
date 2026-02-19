@@ -516,6 +516,35 @@ export class Config {
   getSecretsPath() {
     return join(Config.getLocalDir(), 'secrets.yaml')
   }
+
+  static resetForE2E(): void {
+    // Preserve server-identity properties
+    const httpport = Config.config?.httpport
+    const supervisor_host = Config.config?.supervisor_host
+    const mqttusehassio = Config.config?.mqttusehassio
+    const fakeModbus = Config.config?.fakeModbus
+
+    // Reset to fresh config
+    Config.config = structuredClone(Config.newConfig)
+    Config.secret = undefined as unknown as string
+
+    // Restore preserved properties
+    if (httpport) Config.config.httpport = httpport
+    if (supervisor_host) Config.config.supervisor_host = supervisor_host
+    if (mqttusehassio) Config.config.mqttusehassio = mqttusehassio
+    if (fakeModbus) Config.config.fakeModbus = fakeModbus
+
+    // Rewrite minimal YAML
+    const localDir = Config.getLocalDir()
+    if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true })
+    const minimalConfig: Record<string, unknown> = { httpport: Config.config.httpport }
+    if (supervisor_host) minimalConfig.supervisor_host = supervisor_host
+    fs.writeFileSync(Config.getConfigPath(), stringify(minimalConfig), { encoding: 'utf8' })
+
+    // Delete secrets
+    const secretsPath = join(Config.getLocalDir(), 'secrets.yaml')
+    if (fs.existsSync(secretsPath)) fs.unlinkSync(secretsPath)
+  }
   static setFakeModbus(newMode: boolean) {
     Config.config.fakeModbus = newMode
   }
