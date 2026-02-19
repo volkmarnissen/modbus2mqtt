@@ -7,24 +7,19 @@
     { "path": "angular" },
     { "path": "scripts" },
     { "path": "docs" },
-    { "path": "validator" }
+    { "path": "validator" },
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",
     "eslint.useFlatConfig": true,
-    "eslint.validate": [
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact"
-    ],
-    "eslint.workingDirectories": [ { "mode": "auto" } ],
+    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "eslint.workingDirectories": [{ "mode": "auto" }],
 
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit",
-      "source.organizeImports": "never"
+      "source.organizeImports": "never",
     },
     "prettier.requireConfig": true,
 
@@ -35,20 +30,20 @@
       "dist": true,
       "distprod": true,
       "coverage": true,
-      "e2e/modbus2mqtt.temp": true
+      "e2e/modbus2mqtt.temp": true,
     },
     "search.exclude": {
       "**/node_modules": true,
       "dist": true,
       "distprod": true,
       "coverage": true,
-      "e2e/modbus2mqtt.temp": true
+      "e2e/modbus2mqtt.temp": true,
     },
 
     "jest.jestCommandLine": "npx jest --config jest.config.cjs --runInBand --detectOpenHandles --watchAll=false",
     "jest.rootPath": ".",
 
-    "cypress.configFile": "cypress.config.js"
+    "cypress.configFile": "cypress.config.js",
   },
   "extensions": {
     "recommendations": [
@@ -58,7 +53,7 @@
       "firsttris.vscode-jest-runner",
       "Angular.ng-template",
       "cypress.cypress",
-      "streetsidesoftware.code-spell-checker"
-    ]
-  }
+      "streetsidesoftware.code-spell-checker",
+    ],
+  },
 }
