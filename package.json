@@ -20,6 +20,14 @@
   "engines": {
     "node": ">=22.11.0"
   },
+  "files": [
+    "bin/",
+    "dist/server/",
+    "dist/shared/",
+    "dist/specification/",
+    "dist/frontend/",
+    "specifications/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/modbus2mqtt/server.git"

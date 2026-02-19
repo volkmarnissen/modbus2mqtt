@@ -1,0 +1,84 @@
+# Runtime image built from the npm pack tarball
+FROM node:22-alpine
+
+# Build arguments
+ARG S6_OVERLAY_VERSION=3.2.0.2
+ARG BUILD_DATE
+ARG BUILD_DESCRIPTION="modbus2mqtt Docker Image"
+ARG BUILD_NAME="modbus2mqtt"
+ARG BUILD_REF="modbus2mqtt"
+ARG BUILD_REPOSITORY="modbus2mqtt"
+ARG BUILD_VERSION
+
+ENV NODE_ENV=production
+
+# System packages (git for /data/public repo, jq for options.json parsing)
+RUN apk add --no-cache git jq
+
+# Install s6-overlay (arch-specific via TARGETARCH set by docker buildx)
+ARG TARGETARCH
+RUN set -eux; \
+    case "$TARGETARCH" in \
+      amd64) S6_ARCH="x86_64" ;; \
+      arm64) S6_ARCH="aarch64" ;; \
+      *) echo "Unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
+    esac; \
+    wget -qO /tmp/s6-noarch.tar.xz \
+      "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" && \
+    wget -qO /tmp/s6-arch.tar.xz \
+      "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${S6_ARCH}.tar.xz" && \
+    tar -C / -Jxpf /tmp/s6-noarch.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-arch.tar.xz && \
+    rm /tmp/s6-*.tar.xz
+
+# Install application from pre-built npm pack tarball
+COPY docker/modbus2mqtt.tgz /tmp/app.tgz
+RUN npm install -g /tmp/app.tgz --omit=dev && \
+    rm /tmp/app.tgz && \
+    npm cache clean --force
+
+# Create modbus2mqtt user with dialout group for serial port access
+# Fixed UID 1000 for predictable Docker volume permissions
+# node:22-alpine ships a 'node' user at UID 1000 – remove it first
+RUN deluser --remove-home node 2>/dev/null || true && \
+    adduser -S -D -u 1000 -h /var/lib/modbus2mqtt -s /sbin/nologin \
+      -G dialout -g modbus2mqtt modbus2mqtt
+
+# Create application directories
+RUN mkdir -p /config /data /ssl /var/lib/modbus2mqtt/.config/git && \
+    chown -R modbus2mqtt:dialout /var/lib/modbus2mqtt /config /data /ssl && \
+    chmod -R 755 /var/lib/modbus2mqtt /config /data /ssl
+
+# Home Assistant s6-overlay service compatibility script
+COPY ./docker/service /usr/bin/service
+
+# s6-overlay service definitions
+COPY ./docker/rootfs/ /
+
+EXPOSE 3000
+
+# Start s6-overlay init system
+CMD ["/init"]
+
+# Health check
+HEALTHCHECK --start-period=10m \
+    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1
+
+# Labels
+LABEL \
+    io.hass.name="${BUILD_NAME}" \
+    io.hass.description="${BUILD_DESCRIPTION}" \
+    io.hass.type="addon" \
+    io.hass.version=${BUILD_VERSION} \
+    maintainer="Volkmar Nissen <volkmar.nissen@gmail.com>" \
+    org.opencontainers.image.title="${BUILD_NAME}" \
+    org.opencontainers.image.description="${BUILD_DESCRIPTION}" \
+    org.opencontainers.image.vendor="Carcam 360" \
+    org.opencontainers.image.authors="Volkmar Nissen <volkmar.nissen@gmail.com>" \
+    org.opencontainers.image.licenses="MIT" \
+    org.opencontainers.image.url="https://github.com/modbus2mqtt/hassio-addon-repository" \
+    org.opencontainers.image.source="https://github.com/${BUILD_REPOSITORY}" \
+    org.opencontainers.image.documentation="https://github.com/${BUILD_REPOSITORY}/blob/main/README.md" \
+    org.opencontainers.image.created=${BUILD_DATE} \
+    org.opencontainers.image.revision=${BUILD_REF} \
+    org.opencontainers.image.version=${BUILD_VERSION}
