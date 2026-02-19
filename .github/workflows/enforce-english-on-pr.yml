@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 jobs:
   enforce-english-on-pr:
@@ -40,7 +41,7 @@ jobs:
           matches=()
           if [ -n "${PR_BASE_SHA:-}" ] && [ -n "${PR_HEAD_SHA:-}" ]; then
             range="${PR_BASE_SHA}..${PR_HEAD_SHA}"
-            changed_files=$(git diff --name-only "$range" -- '*.md' '*.yml' '*.yaml' '*.json' || true)
+            changed_files=$(git diff --name-only "$range" -- '*.md' '*.yml' '*.yaml' '*.json' ':!.github/workflows/*' || true)
             for f in $changed_files; do
               if git diff "$range" -- "$f" | grep -E "^[+].*($umlaut_pattern|$german_words)" -i >/dev/null 2>&1; then
                 matches+=("file:$f")
