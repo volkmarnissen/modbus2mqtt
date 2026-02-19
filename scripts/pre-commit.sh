@@ -198,11 +198,6 @@ check_forbidden_extensions() {
   forbidden_exts="cjs cts"
   for file in $CHANGED_FILES; do
     # Allow-list known config files that require CJS
-    case "$file" in
-      jest.config.cjs)
-        continue
-        ;;
-    esac
     ext="${file##*.}"
     for forbidden in $forbidden_exts; do
       if [ "$ext" = "$forbidden" ]; then
@@ -257,13 +252,12 @@ run_eslint_full() {
   return 0
 }
 
-# Run full Jest test suite
-run_jest_full() {
-  if command -v npx >/dev/null 2>&1; then
-    echo "[pre-commit] Running full Jest test suite ..." >&2
-    # Avoid watch, run serially to be predictable in hooks
-    if ! npx jest --config jest.config.cjs --runInBand --detectOpenHandles --watchAll=false; then
-      echo -e "\033[31m[pre-commit] ERROR: Jest tests failed.\033[0m" >&2
+# Run full test suite (backend + frontend via vitest)
+run_tests_full() {
+  if command -v pnpm >/dev/null 2>&1; then
+    echo "[pre-commit] Running full test suite ..." >&2
+    if ! pnpm run test; then
+      echo -e "\033[31m[pre-commit] ERROR: Tests failed.\033[0m" >&2
       return 1
     fi
   fi
@@ -279,7 +273,7 @@ check_prettier || FAILED=1
 # Optional full-project checks (controlled via env/file/call path)
 if [ "$FULL_MODE" -eq 1 ]; then
   run_eslint_full || FAILED=1
-  run_jest_full || FAILED=1
+  run_tests_full || FAILED=1
 else
   echo "[pre-commit] Full checks skipped (set PRECOMMIT_FULL=1 or .precommit-full to enable)." >&2
 fi
