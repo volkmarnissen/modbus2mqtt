@@ -1,4 +1,5 @@
 
+import glob
 import shutil
 import subprocess
 import tempfile
@@ -83,9 +84,9 @@ def startDockerServers(docker_image=None):
     fb = tempfile.NamedTemporaryFile(delete_on_close=False)
     fb.write(nginxConf.encode('utf-8'))
     fb.close()
-    tmpfile = "e2e/servers/tmpfiles"
-    if os.path.exists(tmpfile):
-        os.remove(tmpfile)
+    # Clean up per-port tmpdir files
+    for f in glob.glob("e2e/servers/tmpdir.*"):
+        os.remove(f)
     with open('stderr.out', "a") as outfile:
         subprocess.Popen(["nohup", "nginx", "-c", fb.name, "-p", "."], stderr=outfile, stdout=outfile)
         subprocess.Popen(["nohup", "sh", "-c", "./e2e/servers/modbustcp"], stderr=outfile, stdout=outfile)
