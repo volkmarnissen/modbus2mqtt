@@ -134,17 +134,21 @@ dist
 .jest/
 .angular/
 **/secrets.txt
-e2e
-cypress/screenshots/
+e2e/test-results/
+e2e/servers/logs/
+e2e/servers/e2e/
+e2e/servers/tmpfiles
+e2e/servers/tmpdir.*
+e2e/servers/__pycache__/
+e2e/modbus2mqtt.temp/
+e2e/*.out
 coverage-summary.json
 coverage.txt
-cypress/servers/modbustcp.conf/yaml-dir/public/
 __tests__/backendTCP/public/**/*
 nginx.conf
 nohup.out
 .angular/**/*
 bin/.pycache/**/* */
-cypress/servers/tmpfiles
 stderr.out
 alpine/package/modbus2mqtt/build/
 alpine/package/modbus2mqtt/work/
@@ -153,7 +157,6 @@ alpine/repo/
 alpine-package/
 alpine-repo/
 distprod
-cypress/servers/__pycache__/
 
 # Local toggle to skip pre-commit hooks
 .skip-precommit
