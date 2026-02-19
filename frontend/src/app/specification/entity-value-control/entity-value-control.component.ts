@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core'
 import { FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { ImodbusData, Inumber, Iselect, IselectOption } from '../../../shared/specification'
+import { ImodbusData, Inumber, Iselect, IselectOption } from '@shared/specification'
 import { Observable, Subscription } from 'rxjs'
 import { ISpecificationMethods, ImodbusEntityWithName } from '../../services/specificationInterface'
 import { MatSlideToggle } from '@angular/material/slide-toggle'

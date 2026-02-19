@@ -12,7 +12,9 @@ This document outlines the planned refactorings, their proposed order to minimiz
 
 1. SPEC packaging (immediate): Extract `src/specification` into a delivery npm package with minimal dependencies; adapt CI.-> Done
 2. Bus TCP bridge change (immediate): Replace enable-flag with explicit port; keep backward compatibility. -> Done
-3. Shared Code refactoring: Replace frontend symlink (`frontend/src/shared` -> `backend/src/shared`) with eigenständigen Frontend-Types. Analog zu lxc-manager nur die tatsächlich benötigten Types/Interfaces/Enums im Frontend halten. Symlink verursacht Probleme mit Vite/Vitest (`.js` -> `.ts` Resolution durch Symlinks).
+3. Shared Code refactoring (Phase 1+2 done): Frontend-Kopie von `shared/` gelöscht, Frontend referenziert `backend/src/shared/` per tsconfig-Paths + Vite-Alias. mqtt-Dependency aus shared eliminiert, `const enum` → `enum`.
+   - Phase 3: Data Minimization - `Iconfiguration` in Public/Settings/Full aufteilen, Passwörter nicht mehr ans Frontend senden.
+   - Phase 4: Weitere API-Endpunkte prüfen und ggf. DTOs einführen.
 4. Replace Alpine build: Use direct Dockerfile build and publish; introduce a new npm package if required by delivery flow.
 5. Directory structure split: Separate `backend`, `frontend`, and `packaging/delivery (root)` clearly.-> Done
 6. Angular 21 migration: Upgrade dependencies and tooling first to enable modern template features.-> Done
@@ -61,7 +63,53 @@ TODO:
 - Update unit/integration tests to cover new + legacy paths.
 - Update docs and examples.
 
-## 3) Replace Alpine build with Dockerfile + npm package
+## 3) Shared Code Refactoring
+
+### Was erledigt ist (Phase 1+2)
+
+- `backend/src/shared/` ist der Single Source of Truth
+- `frontend/src/shared/` (die Kopie) gelöscht
+- Frontend referenziert Backend-Shared per tsconfig-Paths (`@shared/*` → `../backend/src/shared/*`) und Vite-Alias
+- `import type { IClientOptions } from 'mqtt'` eliminiert, `ImqttClient` als eigenständiges Interface (mit `Uint8Array` statt `Buffer` für Browser-Kompatibilität)
+- `getCurrentLanguage()` nach `frontend/src/app/utils/language.ts` verschoben (nutzt `navigator`, browser-only)
+- `const enum` → `enum` für `SpecificationStatus`, `SpecificationFileUsage`, `apiUri` (Kompatibilität mit esbuild/vitest `isolatedModules`)
+- mqtt-Mock (`frontend/src/test-mocks/mqtt.ts`) entfernt
+
+### Phase 3: Data Minimization (TODO)
+
+Ziel: Sensitive Daten (Passwörter, Tokens) nicht mehr an alle Frontend-Komponenten senden.
+
+Aktuell: `GET /api/configuration` liefert die volle `Iconfiguration` inkl. `password` (bcrypt hash), `githubPersonalToken` (Klartext!), `mqttconnect.password` (Klartext) an ALLE Frontend-Komponenten.
+
+TODO:
+
+- `Iconfiguration` in drei Stufen aufteilen:
+  - `IconfigurationPublic` - sicher für alle Komponenten (version, mqttbasetopic, displayHex, etc.)
+  - `IconfigurationSettings extends IconfigurationPublic` - für Configure-Seite (mit maskierten Passwörtern `'***'`)
+  - `Iconfiguration extends IconfigurationSettings` - backend-only (password, username, frontendDir, supervisor_host)
+- Stripping-Funktionen in `backend/src/server/config.ts`:
+  - `toPublicConfig(config): IconfigurationPublic`
+  - `toSettingsConfig(config): IconfigurationSettings` (Passwörter als `'***'`)
+- API-Endpoints aufteilen:
+  - `GET /api/configuration` → `IconfigurationPublic`
+  - `GET /api/configuration/settings` → `IconfigurationSettings`
+  - `POST /api/configuration` → akzeptiert `IconfigurationSettings`, Backend prüft: Passwort=`'***'` → bestehenden Wert behalten
+- Frontend-Komponenten aktualisieren:
+  - `configure.component.ts` → `getConfigurationSettings()` + `IconfigurationSettings`
+  - `specifications.component.ts`, `select-slave.component.ts`, `specification.component.ts` → `getConfiguration()` + `IconfigurationPublic`
+  - `api-service.ts` → neue Methode `getConfigurationSettings()`, Return-Type von `getConfiguration()` auf `IconfigurationPublic` ändern
+
+### Phase 4: Weitere API-DTOs prüfen (TODO)
+
+Ziel: Prüfen, ob andere API-Endpunkte ebenfalls zu viele Daten senden.
+
+TODO:
+
+- `GET /api/busses`, `GET /api/slaves` prüfen: werden interne Felder (modbusStatusForSlave, durationOfLongestModbusCall) nur wo nötig gesendet?
+- Für alle POST-Endpoints prüfen: Validierung der eingehenden Daten (nur erwartete Felder akzeptieren)
+- Langfristig: Explizite Request/Response-Interfaces pro Endpoint (analog lxc-manager)
+
+## 4) Replace Alpine build with Dockerfile + npm package
 
 Goal: Build with a direct Dockerfile; replace Alpine-specific pipeline; add a new npm package if delivery requires it.
 

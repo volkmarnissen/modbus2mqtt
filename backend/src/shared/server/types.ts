@@ -1,5 +1,4 @@
 import { IdentifiedStates, IidentEntity, Ispecification, ModbusRegisterType, SpecificationStatus } from '../specification/index.js'
-import type { IClientOptions } from 'mqtt'
 
 export enum HttpErrorsEnum {
   OK = 200,
@@ -31,9 +30,24 @@ export enum PollModes {
   intervallAndTrigger = 2,
   noPoll = 3,
 }
-export interface ImqttClient extends IClientOptions {
+export interface ImqttClient {
   mqttserverurl?: string
   ssl?: boolean
+  host?: string
+  port?: number
+  protocol?: string
+  username?: string
+  password?: string | Uint8Array
+  clientId?: string
+  connectTimeout?: number
+  clean?: boolean
+  reconnectPeriod?: number
+  keepalive?: number
+  will?: unknown
+  key?: string | Uint8Array
+  ca?: string | Uint8Array
+  cert?: string | Uint8Array
+  log?: (...args: unknown[]) => void
 }
 
 export interface IRTUConnection {

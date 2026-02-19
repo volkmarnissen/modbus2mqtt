@@ -4,7 +4,7 @@ import {
   MessageTypes,
   SpecificationStatus,
   getSpecificationI18nEntityName,
-} from '../../shared/specification'
+} from '@shared/specification'
 import { ApiService } from './api-service'
 import { Observable } from 'rxjs'
 

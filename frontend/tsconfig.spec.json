@@ -4,6 +4,6 @@
     "types": ["vitest/globals", "node"],
     "sourceMap": true
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "src/**/*.vitest.spec.ts", "src/**/*.test.ts"],
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "src/**/*.vitest.spec.ts", "src/**/*.test.ts", "../backend/src/shared/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

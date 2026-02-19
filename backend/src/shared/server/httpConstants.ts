@@ -1,4 +1,4 @@
-export const enum apiUri {
+export enum apiUri {
   modbusSpecification = '/api/modbus/specification',
   specsDetection = '/api/specsDetection',
   specifications = '/api/specifications',

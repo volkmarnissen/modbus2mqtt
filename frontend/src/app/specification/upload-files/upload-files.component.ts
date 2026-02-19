@@ -9,7 +9,7 @@ import {
   ImodbusSpecification,
   FileLocation,
   SpecificationStatus,
-} from '../../../shared/specification'
+} from '@shared/specification'
 import { ApiService } from '../../services/api-service'
 import { MatIconButton } from '@angular/material/button'
 import { MatInput } from '@angular/material/input'

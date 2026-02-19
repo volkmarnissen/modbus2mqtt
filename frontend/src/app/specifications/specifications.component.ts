@@ -10,9 +10,9 @@ import {
   SpecificationFileUsage,
   SpecificationStatus,
   getSpecificationI18nName,
-} from '../../shared/specification/index'
+} from '@shared/specification/index'
 import { SpecificationServices } from '../services/specificationServices'
-import { Iconfiguration, IUserAuthenticationStatus } from '../../shared/server'
+import { Iconfiguration, IUserAuthenticationStatus } from '@shared/server'
 import { GalleryItem, ImageItem } from 'ng-gallery'
 import { MatIcon } from '@angular/material/icon'
 import { MatTooltip } from '@angular/material/tooltip'

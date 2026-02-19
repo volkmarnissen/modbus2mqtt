@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { provideNoopAnimations } from '@angular/platform-browser/animations'
 import { ModbusErrorComponent } from './modbus-error.component'
 import { ApiService } from '../services/api-service'
-import { ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
-import { ModbusRegisterType } from '../../shared/specification'
+import { ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '@shared/server'
+import { ModbusRegisterType } from '@shared/specification'
 import { ensureAngularTesting } from '../../test-setup'
 
 ensureAngularTesting()
