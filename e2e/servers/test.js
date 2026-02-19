@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-data = fs.readFileSync('cypress/servers/tmpfiles', 'utf-8')
+data = fs.readFileSync('e2e/servers/tmpfiles', 'utf-8')
 var args = 3004
 var re = new RegExp(args + ' (.*)\n')
 var matches = re.exec(data)

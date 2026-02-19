@@ -50,7 +50,7 @@ def killOne(app:str):
         print(f"No running process found for {app}")
         
 def killRequiredApps(permanent:bool=False, restart:bool=False):
-    print("::group::Cypress cleanup")
+    print("::group::E2E cleanup")
     try:
         if(not restart):
             killOne("nginx: master")
@@ -106,12 +106,12 @@ def startRequiredApps(permanent: bool, restart: bool):
     print("::group::start Start required servers")
 
     # ensure logs directory exists
-    logdir = os.path.join(PROJECT_ROOT, "cypress", "servers", "logs")
+    logdir = os.path.join(PROJECT_ROOT, "e2e", "servers", "logs")
     os.makedirs(logdir, exist_ok=True)
 
     if not restart:
         checkRequiredApps()
-        with open(os.path.join(PROJECT_ROOT, "cypress", "servers", "nginx.conf", "nginx.conf"), "r") as f:
+        with open(os.path.join(PROJECT_ROOT, "e2e", "servers", "nginx.conf", "nginx.conf"), "r") as f:
             nginxConf = f.read()
             nginxConf = re.sub(r"mime.types", nginxGetMimesTypes(), nginxConf)
         fb = tempfile.NamedTemporaryFile(delete_on_close=False)
@@ -121,9 +121,9 @@ def startRequiredApps(permanent: bool, restart: bool):
     with open(os.path.join(PROJECT_ROOT, "stderr.out"), "a") as outfile:
         if not restart:
             subprocess.Popen(["nohup", "nginx", "-c", fb.name, "-p", PROJECT_ROOT], stderr=outfile, stdout=outfile)
-            subprocess.Popen(["nohup", "sh", "-c", os.path.join(PROJECT_ROOT, "cypress", "servers", "modbustcp")], stderr=outfile, stdout=outfile)
+            subprocess.Popen(["nohup", "sh", "-c", os.path.join(PROJECT_ROOT, "e2e", "servers", "modbustcp")], stderr=outfile, stdout=outfile)
         if not permanent or restart:
-            subprocess.Popen(["nohup", "sh", "-c", os.path.join(PROJECT_ROOT, "cypress", "servers", "mosquitto")], stderr=outfile, stdout=outfile)
+            subprocess.Popen(["nohup", "sh", "-c", os.path.join(PROJECT_ROOT, "e2e", "servers", "mosquitto")], stderr=outfile, stdout=outfile)
             # use modbus2mqtt with different config files; log per port
             def start_modbus2mqtt(http_port: int, ingress: bool = False):
                 logfile = os.path.join(logdir, f"modbus2mqtt_{http_port}.log")
@@ -134,7 +134,7 @@ def startRequiredApps(permanent: bool, restart: bool):
                 log_path.touch(exist_ok=True)
                 log_handle = open(logfile, "ab", buffering=0)
                 modbus2mqtt_log_handles.append(log_handle)
-                cmd = f"{os.path.join(PROJECT_ROOT, 'cypress', 'servers', 'modbus2mqtt')} {http_port}"
+                cmd = f"{os.path.join(PROJECT_ROOT, 'e2e', 'servers', 'modbus2mqtt')} {http_port}"
                 if ingress:
                     cmd += " ingress"
                 subprocess.Popen(["nohup", "sh", "-c", cmd], stdout=log_handle, stderr=log_handle)
@@ -148,7 +148,7 @@ def startRequiredApps(permanent: bool, restart: bool):
             nginx_error_log = os.path.join(PROJECT_ROOT, "nginx.error.log")
             if os.path.exists(nginx_error_log):
                 target = os.path.abspath(nginx_error_log)
-                link_name = os.path.join(PROJECT_ROOT, "cypress", "servers", "logs", "nginx.error.log")
+                link_name = os.path.join(PROJECT_ROOT, "e2e", "servers", "logs", "nginx.error.log")
                 if os.path.islink(link_name) or os.path.exists(link_name):
                     os.remove(link_name)
                 os.symlink(target, link_name)

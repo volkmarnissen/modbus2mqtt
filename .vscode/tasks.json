@@ -219,7 +219,7 @@
       "script": "e2e:start",
       "problemMatcher": [],
       "label": "npm: e2e:start",
-      "detail": "./cypress/servers/testall.py startServers"
+      "detail": "./e2e/servers/testall.py startServers"
     }
   ]
 }

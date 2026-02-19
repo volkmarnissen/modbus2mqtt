@@ -47,7 +47,7 @@ def docker_restart_container(container_name="modbus2mqtt-test"):
     except Exception as e:
         raise RuntimeError(f"Error restarting container {container_name}: {e}") 
         
-def copy_config_to_container(local_path="cypress/servers/modbustcp.conf/config-dir", container_name="modbus2mqtt-test", container_target="/config/modbus2mqtt"):
+def copy_config_to_container(local_path="e2e/servers/modbustcp.conf/config-dir", container_name="modbus2mqtt-test", container_target="/config/modbus2mqtt"):
 
     # Check if container is running
     try:
@@ -77,19 +77,19 @@ def startDockerServers(docker_image=None):
         docker_image = "ghcr.io/modbus2mqtt/modbus2mqtt:latest"
     print("::group::Start modbustcp and mosquitto (local)")
     checkRequiredApps()
-    with open("./cypress/servers/nginx.conf/nginx.conf", "r") as f:
+    with open("./e2e/servers/nginx.conf/nginx.conf", "r") as f:
         nginxConf = f.read()
         nginxConf = re.sub(r"mime.types", nginxGetMimesTypes(), nginxConf)
     fb = tempfile.NamedTemporaryFile(delete_on_close=False)
     fb.write(nginxConf.encode('utf-8'))
     fb.close()
-    tmpfile = "cypress/servers/tmpfiles"
+    tmpfile = "e2e/servers/tmpfiles"
     if os.path.exists(tmpfile):
         os.remove(tmpfile)
     with open('stderr.out', "a") as outfile:
         subprocess.Popen(["nohup", "nginx", "-c", fb.name, "-p", "."], stderr=outfile, stdout=outfile)
-        subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/modbustcp"], stderr=outfile, stdout=outfile)
-        subprocess.Popen(["nohup", "sh", "-c", "./cypress/servers/mosquitto"], stderr=outfile, stdout=outfile)
+        subprocess.Popen(["nohup", "sh", "-c", "./e2e/servers/modbustcp"], stderr=outfile, stdout=outfile)
+        subprocess.Popen(["nohup", "sh", "-c", "./e2e/servers/mosquitto"], stderr=outfile, stdout=outfile)
     print('::endgroup::')
     print("::group::Start modbus2mqtt in Docker")
     ssl_dir = tempfile.mkdtemp(prefix="modbus2mqtt-ssl-")
@@ -111,7 +111,7 @@ def startDockerServers(docker_image=None):
     print(f"Running: {' '.join(docker_cmd)}")
     subprocess.check_call(docker_cmd)
     copy_config_to_container()
-    copy_config_to_container( local_path="cypress/servers/modbus2mqtt-docker.yaml", container_target="/config/modbus2mqtt/modbus2mqtt.yaml")
+    copy_config_to_container( local_path="e2e/servers/modbus2mqtt-docker.yaml", container_target="/config/modbus2mqtt/modbus2mqtt.yaml")
     check_container_permissions()
     docker_restart_container()
     print('::endgroup::')
