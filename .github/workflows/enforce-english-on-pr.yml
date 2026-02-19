@@ -5,9 +5,7 @@ on:
     types: [opened, edited, synchronize]
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
   enforce-english-on-pr:
@@ -58,16 +56,9 @@ jobs:
             echo "Matches: none"
           fi
 
-      - name: Report and fail on PR
+      - name: Fail on non-English content
         if: steps.scan.outputs.found == 'true'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const matches = `${{ steps.scan.outputs.matches }}`
-            const repo = context.repo
-            const pr = context.payload.pull_request.number
-            const body = `⚠️ Please use English for repository changes. Detected potential non-English content in: ${matches}`
-            core.info(`Commenting on PR #${pr}`)
-            await github.rest.issues.createComment({ owner: repo.owner, repo: repo.repo, issue_number: pr, body })
-            core.setFailed('Non-English content detected in files; please update to use English.')
+        run: |
+          echo "::error::Non-English content detected: ${{ steps.scan.outputs.matches }}"
+          echo "Please use English for repository changes."
+          exit 1
