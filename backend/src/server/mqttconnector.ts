@@ -107,7 +107,7 @@ export class MqttConnector {
         }
         iopts.clean = false
         iopts.reconnectPeriod = 1000
-        iopts.keepalive = 50000
+        iopts.keepalive = 60
         iopts.clientId = Config.getConfiguration().mqttbasetopic
         if (iopts.ca == undefined) delete iopts.ca
         if (iopts.key == undefined) delete iopts.key

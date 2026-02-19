@@ -911,6 +911,10 @@ export class HttpServer extends HttpServerBase {
     new ConfigSpecification().readYaml()
     ConfigBus.readBusses()
 
+    // Phase 6: Re-create MqttDiscover singleton to re-register ConfigBus listeners
+    // (addSlave, deleteSlave, updateSlave, deleteBus events for MQTT discovery)
+    MqttDiscover.getInstance()
+
     log.log(LogLevelEnum.info, 'E2E reset: complete')
   }
 }

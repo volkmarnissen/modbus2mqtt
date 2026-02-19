@@ -39,22 +39,27 @@ test.describe('MQTT Discovery Tests', () => {
       await addEntity(page, 2, 3);
       await saveSpecification(page);
 
-      // Wait for Home Assistant discovery messages
-      await page.waitForTimeout(1000);
+      // Wait for MQTT discovery messages to arrive (CI can be slow)
+      await expect
+        .poll(() => mqttHelper.getTopicAndPayloads().find((tp) => tp.payload === 'online'), {
+          timeout: 15_000,
+          message: 'Waiting for "online" MQTT message',
+        })
+        .toBeTruthy();
 
-      const messages = mqttHelper.getTopicAndPayloads();
+      await expect
+        .poll(() => mqttHelper.getTopicAndPayloads().find((tp) => tp.topic.endsWith('/state/')), {
+          timeout: 15_000,
+          message: 'Waiting for /state/ topic',
+        })
+        .toBeTruthy();
 
-      // Validate "online" status message
-      const onlineIdx = messages.findIndex((tp) => tp.payload === 'online');
-      expect(onlineIdx, 'Expected "online" message').not.toBe(-1);
-
-      // Validate /state/ topic
-      const stateIdx = messages.findIndex((tp) => tp.topic.endsWith('/state/'));
-      expect(stateIdx, 'Expected /state/ topic').not.toBe(-1);
-
-      // Validate exactly 2 homeassistant/ discovery topics
-      const haTopics = messages.filter((tp) => tp.topic.startsWith('homeassistant/'));
-      expect(haTopics.length, 'Expected 2 homeassistant discovery topics').toBe(2);
+      await expect
+        .poll(() => mqttHelper.getTopicAndPayloads().filter((tp) => tp.topic.startsWith('homeassistant/')), {
+          timeout: 15_000,
+          message: 'Waiting for 2 homeassistant discovery topics',
+        })
+        .toHaveLength(2);
 
       // Validate specification file was created on disk
       const tmpdir = getTempDir(String(PORTS.modbus2mqttAddon));
