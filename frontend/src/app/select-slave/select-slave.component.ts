@@ -12,7 +12,6 @@ import { MatListModule } from '@angular/material/list'
 
 import { ApiService } from '../services/api-service'
 import {
-  getCurrentLanguage,
   IbaseSpecification,
   getSpecificationI18nName,
   SpecificationStatus,
@@ -23,7 +22,8 @@ import {
   Ientity,
   Ispecification,
   IidentEntity,
-} from '../../shared/specification'
+} from '@shared/specification'
+import { getCurrentLanguage } from '../utils/language'
 import { Clipboard } from '@angular/cdk/clipboard'
 import { Observable, Subject, Subscription } from 'rxjs'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -43,7 +43,7 @@ import {
   Iconfiguration,
   IEntityCommandTopics,
   ImodbusStatusForSlave,
-} from '../../shared/server'
+} from '@shared/server'
 import { MatInput } from '@angular/material/input'
 import { MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion'
 import { MatOption } from '@angular/material/core'

@@ -24,14 +24,13 @@
     "types": [],
     "paths": {
       "@app/*": ["src/app/*"],
-      "@shared/*": ["src/shared/*"],
-      "@m2m-shared/*": ["src/shared/*"]
+      "@shared/*": ["../backend/src/shared/*"]
     }
   },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "../backend/src/shared/**/*.ts"],
   "exclude": ["./src/**/*.spec.ts", "./src/**/*.test.ts"]
 }

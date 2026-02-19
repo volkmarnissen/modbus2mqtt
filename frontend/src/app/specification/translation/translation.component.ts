@@ -10,7 +10,7 @@ import {
   getSpecificationI18nText,
   setSpecificationI18nText,
   validateTranslation,
-} from '../../../shared/specification'
+} from '@shared/specification'
 import { ApiService } from '../../services/api-service'
 import { AbstractControl, FormControl, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { ISpecificationMethods } from '../../services/specificationInterface'

@@ -231,14 +231,14 @@ export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntit
 export const SPECIFICATION_VERSION = '0.4'
 export const SPECIFICATION_FILES_VERSION = '0.1'
 
-export const enum SpecificationStatus {
+export enum SpecificationStatus {
   published = 0,
   cloned = 1,
   added = 2,
   new = 3,
   contributed = 4,
 }
-export const enum SpecificationFileUsage {
+export enum SpecificationFileUsage {
   img = 'img',
   documentation = 'doc',
   icon = 'icon',
@@ -430,9 +430,6 @@ export function getSpecificationI18nEntityOptionId(
   return [0]
 }
 
-export function getCurrentLanguage(): string {
-  return navigator.language.replace(/-.*/g, '')
-}
 export function getFileNameFromName(name: string): string | undefined {
   const searchRegExp = /[^a-z^A-Z^.^0-9+-._]*/g
   if (!name) return undefined

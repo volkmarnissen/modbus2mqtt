@@ -1,10 +1,10 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core'
 import { MatIconModule } from '@angular/material/icon'
-import { ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
+import { ImodbusErrorsForSlave, ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '@shared/server'
 import { ApiService } from '../services/api-service'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { ModbusRegisterType } from '../../shared/specification'
+import { ModbusRegisterType } from '@shared/specification'
 const oneMinuteInMs = 60 * 1000
 @Component({
   selector: 'app-modbus-error-component',

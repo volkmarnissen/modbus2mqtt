@@ -7,7 +7,7 @@ import { provideRouter } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
 import { EntityComponent } from './entity.component'
 import { ISpecificationMethods, ImodbusEntityWithName } from '../../services/specificationInterface'
-import { IdentifiedStates, ImodbusData, ImodbusEntity, Inumber, Iselect, Itext, VariableTargetParameters } from '../../../shared/specification'
+import { IdentifiedStates, ImodbusData, ImodbusEntity, Inumber, Iselect, Itext, VariableTargetParameters } from '@shared/specification'
 import { ensureAngularTesting } from '../../../test-setup'
 import convertersFixture from '../../../test-fixtures/converters.json'
 

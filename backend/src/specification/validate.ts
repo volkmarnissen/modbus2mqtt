@@ -27,7 +27,7 @@ cli.option('-o, --pr_owner <owner>', 'Creator of the pull request')
 const rawArgs = process.argv.slice(2)
 if (rawArgs.includes('--help') || rawArgs.includes('-h')) {
   cli.outputHelp()
-  process.exit(1)
+  process.exit(0)
 }
 cli.parse(process.argv)
 let pr_number: number | undefined

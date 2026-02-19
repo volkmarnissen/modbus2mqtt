@@ -1,7 +1,7 @@
 import { AfterViewInit, Component } from '@angular/core'
 import { ApiService } from '../services/api-service'
 import { Router } from '@angular/router'
-import { IUserAuthenticationStatus } from '../../shared/server'
+import { IUserAuthenticationStatus } from '@shared/server'
 
 @Component({
   selector: 'app-root-routing',

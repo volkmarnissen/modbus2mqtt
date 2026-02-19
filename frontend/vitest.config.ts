@@ -6,8 +6,12 @@ export default defineConfig({
   plugins: [angular()],
   resolve: {
     alias: {
-      // mqtt is a backend-only Node.js package (type-only usage in shared/server/types.ts)
-      mqtt: fileURLToPath(new URL('./src/test-mocks/mqtt.ts', import.meta.url)),
+      '@shared': fileURLToPath(new URL('../backend/src/shared', import.meta.url)),
+    },
+  },
+  server: {
+    fs: {
+      allow: ['..'],
     },
   },
   test: {

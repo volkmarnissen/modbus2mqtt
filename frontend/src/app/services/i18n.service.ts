@@ -7,7 +7,7 @@ import {
   getSpecificationI18nName,
   setSpecificationI18nEntityName,
   setSpecificationI18nEntityOptionName,
-} from '../../shared/specification'
+} from '@shared/specification'
 
 interface AssociativeArray {
   [key: string]: string

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
 import { ModbusErrorComponent } from './modbus-error.component'
-import { ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '../../shared/server'
-import { ModbusRegisterType } from '../../shared/specification'
+import { ImodbusStatusForSlave, ModbusErrorStates, ModbusTasks } from '@shared/server'
+import { ModbusRegisterType } from '@shared/specification'
 
 const buildErrors = (date: number): ImodbusStatusForSlave => ({
   errors: [

@@ -20,6 +20,10 @@ on:
         description: 'Version (without leading v). If omitted, read from package.json.'
         required: false
         type: string
+permissions:
+  contents: write
+  packages: write
+
 env:
   product_name: modbus2mqtt
   main_docker_name: 'ghcr.io/${{ github.repository_owner }}/modbus2mqtt'

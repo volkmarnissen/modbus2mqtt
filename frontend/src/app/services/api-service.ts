@@ -14,7 +14,7 @@ import {
   Imessage,
   IimportMessages,
   Converters,
-} from '../../shared/specification'
+} from '@shared/specification'
 import { SessionStorage } from './SessionStorage'
 import { ActivatedRoute, Router } from '@angular/router'
 import { I18nService } from './i18n.service'
@@ -27,7 +27,7 @@ import {
   Islave,
   IidentificationSpecification,
   IModbusConnection,
-} from '../../shared/server'
+} from '@shared/server'
 
 @Injectable({
   providedIn: 'root',

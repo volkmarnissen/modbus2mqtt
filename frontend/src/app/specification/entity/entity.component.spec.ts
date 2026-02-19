@@ -13,7 +13,7 @@ import {
   Itext,
   ModbusRegisterType,
   VariableTargetParameters,
-} from '../../../shared/specification'
+} from '@shared/specification'
 
 class ApiServiceMock {
   getConverters() {
