@@ -207,12 +207,23 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
   }
 
   hasPublicSpec(filename: string): boolean {
-    return fs.existsSync(this.getPublicYamlPath(filename))
+    return fs.existsSync(this.getPublicYamlPath(filename)) || fs.existsSync(join(this.getPublicSpecDir(), filename + '.json'))
   }
 
-  renameFilesPath(spec: IfileSpecification, oldfilename: string): void {
-    const oldPath = getSpecificationImageOrDocumentUrl(this.getLocalDir(), oldfilename, '')
-    const newPath = getSpecificationImageOrDocumentUrl(this.getLocalDir(), spec.filename, '')
+  /**
+   * Renames a spec: deletes old JSON/YAML files and renames the files directory.
+   */
+  renameSpec(newFilename: string, oldFilename: string): void {
+    const oldJsonPath = this.getLocalJsonPath(oldFilename)
+    const oldYamlPath = this.getLocalYamlPath(oldFilename)
+    if (fs.existsSync(oldJsonPath)) fs.unlinkSync(oldJsonPath)
+    if (fs.existsSync(oldYamlPath)) fs.unlinkSync(oldYamlPath)
+    this.renameFilesDir(newFilename, oldFilename)
+  }
+
+  private renameFilesDir(newFilename: string, oldFilename: string): void {
+    const oldPath = getSpecificationImageOrDocumentUrl(this.getLocalDir(), oldFilename, '')
+    const newPath = getSpecificationImageOrDocumentUrl(this.getLocalDir(), newFilename, '')
     const newParentDir = path.dirname(newPath)
     if (!fs.existsSync(newParentDir)) fs.mkdirSync(newParentDir, { recursive: true })
     if (fs.existsSync(newPath)) fs.rmSync(newPath, { recursive: true })
@@ -225,11 +236,6 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
     if (!fs.existsSync(localFilesPath) && fs.existsSync(filespath)) {
       fs.cpSync(filespath, localFilesPath, { recursive: true })
     }
-  }
-
-  deleteNewSpecificationFiles(): void {
-    const dir = getSpecificationImageOrDocumentUrl(this.getLocalDir(), '_new', '')
-    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
   }
 
   cleanOldYaml(filename: string): void {

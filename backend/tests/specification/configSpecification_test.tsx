@@ -5,7 +5,6 @@ import * as fs from 'fs'
 import { join } from 'path'
 import { configDir, singleMutex, dataDir } from './configsbase.js'
 import {
-  IbaseSpecification,
   SPECIFICATION_VERSION,
   SpecificationFileUsage,
   FileLocation,
@@ -130,10 +129,11 @@ it('add new specification, add files (base64), set filename', () => {
     { url: 'test.pdf', fileLocation: FileLocation.Local, usage: SpecificationFileUsage.documentation, data: Buffer.from('test').toString('base64'), mimeType: 'application/pdf' },
     { url: 'test.jpg', fileLocation: FileLocation.Local, usage: SpecificationFileUsage.img, data: Buffer.from('test').toString('base64'), mimeType: 'image/jpeg' },
   ]
-  let g = ConfigSpecification.getSpecificationByFilename('_new')
-  expect(g).not.toBeNull()
-  expect(g!.files.find((f) => f.url === 'test.jpg')).not.toBeNull()
-  expect(g!.files.find((f) => f.url === 'test.pdf')).not.toBeNull()
+  // _new returns an empty template (files are base64-embedded in the spec, not on disk)
+  const g0 = ConfigSpecification.getSpecificationByFilename('_new')
+  expect(g0).toBeDefined()
+  expect(g0!.files).toHaveLength(0)
+  expect(g0!.status).toBe(SpecificationStatus.new)
 
   mspec.filename = 'addspectest'
   let wasCalled = false
@@ -147,7 +147,7 @@ it('add new specification, add files (base64), set filename', () => {
     null
   )
   expect(wasCalled).toBeTruthy()
-  g = ConfigSpecification.getSpecificationByFilename('addspectest')
+  const g = ConfigSpecification.getSpecificationByFilename('addspectest')
   expect(g).not.toBeNull()
   expect(g!.files.length).toBe(2)
 
@@ -285,68 +285,50 @@ it('contribution cloned', () => {
   })
 })
 
-it.skip('importSpecificationZip existing Specification', () => {
-  return new Promise<void>((resolve) => {
-    const zipFile = 'spec.zip'
-    const s = fs.createWriteStream(zipFile)
-    ConfigSpecification.createZipFromSpecification('waterleveltransmitter', s)
-    const errors = ConfigSpecification.importSpecificationZip(zipFile)
-    expect(errors.errors).not.toBe('')
-    resolve()
-  })
+it('importSpecificationJson with existing spec shows warning', () => {
+  const cfgSpec = new ConfigSpecification()
+  cfgSpec.readYaml()
+  const existing = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')
+  expect(existing).toBeDefined()
+
+  const errors = ConfigSpecification.importSpecificationJson(existing!)
+  expect(errors.errors).toBe('')
+  expect(errors.warnings).toContain('already exists')
 })
 
-function removeLocal(specPath: string, specFilesPath: string) {
-  fs.rmSync(specFilesPath, { recursive: true, force: true })
-  try {
-    fs.rmSync(specPath, { recursive: true, force: true })
-  } catch (e: any) {
-    if (e.code != 'ENOENT') console.log('error ' + e.message)
+it('importSpecificationJson with new spec', () => {
+  const cfgSpec = new ConfigSpecification()
+  cfgSpec.readYaml()
+
+  const newSpec = {
+    filename: 'importtest',
+    entities: [],
+    files: [],
+    i18n: [{ key: 'name', texts: [{ language: 'en', text: 'Import Test' }] }],
+    version: SPECIFICATION_VERSION,
+    testdata: { holdingRegisters: [], coils: [], analogInputs: [], discreteInputs: [] },
   }
-}
-it('importSpecificationZip ', () => {
-  return new Promise<void>((resolve) => {
-    const filename = 'eastronsdm720-m'
-    const zipFile = join(ConfigSpecification.configDir, filename + '.zip')
-    const specPath = ConfigSpecification['getSpecificationPath']({ filename: filename } as IbaseSpecification)
-    const specFilesPath = ConfigSpecification['getLocalFilesPath'](filename)
 
-    removeLocal(specPath, specFilesPath)
+  const errors = ConfigSpecification.importSpecificationJson(newSpec)
+  expect(errors.errors).toBe('')
+  expect(errors.warnings).toBe('')
 
-    // Create the specification locally to be able to create the zip file in the next step
+  const imported = ConfigSpecification.getSpecificationByFilename('importtest')
+  expect(imported).toBeDefined()
+  expect(imported!.filename).toBe('importtest')
+  expect(imported!.status).toBe(SpecificationStatus.added)
 
-    const s = fs.createWriteStream(zipFile)
-    s.on('end', () => {
-      console.log('Write finished')
-    })
-    s.on('error', () => {
-      console.log('Write finished')
-    })
-    s.on('finish', () => {
-      s.end()
-      // Remove specification to be able to import it w/o error
-      removeLocal(specPath, specFilesPath)
+  // Cleanup
+  cfgSpec.deleteSpecification('importtest')
+})
 
-      ConfigSpecification.importSpecificationZip(zipFile)
-      expect(fs.existsSync(specPath)).toBeTruthy()
-      expect(fs.existsSync(specFilesPath)).toBeTruthy()
-      removeLocal(specPath, specFilesPath)
-      resolve()
-    })
+it('importSpecificationJson validates required fields', () => {
+  let errors = ConfigSpecification.importSpecificationJson(null)
+  expect(errors.errors).toContain('Invalid JSON data')
 
-    // Ensure public spec + files exist in temp data dir for zip creation
-    const publicFilesPath = ConfigSpecification['getPublicFilesPath'](filename)
-    const publicSpecPath = ConfigSpecification['getPublicSpecificationPath']({ filename } as IbaseSpecification)
-    fs.mkdirSync(publicFilesPath, { recursive: true })
-    fs.mkdirSync(join(publicSpecPath, '..'), { recursive: true })
-    try {
-      fs.writeFileSync(join(publicFilesPath, 'files.yaml'), 'files:\n', { encoding: 'utf8' })
-    } catch {}
-    try {
-      fs.writeFileSync(publicSpecPath, `filename: ${filename}\nentities: []\n`, { encoding: 'utf8' })
-    } catch {}
+  errors = ConfigSpecification.importSpecificationJson({ entities: [] })
+  expect(errors.errors).toContain('filename')
 
-    ConfigSpecification.createZipFromSpecification(filename, s)
-    // s.on( finish will be called after createZipFromSpecification
-  })
+  errors = ConfigSpecification.importSpecificationJson({ filename: 'test' })
+  expect(errors.errors).toContain('entities')
 })

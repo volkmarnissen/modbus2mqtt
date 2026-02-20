@@ -6,19 +6,20 @@
         <mat-card-title>Functions</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="border" dragndropDirective (fileDropped)="onZipDropped($event)">
+        <div class="border" dragndropDirective (fileDropped)="onJsonFileDropped($event)">
           <input
             type="file"
-            #zipFiles
-            id="zipFiles"
+            #jsonFiles
+            id="jsonFiles"
             multiple
-            matTooltip="Test"
-            (change)="zipBrowseHandler($event.target)"
+            accept=".json"
+            matTooltip="Import Specification JSON"
+            (change)="jsonBrowseHandler($event.target)"
             hidden
             class="downloadLabel"
           />
-          <label class="downloadLabel" for="zipFiles" i18n dragndropDirective (fileDropped)="onZipDropped($event)"
-            >Specification Files</label
+          <label class="downloadLabel" for="jsonFiles" i18n dragndropDirective (fileDropped)="onJsonFileDropped($event)"
+            >Import Specification Files</label
           >
         </div>
 

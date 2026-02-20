@@ -305,20 +305,17 @@ describe('http ADD/DELETE /busses', () => {
     Bus.addBus = orig
   })
 
-  test('post specification zip', async () => {
-    // Expect 406 with a non-zip body; force text parsing to avoid JSON parser errors
+  test('post specification json with invalid data', async () => {
     await supertest(httpServer['app'])
       .post(apiUri.uploadSpec)
-      .accept('text/plain')
-      .send('Just some text to make sure it fails')
-      .set('Content-Type', 'application/zip')
+      .send({ noFilename: true })
       .parse((res, cb) => {
         let data = ''
         res.setEncoding('utf8')
         res.on('data', (chunk) => (data += chunk))
         res.on('end', () => cb(null, data))
       })
-      .expect(HttpErrorsEnum.ErrNotAcceptable)
+      .expect(HttpErrorsEnum.ErrBadRequest)
   })
   test('POST /mqtt/validate', async () => {
     const oldConfig = Config.getConfiguration()
@@ -348,7 +345,7 @@ describe('http POST', () => {
 
     const spec1: ImodbusSpecification = Object.assign(spec)
 
-    const p = ConfigSpecification['getSpecificationPath'](spec1)
+    const p = ConfigSpecification.getLocalDir() + '/specifications/' + spec1.filename + '.yaml'
     if (fs.existsSync(p)) fs.unlinkSync(p)
     const url = apiUri.specfication + '?busid=0&slaveid=2&originalFilename=waterleveltransmitter'
 
@@ -376,7 +373,7 @@ describe('http POST', () => {
       .send(spec1)
       .expect(HttpErrorsEnum.OkCreated)
     const found = ConfigSpecification.getSpecificationByFilename(spec1.filename)! as any
-    const newFilename = ConfigSpecification['getLocalJsonPath'](response.body)
+    const newFilename = ConfigSpecification.getLocalDir() + '/specifications/' + response.body.filename + '.json'
     expect(fs.existsSync(newFilename)).toBeTruthy()
     expect(getSpecificationI18nName(found!, 'en')).toBe('Water Level Transmitter')
     expect(response)

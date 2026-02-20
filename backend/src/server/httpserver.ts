@@ -13,13 +13,7 @@ import {
   SpecificationStatus,
   IimportMessages,
 } from '../shared/specification/index.js'
-import path, { join } from 'path'
-import multer from 'multer'
-
-// Alias for typed Express requests with query parameters
-// (no alias needed; use express.Request directly)
-
-import { zipStorage } from './httpFileUpload.js'
+import { join } from 'path'
 import { Bus } from './bus.js'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
@@ -370,40 +364,35 @@ export class HttpServer extends HttpServerBase {
     })
     this.get(apiUri.download, (req: express.Request, res: http.ServerResponse) => {
       debug(req.url)
-      let downloadMethod: (filename: string, r: Writable) => Promise<void>
-      let filename = 'local.zip'
-      if (req.params && req.params['what'] && req.params['what'] == 'local') downloadMethod = Config.createZipFromLocal
-      else {
-        const whatParam = Array.isArray(req.params['what']) ? req.params['what'][0] : (req.params['what'] as string)
-        filename = whatParam + '.zip'
-        downloadMethod = (file: string, r: Writable) => {
-          return new Promise<void>((resolve, reject) => {
-            try {
-              ConfigSpecification.createZipFromSpecification(file, r)
-              resolve()
-            } catch (e: unknown) {
-              reject(e)
-            }
-          })
-        }
-      }
-      res.setHeader('Content-Type', 'application/zip')
-      res.setHeader('Content-disposition', 'attachment; filename=' + filename)
-      // Tell the browser that this is a zip file.
       if (req.params && req.params['what']) {
         const whatParam = Array.isArray(req.params['what']) ? req.params['what'][0] : (req.params['what'] as string)
-        downloadMethod(whatParam, res)
-          .then(() => {
-            super.returnResult(req, res, HttpErrorsEnum.OK, undefined)
-          })
-          .catch((e) => {
-            this.returnResult(
-              req,
-              res,
-              HttpErrorsEnum.SrvErrInternalServerError,
-              JSON.stringify('download Zip ' + whatParam + e.message)
-            )
-          })
+        if (whatParam === 'local') {
+          // Local config download stays as zip
+          res.setHeader('Content-Type', 'application/zip')
+          res.setHeader('Content-disposition', 'attachment; filename=local.zip')
+          Config.createZipFromLocal('local', res as unknown as Writable)
+            .then(() => {
+              super.returnResult(req, res, HttpErrorsEnum.OK, undefined)
+            })
+            .catch((e) => {
+              this.returnResult(
+                req,
+                res,
+                HttpErrorsEnum.SrvErrInternalServerError,
+                JSON.stringify('download local: ' + e.message)
+              )
+            })
+        } else {
+          // Spec download as JSON
+          const spec = ConfigSpecification.getSpecificationByFilename(whatParam)
+          if (!spec) {
+            this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'Specification not found: ' + whatParam)
+            return
+          }
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Content-disposition', 'attachment; filename=' + whatParam + '.json')
+          res.end(JSON.stringify(spec, null, 2))
+        }
       }
     })
     this.post(apiUri.specficationContribute, (req: express.Request, res: http.ServerResponse) => {
@@ -708,41 +697,18 @@ export class HttpServer extends HttpServerBase {
       const rc: Islave = bus.writeSlave(req.body)
       this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
     })
-    this.app.post(
-      apiUri.uploadSpec,
-      multer({ storage: zipStorage }).array('zips'),
-      (req: ExpressRequest, res: http.ServerResponse) => {
-        if (req.files) {
-          // req.body.documents
-
-          ; (req.files as Express.Multer.File[])!.forEach((f) => {
-            try {
-              const zipfilename = join(f.destination, f.filename)
-              const errors = ConfigSpecification.importSpecificationZip(zipfilename)
-              fs.rmdirSync(path.dirname(zipfilename), { recursive: true })
-
-              if (errors.errors.length > 0)
-                this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Import failed: ' + errors.errors, errors)
-              else this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(errors))
-            } catch (e: unknown) {
-              const errors: IimportMessages = { errors: 'Import error: ' + (e as Error).message, warnings: '' }
-              this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, errors.errors, errors)
-            }
-          })
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, 'No or incorrect files passed')
-        }
-      }
-    )
-
-    this.delete(apiUri.newSpecificationfiles, (req: ExpressRequest, res: http.ServerResponse) => {
+    this.post(apiUri.uploadSpec, (req: ExpressRequest, res: http.ServerResponse) => {
       try {
-        new ConfigSpecification().deleteNewSpecificationFiles()
-        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify('OK'))
-      } catch (err: unknown) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'deletion failed: ' + (err as Error).message, err)
+        const errors = ConfigSpecification.importSpecificationJson(req.body)
+        if (errors.errors.length > 0)
+          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Import failed: ' + errors.errors, errors)
+        else this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(errors))
+      } catch (e: unknown) {
+        const errors: IimportMessages = { errors: 'Import error: ' + (e as Error).message, warnings: '' }
+        this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, errors.errors, errors)
       }
     })
+
     // app.post('/specification',  ( req:express.TypedRequestBody<IfileSpecification>) =>{
     //         debug( req.body.name);
     //    });

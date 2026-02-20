@@ -179,19 +179,27 @@ export class SpecificationsComponent implements OnInit {
     if (d && d.length > 0 && d[0].data && d[0].data.src) return d[0].data.src as string
     return ''
   }
-  onZipDropped(files: FileList) {
-    const fd = new FormData()
-    Array.prototype.forEach.call(files, (element: File) => {
-      fd.append('zips', element, element.name)
-    })
-    this.apiService.postZip(fd).subscribe((errors) => {
-      let msg = 'Specification imported'
-      if (errors.warnings) msg = msg + '\n\n' + errors.warnings
-      this.message.next(msg)
+  onJsonFileDropped(files: FileList) {
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const spec = JSON.parse(reader.result as string)
+          this.apiService.importSpecification(spec).subscribe((errors) => {
+            let msg = 'Specification imported: ' + (spec.filename || file.name)
+            if (errors.warnings) msg = msg + '\n\n' + errors.warnings
+            this.message.next(msg)
+            this.apiService.getSpecifications().subscribe(this.fillSpecifications.bind(this))
+          })
+        } catch {
+          this.message.next('Invalid JSON file: ' + file.name)
+        }
+      }
+      reader.readAsText(file)
     })
   }
-  zipBrowseHandler(input: EventTarget | null) {
-    if (input && (input as HTMLInputElement).files !== null) this.onZipDropped((input as HTMLInputElement).files!)
+  jsonBrowseHandler(input: EventTarget | null) {
+    if (input && (input as HTMLInputElement).files !== null) this.onJsonFileDropped((input as HTMLInputElement).files!)
   }
   generateDownloadLink(what: string): string {
     const url = 'download/' + what

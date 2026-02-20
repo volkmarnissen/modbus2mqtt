@@ -340,15 +340,6 @@ export class ApiService {
         })
       )
   }
-  deleteNewSpecfiles() {
-    return this.httpClient.delete<void>(this.getFullUri(apiUri.newSpecificationfiles)).pipe(
-      catchError((err): Observable<void> => {
-        this.loadingError$.next(true)
-        this.errorHandler(err)
-        return new Observable<void>()
-      })
-    )
-  }
   postModbusWriteMqtt(
     spec: ImodbusSpecification,
     entityid: number,
@@ -391,8 +382,8 @@ export class ApiService {
       }
     } else throw new Error('entityid ' + entityid + ' not found ')
   }
-  postZip(formData: FormData): Observable<IimportMessages> {
-    return this.httpClient.post<IimportMessages>(this.getFullUri(apiUri.uploadSpec), formData).pipe(
+  importSpecification(spec: object): Observable<IimportMessages> {
+    return this.httpClient.post<IimportMessages>(this.getFullUri(apiUri.uploadSpec), spec).pipe(
       catchError((err) => {
         this.errorHandler(err)
         return new Observable<IimportMessages>()

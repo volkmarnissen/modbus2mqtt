@@ -128,10 +128,6 @@ export class SpecificationComponent extends SessionStorage implements OnInit, On
     this.validationForms = this.fb.group({ spec: this.enterSpecNameFormGroup })
   }
   ngOnDestroy(): void {
-    if (this.currentSpecification?.filename == '_new') {
-      this.entityApiService.deleteNewSpecfiles().subscribe(() => {})
-    }
-
     if (this.sub) this.sub.unsubscribe()
   }
   private getMqttDiscoveryLanguage(): string {
