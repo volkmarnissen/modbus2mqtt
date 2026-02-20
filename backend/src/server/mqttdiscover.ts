@@ -346,7 +346,7 @@ export class MqttDiscover {
       const tAndPs = this.generateDiscoveryEntities(slave)
       if (tAndPs.length == 0) {
         const message = 'No entities found for discovery slave: ' + slave.getSlaveId()
-        log.log(LogLevelEnum.error, message)
+        log.log(LogLevelEnum.warn, message)
         reject(new Error(message))
         return
       }

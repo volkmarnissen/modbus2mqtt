@@ -18,6 +18,7 @@ export class MqttPoller {
   interval: NodeJS.Timeout | undefined
   private lastMessage: string = ''
   private slavePollInfo: Map<number, IslavePollInfo> = new Map<number, IslavePollInfo>()
+  private warnedNoSpecSlaves: Set<number> = new Set<number>()
 
   constructor(private connector: MqttConnector) {}
 
@@ -39,11 +40,13 @@ export class MqttPoller {
               pc.processing = true
               needPolls.push(s)
             } else {
-              if (slave.specificationid)
+              if (slave.specificationid && !this.warnedNoSpecSlaves.has(s.getSlaveId())) {
                 log.log(
                   LogLevelEnum.error,
                   'No specification found for slave ' + s.getSlaveId() + ' specid: ' + s.getSpecificationId()
                 )
+                this.warnedNoSpecSlaves.add(s.getSlaveId())
+              }
             }
           }
           this.slavePollInfo.set(sl.getSlaveId(), { count: ++pc.count, processing: pc.processing })

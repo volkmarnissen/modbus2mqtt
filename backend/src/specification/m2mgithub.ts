@@ -187,28 +187,43 @@ export class M2mGitHub {
         auth: personalAccessToken,
       })
   }
+  private clonePublicRepo(): void {
+    log.log(
+      LogLevelEnum.info,
+      execSync(
+        'git clone https://github.com/' +
+          githubPublicNames.publicModbus2mqttOwner +
+          '/' +
+          githubPublicNames.modbus2mqttRepo +
+          '.git ' +
+          this.publicRoot
+      ).toString()
+    )
+  }
+
   fetchPublicFiles(): void {
     debug('Fetch public files')
-    // If directory exists and is a git repo, pull. If it exists but isn't a repo, skip cloning.
-    if (existsSync(this.publicRoot)) {
-      if (existsSync(join(this.publicRoot, '.git'))) {
-        const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
-        if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
+    try {
+      if (existsSync(this.publicRoot)) {
+        if (existsSync(join(this.publicRoot, '.git'))) {
+          try {
+            const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
+            if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
+          } catch (e: unknown) {
+            log.log(LogLevelEnum.warn, 'git pull failed, continuing with existing files: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        } else if (existsSync(join(this.publicRoot, 'specifications'))) {
+          log.log(LogLevelEnum.info, 'Public files directory exists without git repo, using existing specifications')
+        } else {
+          log.log(LogLevelEnum.warn, 'Public files directory exists but has no specifications, removing and re-cloning')
+          fs.rmSync(this.publicRoot, { recursive: true })
+          this.clonePublicRepo()
+        }
       } else {
-        log.log(LogLevelEnum.info, 'Public files directory exists, skipping git clone')
+        this.clonePublicRepo()
       }
-    } else {
-      log.log(
-        LogLevelEnum.info,
-        execSync(
-          'git clone https://github.com/' +
-            githubPublicNames.publicModbus2mqttOwner +
-            '/' +
-            githubPublicNames.modbus2mqttRepo +
-            '.git ' +
-            this.publicRoot
-        ).toString()
-      )
+    } catch (e: unknown) {
+      log.log(LogLevelEnum.error, 'fetchPublicFiles failed: ' + (e instanceof Error ? e.message : String(e)))
     }
     new ConfigSpecification().readYaml()
   }
@@ -304,8 +319,13 @@ export class M2mGitHub {
     this.fetchPublicFiles()
     if (null == this.octokit) return false
     if (!this.ownOwner) {
-      const user = await this.octokit.users.getAuthenticated()
-      this.ownOwner = user.data.login
+      try {
+        const user = await this.octokit.users.getAuthenticated()
+        this.ownOwner = user.data.login
+      } catch (e: unknown) {
+        log.log(LogLevelEnum.error, 'GitHub authentication failed: ' + (e instanceof Error ? e.message : String(e)))
+        return false
+      }
     }
     try {
       await this.findOrCreateOwnModbus2MqttRepo()
