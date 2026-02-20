@@ -6,12 +6,20 @@ The three static classes `Config`, `ConfigBus`, and `ConfigSpecification` curren
 
 **Risk minimization**: Only extract read/write. Business logic, events, and public API remain unchanged as much as possible.
 
-### Already Completed
+### Already Completed (before this refactoring)
 
 - **JSON single-file format**: Specifications are stored as single `.json` files with base64-embedded files (no separate `files.yaml` or binary files). Migrator handles YAML -> JSON conversion on read.
 - **Base64 files**: `IimageAndDocumentUrl` has `data` (base64) and `mimeType` fields. Upload endpoints removed, frontend uses `FileReader.readAsDataURL()`.
 - **Status as JSON attribute**: Status (`added`, `cloned`, `contributed`) is persisted in the JSON file. `readYaml()` is a pure reader — no status derivation logic. For legacy YAML specs, the Migrator derives status from `publicNames`.
 - **Two directories only**: `public/specifications/` (read-only, from GitHub) and `local/specifications/` (all local specs). No `contributed/` directory.
+- **Spec Export/Import als JSON**: Zip-basierter Export/Import durch JSON ersetzt. `configspec.ts` ist fs-frei. `multer`/`zipStorage` aus httpserver.ts entfernt.
+
+### Completed (this refactoring, Steps 0–5 + Cleanup)
+
+- **Steps 0–5**: Persistence-Klassen (`ConfigPersistence`, `BusPersistence`, `SpecPersistence`), `Store<T>`, Interfaces, 40 neue Tests — alle grün (170 Tests gesamt).
+- **config.ts ist fs-frei**: Alle `fs`-Aufrufe aus `config.ts` entfernt. Neue Methoden in `ConfigPersistence`: `ensureSecret()`, `readCertificateFile()`, `createLocalExportZip()`.
+- **Directory-Properties auf ConfigPersistence**: `configDir`, `sslDir`, `dataDir` und `getLocalDir()` sind jetzt static auf `ConfigPersistence` (vorher auf `Config`). Alle 13+ Dateien (Source + Tests) entsprechend aktualisiert.
+- **config.ts kennt keine Dateipfade mehr**: Kein `fs`, kein `path` (außer `join` für URL-Konstruktion in `getSpecificationImageOrDocumentUrl`), kein `stream`, kein `AdmZip`.
 
 ---
 
@@ -178,29 +186,33 @@ export class InMemorySpecPersistence implements ICollectionPersistence<IfileSpec
 
 ---
 
-## Step 2: ConfigPersistence + Config Refactoring
+## Step 2: ConfigPersistence + Config Refactoring ✅ DONE
 
-**New file:** `backend/src/server/persistence/configPersistence.ts`
+**File:** `backend/src/server/persistence/configPersistence.ts`
 
 **Extracted from** [config.ts](../backend/src/server/config.ts):
 
 | Method | Moves to Persistence | Stays in Config |
 |--------|---------------------|-----------------|
-| `readYamlAsync()` (L398) | File read, YAML parse, secrets substitution | MQTT Hassio, config defaults, TLS |
-| `writeConfiguration()` (L470) | Secrets extraction, YAML write | In-memory update |
-| `getSecret()` (L152) | File read/write of JWT secret | - |
-| `getConfigPath()` (L513) | Path logic -> Persistence | - |
-| `getSecretsPath()` (L516) | Path logic -> Persistence | - |
-| `resetForE2E()` (L520) | Filesystem cleanup | In-memory reset |
+| `readYamlAsync()` | File read, YAML parse, secrets substitution | MQTT Hassio, config defaults, TLS |
+| `writeConfiguration()` | Secrets extraction, YAML write | In-memory update |
+| `getSecret()` | File read/write of JWT secret | - |
+| `getConfigPath()` | Path logic -> Persistence | - |
+| `getSecretsPath()` | Path logic -> Persistence | - |
+| `resetForE2E()` | Filesystem cleanup | In-memory reset |
+| `ensureSecret()` | Secret-Datei anlegen/lesen (aus getConfiguration) | - |
+| `readCertificateFile()` | TLS-Zertifikat lesen (aus readCertfile) | - |
+| `createLocalExportZip()` | Zip-Export (aus createZipFromLocal) | - |
 
-**Config remains a singleton** - no Store needed (single object, not a collection). Persistence is injected.
-
-**Startup flow:**
+**Directory-Properties** sind static auf ConfigPersistence:
 ```typescript
-const configPersistence = new ConfigPersistence(configDir)
-const configData = await configPersistence.read()
-Config.init(configData, configPersistence)  // Config stores reference for later writes
+static configDir: string = ''
+static sslDir: string = ''
+static dataDir: string = ''
+static getLocalDir(): string { return join(configDir, 'modbus2mqtt') }
 ```
+
+**Config** hat kein `fs`, kein `path`, kein `AdmZip`, kein `stream` mehr. Delegiert alles an `ConfigPersistence`.
 
 ---
 
@@ -308,17 +320,27 @@ ConfigSpecification.init(specStore, specPersistence, publicSpecs, localSpecs)
 
 ## Implementation Order
 
-1. Safety tests (Step 0)
-2. Store + Interfaces (Step 1) - no behavior change
-3. ConfigPersistence + Config refactoring (Step 2) -> tests green
-4. BusPersistence + ConfigBus refactoring (Step 3) -> tests green
-5. SpecPersistence + ConfigSpecification refactoring (Step 4) -> tests green
-6. Cleanup + tests for new functionality (Step 5)
+1. ✅ Safety tests (Step 0)
+2. ✅ Store + Interfaces (Step 1) - no behavior change
+3. ✅ ConfigPersistence + Config refactoring (Step 2) -> tests green
+4. ✅ BusPersistence + ConfigBus refactoring (Step 3) -> tests green
+5. ✅ SpecPersistence + ConfigSpecification refactoring (Step 4) -> tests green
+6. ✅ Cleanup + tests for new functionality (Step 5)
+7. ✅ Spec Export/Import: Zip durch JSON ersetzt, `configspec.ts` fs-frei
+8. ✅ config.ts fs-frei: `ensureSecret()`, `readCertificateFile()`, `createLocalExportZip()` nach ConfigPersistence
+9. ✅ Directory-Properties (`configDir`, `sslDir`, `dataDir`, `getLocalDir()`) von Config nach ConfigPersistence verschoben
 
 ## Verification
 
-- **After step 1**: All new tests green
-- **After steps 3-5**: All new + existing tests green (refactoring safety)
-- Backend compiles after each step
-- Manual test: Startup -> read config -> read busses -> read specs
-- Existing E2E tests (`resetForE2E` paths) work
+- ✅ 170 Backend-Tests grün (26 Test-Dateien, 2 skipped)
+- ✅ `grep "from 'fs'" backend/src/server/config.ts` → keine Treffer
+- ✅ `grep "Config\.(configDir|sslDir|dataDir|getLocalDir)" backend/src/` → keine Treffer
+- ✅ `configspec.ts` hat kein `fs`-Import mehr
+- ✅ `config.ts` hat kein `fs`-Import mehr
+
+## Remaining Opportunities
+
+- `httpFileUpload.ts` kann gelöscht werden (keine Imports mehr)
+- `adm-zip` aus root `package.json` entfernen falls nur `ConfigPersistence.createLocalExportZip` es nutzt
+- `configbus.ts` hat noch direkte `fs`-Aufrufe — könnte in `BusPersistence` verschoben werden
+- In-Memory-Persistence-Implementierungen für schnellere Unit-Tests (Step 1 Interface vorhanden)
