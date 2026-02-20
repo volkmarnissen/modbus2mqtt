@@ -37,6 +37,7 @@ function getFakeDiscovery(): IfakeDiscovery {
   rc.conn.getMqttClient = function (onConnectCallback: (connection: MqttClient) => void) {
     onConnectCallback(rc.fake as any as MqttClient)
   }
+  rc.conn['client'] = rc.fake as any as MqttClient
   return rc
 }
 let fakeDiscovery: IfakeDiscovery
