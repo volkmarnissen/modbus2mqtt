@@ -170,7 +170,12 @@ export class Modbus2Mqtt {
         }
         httpServer = new HttpServer(angulardir)
         debugAction('readBussesFromConfig starts')
-        gh.init().finally(startServer)
+        gh.init()
+          .catch((e) => {
+            const msg = e instanceof Error ? e.message : String(e)
+            log.log(LogLevelEnum.error, 'GitHub init failed: ' + msg)
+          })
+          .finally(startServer)
       })
       .catch((error) => {
         const msg = error instanceof Error ? error.message : String(error)
