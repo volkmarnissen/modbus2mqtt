@@ -1,33 +1,30 @@
-import { parse } from 'yaml'
 import * as fs from 'fs'
-import * as path from 'path'
 import { join } from 'path'
 import { LogLevelEnum, Logger } from './log.js'
 import {
-  EnumNumberFormat,
   FileLocation,
   IbaseSpecification,
   IimportMessages,
   ImodbusSpecification,
-  Inumber,
   ModbusRegisterType,
   SPECIFICATION_VERSION,
   SpecificationStatus,
+  getBaseFilename,
   getSpecificationI18nName,
 } from '../shared/specification/index.js'
-import { getBaseFilename } from '../shared/specification/index.js'
 import { IfileSpecification } from './ifilespecification.js'
 import { M2mSpecification } from './m2mspecification.js'
-import { IimageAndDocumentFilesType, Migrator } from './migrator.js'
 import stream from 'stream'
 
-import { M2mGitHub } from './m2mgithub.js'
 import AdmZip from 'adm-zip'
+import { SpecPersistence } from '../server/persistence/specPersistence.js'
 
 const log = new Logger('specification')
 export const filesUrlPrefix = 'specifications/files'
 
 export class ConfigSpecification {
+  private static persistence: SpecPersistence
+
   static setMqttdiscoverylanguage(lang: string, ghToken?: string) {
     ConfigSpecification.mqttdiscoverylanguage = lang
     ConfigSpecification.githubPersonalToken = ghToken
@@ -41,6 +38,23 @@ export class ConfigSpecification {
     return join(ConfigSpecification.configDir, 'modbus2mqtt')
   }
   constructor() {}
+
+  private static persistenceConfigDir: string = ''
+  private static persistenceDataDir: string = ''
+
+  private static ensurePersistence(): SpecPersistence {
+    if (
+      !ConfigSpecification.persistence ||
+      ConfigSpecification.persistenceConfigDir !== ConfigSpecification.configDir ||
+      ConfigSpecification.persistenceDataDir !== ConfigSpecification.dataDir
+    ) {
+      ConfigSpecification.persistence = new SpecPersistence(ConfigSpecification.configDir, ConfigSpecification.dataDir)
+      ConfigSpecification.persistenceConfigDir = ConfigSpecification.configDir
+      ConfigSpecification.persistenceDataDir = ConfigSpecification.dataDir
+    }
+    return ConfigSpecification.persistence
+  }
+
   private static getPublicSpecificationPath(spec: IbaseSpecification): string {
     return ConfigSpecification.getPublicDir() + '/specifications/' + spec.filename + '.yaml'
   }
@@ -60,118 +74,23 @@ export class ConfigSpecification {
 
   static resetForE2E(): void {
     ConfigSpecification.specifications = []
+    ConfigSpecification.persistence = undefined as unknown as SpecPersistence
   }
 
   static dataDir: string = ''
   static configDir: string = ''
 
-  private readFilesYaml(directory: string, spec: IfileSpecification) {
-    const fp = join(directory, 'files', spec.filename, 'files.yaml')
-
-    if (fs.existsSync(fp)) {
-      const src = fs.readFileSync(fp, { encoding: 'utf8' })
-      let f: IimageAndDocumentFilesType = parse(src)
-      f = new Migrator().migrateFiles(f)
-
-      spec.files = f.files
-    } else {
-      spec.files = []
-    }
-    spec.files.forEach((file) => {
-      if (file.fileLocation == FileLocation.Local) {
-        const url = getSpecificationImageOrDocumentUrl(undefined, spec.filename, file.url)
-        file.url = url
-      }
-    })
-  }
-
-  private postProcessSpec(o: IfileSpecification) {
-    if (o.entities)
-      o.entities.forEach((entity) => {
-        if (entity.converter != undefined) {
-          const inumber = entity.converterParameters as Inumber
-          if (inumber.multiplier != undefined && inumber.numberFormat == undefined) {
-            inumber.numberFormat = EnumNumberFormat.default
-          }
-        }
-        if (!o.nextEntityId || entity.id > o.nextEntityId + 1) o.nextEntityId = entity.id + 1
-      })
-    if (o.pullNumber) o.pullUrl = M2mGitHub.getPullRequestUrl(o.pullNumber)
-    if (!o.files) o.files = []
-  }
-
-  private writeSpecAsJson(filepath: string, spec: IfileSpecification) {
-    const dir = path.dirname(filepath)
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    const ns = structuredClone(spec)
-    this.cleanSpecForWriting(ns)
-    ns.version = SPECIFICATION_VERSION
-    fs.writeFileSync(filepath, JSON.stringify(ns, null, 2), { encoding: 'utf8' })
-  }
-
-  // READ-ONLY: reads both JSON and YAML specs from directory. Never writes.
-  // publicNames: if provided, used to set status for YAML specs without status field
-  //   (filename in publicNames → cloned, otherwise → added)
-  private readspecifications(directory: string, publicNames?: Set<string>): IfileSpecification[] {
-    const rc: IfileSpecification[] = []
-    if (!fs.existsSync(directory)) {
-      return rc
-    }
-    const allFiles: string[] = fs.readdirSync(directory)
-    const jsonNames = new Set(allFiles.filter((f) => f.endsWith('.json')).map((f) => f.replace('.json', '')))
-
-    allFiles.forEach((file: string) => {
-      try {
-        if (file.endsWith('.json')) {
-          const src = fs.readFileSync(join(directory, file), { encoding: 'utf8' })
-          const o: IfileSpecification = JSON.parse(src)
-          o.filename = file.replace('.json', '')
-          this.postProcessSpec(o)
-          rc.push(o)
-        } else if (file.endsWith('.yaml')) {
-          const basename = file.replace('.yaml', '')
-          if (jsonNames.has(basename)) return // JSON takes precedence
-
-          const src: string = fs.readFileSync(join(directory, file), { encoding: 'utf8' })
-          let o: IfileSpecification = parse(src)
-          o.filename = basename // set before migrate so migrator can find files
-          if (o.version != SPECIFICATION_VERSION) {
-            o = new Migrator().migrate(o, directory, publicNames)
-          } else {
-            // Already at current version but from YAML: still need to load files
-            this.readFilesYaml(directory, o)
-            if (o.status == undefined && publicNames) {
-              o.status = publicNames.has(basename) ? SpecificationStatus.cloned : SpecificationStatus.added
-            }
-          }
-          this.postProcessSpec(o)
-          rc.push(o)
-        }
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e)
-        log.log(LogLevelEnum.error, 'Unable to load spec ' + file + ' continuing ' + msg)
-      }
-    })
-    return rc
-  }
-
-  // Reads all specifications from public + local directories.
+  // Reads all specifications from public + local directories via persistence layer.
   // Status comes from JSON attribute (local) or is 'published' (public).
   // For legacy YAML specs without status, it is derived from publicNames during read.
   readYaml(): void {
     try {
-      const publishedSpecifications: IfileSpecification[] = this.readspecifications(
-        ConfigSpecification.getPublicDir() + '/specifications'
-      )
-      publishedSpecifications.forEach((spec) => {
-        spec.status = SpecificationStatus.published
-      })
+      const persistence = ConfigSpecification.ensurePersistence()
+
+      const publishedSpecifications = persistence.readPublished()
 
       const publicNames = new Set(publishedSpecifications.map((s) => s.filename))
-      ConfigSpecification.specifications = this.readspecifications(
-        ConfigSpecification.getLocalDir() + '/specifications',
-        publicNames
-      )
+      ConfigSpecification.specifications = persistence.readLocal(publicNames)
 
       // Set publicSpecification references and copy files if needed
       ConfigSpecification.specifications.forEach((specification: IfileSpecification) => {
@@ -204,8 +123,6 @@ export class ConfigSpecification {
   }
 
   static emptyTestData = { holdingRegisters: [], coils: [], analogInputs: [], discreteInputs: [] }
-  // removes non configuration data
-  // Adds  testData array from Modbus values. They can be used to test specification
   static toFileSpecification(modbusSpec: ImodbusSpecification): IfileSpecification {
     const fileSpec: IfileSpecification = structuredClone({
       ...modbusSpec,
@@ -213,7 +130,6 @@ export class ConfigSpecification {
       testdata: structuredClone(this.emptyTestData),
     })
     delete fileSpec['identification']
-    // delete (fileSpec as any)['status'];
 
     modbusSpec.entities.forEach((entity) => {
       if (entity.modbusValue)
@@ -257,53 +173,17 @@ export class ConfigSpecification {
     })
     return fileSpec
   }
-  private renameFilesPath(spec: IfileSpecification, oldfilename: string, newDirectory: string) {
-    const oldDirectory = ConfigSpecification.getLocalDir()
-    const oldPath = getSpecificationImageOrDocumentUrl(oldDirectory, oldfilename, '')
-    const newPath = getSpecificationImageOrDocumentUrl(join(newDirectory), spec.filename, '')
-    const newParentDir = path.dirname(newPath)
-    if (!fs.existsSync(newParentDir)) fs.mkdirSync(newParentDir, { recursive: true })
-    if (fs.existsSync(newPath)) fs.rmSync(newPath, { recursive: true })
-    if (fs.existsSync(oldPath)) fs.renameSync(oldPath, newPath)
-  }
 
-  private cleanSpecForWriting(spec: IfileSpecification): void {
-    spec.entities.forEach((e) => {
-      if (!e.icon || e.icon.length == 0) delete e.icon
-      if ('identified' in (e as object)) delete (e as { identified?: unknown }).identified
-      if ('mqttValue' in (e as object)) delete (e as { mqttValue?: unknown }).mqttValue
-      if ('modbusValue' in (e as object)) delete (e as { modbusValue?: unknown }).modbusValue
-      if ('commandTopicModbus' in (e as object)) delete (e as { commandTopicModbus?: unknown }).commandTopicModbus
-      if ('commandTopic' in (e as object)) delete (e as { commandTopic?: unknown }).commandTopic
-      const ce = e as unknown as { converter?: unknown }
-      const conv = ce.converter as Record<string, unknown> | null
-      if (conv && typeof conv === 'object' && 'registerTypes' in conv) delete (conv as Record<string, unknown>)['registerTypes']
-    })
-    if (!spec.manufacturer || spec.manufacturer.length == 0) delete spec.manufacturer
-    if (!spec.model || spec.model.length == 0) delete spec.model
-    if (spec.status != SpecificationStatus.contributed) delete spec.pullNumber
-    if ('stateTopic' in (spec as object)) delete (spec as { stateTopic?: unknown }).stateTopic
-    if ('statePayload' in (spec as object)) delete (spec as { statePayload?: unknown }).statePayload
-    if ('triggerPollTopic' in (spec as object)) delete (spec as { triggerPollTopic?: unknown }).triggerPollTopic
-    if ('commandTopicModbus' in (spec as object)) delete (spec as { commandTopicModbus?: unknown }).commandTopicModbus
-
-    delete spec.publicSpecification
-    if ('identified' in (spec as object)) delete (spec as { identified?: unknown }).identified
-    // Never persist transient 'new' status
-    if (spec.status === SpecificationStatus.new) {
-      spec.status = SpecificationStatus.added
-    }
-  }
   changeContributionStatus(filename: string, newStatus: SpecificationStatus, pullNumber?: number) {
-    // Updates status in JSON only — no file moves between directories
     const spec = ConfigSpecification.specifications.find((f) => f.filename == filename)
     if (!spec) throw new Error('Specification ' + filename + ' not found')
     if (newStatus && newStatus == spec.status) return
 
+    const persistence = ConfigSpecification.ensurePersistence()
+
     // Determine actual status for added/cloned based on public spec existence
     if (newStatus === SpecificationStatus.added || newStatus === SpecificationStatus.cloned) {
-      const publicPath = ConfigSpecification.getPublicSpecificationPath(spec)
-      newStatus = fs.existsSync(publicPath) ? SpecificationStatus.cloned : SpecificationStatus.added
+      newStatus = persistence.hasPublicSpec(spec.filename) ? SpecificationStatus.cloned : SpecificationStatus.added
       delete spec.pullNumber
     }
 
@@ -315,16 +195,10 @@ export class ConfigSpecification {
 
     if (newStatus === SpecificationStatus.published) {
       // Delete local files — public directory already has the spec from GitHub fetch
-      const localJsonPath = ConfigSpecification.getLocalJsonPath(spec)
-      const localYamlPath = ConfigSpecification.getSpecificationPath(spec)
-      if (fs.existsSync(localJsonPath)) fs.unlinkSync(localJsonPath)
-      if (fs.existsSync(localYamlPath)) fs.unlinkSync(localYamlPath)
-      const filesPath = ConfigSpecification.getLocalFilesPath(spec.filename)
-      if (fs.existsSync(filesPath)) fs.rmSync(filesPath, { recursive: true })
+      persistence.deleteLocalSpec(spec.filename)
     } else {
       // Rewrite JSON to local dir with updated status
-      const jsonPath = ConfigSpecification.getLocalJsonPath(spec)
-      this.writeSpecAsJson(jsonPath, spec)
+      persistence.writeItem(spec.filename, spec)
     }
   }
 
@@ -332,11 +206,13 @@ export class ConfigSpecification {
     if (spec.filename == '_new') {
       throw new Error('No or invalid filename for specification')
     }
+
+    const persistence = ConfigSpecification.ensurePersistence()
     const publicFilepath = ConfigSpecification.getPublicSpecificationPath(spec)
-    const jsonFilePath = ConfigSpecification.getLocalJsonPath(spec)
+
     if (spec) {
       if (spec.status == SpecificationStatus.new) {
-        this.renameFilesPath(spec, '_new', ConfigSpecification.getLocalDir())
+        persistence.renameFilesPath(spec, '_new')
       } else if (originalFilename) {
         if (originalFilename != spec.filename) {
           if (
@@ -353,16 +229,11 @@ export class ConfigSpecification {
           spec.filename = s
           if (fs.existsSync(originalYamlPath)) fs.unlinkSync(originalYamlPath)
           if (fs.existsSync(originalJsonPath)) fs.unlinkSync(originalJsonPath)
-          this.renameFilesPath(spec, originalFilename, ConfigSpecification.getLocalDir())
+          persistence.renameFilesPath(spec, originalFilename)
         }
       } else throw new Error(spec.status + ' !=' + SpecificationStatus.new + ' and no originalfilename')
       if (spec.files && spec.files.length && [SpecificationStatus.published].includes(spec.status)) {
-        // cloning with attached files
-        const filespath = ConfigSpecification.getPublicFilesPath(spec.filename)
-        const localFilesPath = ConfigSpecification.getLocalFilesPath(spec.filename)
-        if (!fs.existsSync(localFilesPath) && fs.existsSync(filespath)) {
-          fs.cpSync(filespath, localFilesPath, { recursive: true })
-        }
+        persistence.copyPublicFiles(spec.filename)
       }
       // Determine status — contributed status is preserved from changeContributionStatus()
       if (pullNumber != undefined) {
@@ -377,16 +248,11 @@ export class ConfigSpecification {
       }
     } else throw new Error('spec is undefined')
 
-    // Write as JSON (new format - IfileSpecification already contains everything incl. base64)
-    this.writeSpecAsJson(jsonFilePath, spec)
+    // Write as JSON via persistence
+    persistence.writeItem(spec.filename, spec)
 
-    // Clean up old YAML file at same location if it exists
-    const yamlCounterpart = jsonFilePath.replace(/\.json$/, '.yaml')
-    if (fs.existsSync(yamlCounterpart)) {
-      try {
-        fs.unlinkSync(yamlCounterpart)
-      } catch { /* ignore */ }
-    }
+    // Clean up old YAML file
+    persistence.cleanOldYaml(spec.filename)
 
     const idx = ConfigSpecification.specifications.findIndex((cspec) => {
       return cspec.filename === spec.filename
@@ -406,8 +272,7 @@ export class ConfigSpecification {
     return fileSpec
   }
   deleteNewSpecificationFiles() {
-    const dir = getSpecificationImageOrDocumentUrl(ConfigSpecification.getLocalDir(), '_new', '')
-    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true })
+    ConfigSpecification.ensurePersistence().deleteNewSpecificationFiles()
   }
   deleteSpecification(specfileName: string) {
     for (let idx = 0; idx < ConfigSpecification.specifications.length; idx++) {
@@ -415,14 +280,7 @@ export class ConfigSpecification {
       if (sp.filename === specfileName)
         if (sp.status in [SpecificationStatus.cloned, SpecificationStatus.added, SpecificationStatus.new])
           try {
-            // Delete spec files (both JSON and YAML)
-            const yamlPath = ConfigSpecification.getSpecificationPath(sp)
-            if (fs.existsSync(yamlPath)) fs.unlinkSync(yamlPath)
-            const jsonPath = ConfigSpecification.getLocalJsonPath(sp)
-            if (fs.existsSync(jsonPath)) fs.unlinkSync(jsonPath)
-            // Delete files directory
-            const filesPath = ConfigSpecification.getLocalFilesPath(sp.filename)
-            if (fs.existsSync(filesPath)) fs.rmSync(filesPath, { recursive: true })
+            ConfigSpecification.ensurePersistence().deleteItem(sp.filename)
             log.log(LogLevelEnum.info, 'Specification removed: ' + sp.filename)
             return
           } catch {

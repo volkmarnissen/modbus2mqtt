@@ -1,5 +1,4 @@
 import Debug from 'debug'
-import { parse, stringify } from 'yaml'
 import * as fs from 'fs'
 import * as path from 'path'
 import { join } from 'path'
@@ -14,6 +13,7 @@ import { ImqttClient, AuthenticationErrors, Iconfiguration, IUserAuthenticationS
 import AdmZip from 'adm-zip'
 import { Bus } from './bus.js'
 import { IClientOptions } from 'mqtt'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 const CONFIG_VERSION = '0.1'
 declare global {
   namespace NodeJS {
@@ -38,17 +38,15 @@ export enum ConfigListenerEvent {
   deleteBus,
 }
 const log = new Logger('config')
-const secretsLength = 256
 const debug = Debug('config')
 const debugAddon = Debug('config.addon')
 const saltRounds = 8
 const defaultTokenExpiryTime = 1000 * 60 * 60 * 24 // One day
-//TODO const defaultTokenExpiryTime = 1000 * 20 // three seconds for testing
-//const baseTopic = 'modbus2mqtt';
-//const baseTopicHomeAssistant = 'homeassistant';
 export class Config {
   static tokenExpiryTime: number = defaultTokenExpiryTime
   static mqttHassioLoginData: ImqttClient | undefined = undefined
+  private static persistence: ConfigPersistence
+
   static async login(name: string, password: string): Promise<string> {
     if (Config.config.noAuthentication) {
       log.log(LogLevelEnum.error, 'Login called, but noAuthentication is configured')
@@ -67,11 +65,7 @@ export class Config {
         }
         if (success) {
           try {
-            //const iat = Math.floor(Date.now() / 1000)
-            //const exp = iat + Config.config.tokenExpiryTimeInMSec // seconds
             const s = jwt.sign({ password: password }, Config.secret, {
-              // jsonwebtoken expects seconds (number) or a time-string like '1d'.
-              // We store milliseconds, so convert to whole seconds.
               expiresIn: Math.floor(Config.tokenExpiryTime / 1000),
               algorithm: 'HS256',
             })
@@ -96,8 +90,6 @@ export class Config {
       new Config().writeConfiguration(Config.config)
       return
     } else if (Config.config && password) {
-      // Login
-      //No username and password configured.: Register login
       const enc = await bcrypt.hash(password, saltRounds)
       Config.config.password = enc
       Config.config.username = name
@@ -149,29 +141,18 @@ export class Config {
   static dataDir: string = ''
   static sslDir: string = ''
 
-  static getSecret(pathStr: string): string {
-    let result = ''
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    const charactersLength = characters.length
-    let counter = 0
-    if (fs.existsSync(pathStr)) {
-      const secret = fs.readFileSync(pathStr, { encoding: 'utf8' }).toString()
-      if (secret && secret.length > 0) {
-        return secret
-      }
-    }
-    debug('getSecret: Create secrets file at' + pathStr)
-    while (counter < secretsLength) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength))
-      counter += 1
-    }
-    const dir = path.dirname(pathStr)
-    debug('Config.getSecret: write Secretfile to ' + pathStr)
-    if (dir && !fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(pathStr, result, { encoding: 'utf8' })
-    debug('Config.getSecret: write successful')
+  private static persistenceConfigDir: string = ''
 
-    return result
+  private static ensurePersistence(): ConfigPersistence {
+    if (!Config.persistence || Config.persistenceConfigDir !== Config.configDir) {
+      Config.persistence = new ConfigPersistence(Config.configDir, Config.getLocalDir())
+      Config.persistenceConfigDir = Config.configDir
+    }
+    return Config.persistence
+  }
+
+  static getSecret(pathStr: string): string {
+    return ConfigPersistence.getSecret(pathStr)
   }
   static getConfiguration(): Iconfiguration {
     if (Config.secret == undefined) {
@@ -254,7 +235,6 @@ export class Config {
   }
 
   static executeHassioGetRequest<T>(url: string, next: (_dev: T) => void, reject: (error: Error) => void): void {
-    // This method can be called before configuration. It can't use config.hassio
     const hassiotoken: string | undefined = process.env.HASSIO_TOKEN
     if (!hassiotoken || hassiotoken.length == 0) throw new Error('ENV: HASSIO_TOKEN not defined')
 
@@ -400,48 +380,23 @@ export class Config {
       if (!Config.configDir || Config.configDir.length == 0) {
         log.log(LogLevelEnum.error, 'configDir not defined in command line')
       }
-      if (!fs.existsSync(Config.configDir)) {
-        log.log(LogLevelEnum.info, 'configuration directory  not found ' + process.cwd() + '/' + Config.configDir)
-        Config.config = structuredClone(Config.newConfig)
-        return
-      }
-      debug('configDir: ' + Config.configDir + ' ' + process.argv.length)
 
-      const yamlFile = Config.getConfigPath()
+      const persistence = Config.ensurePersistence()
+      const configData = await persistence.read()
 
-      if (!fs.existsSync(yamlFile)) {
-        log.log(LogLevelEnum.info, 'configuration file  not found ' + yamlFile)
-        Config.config = structuredClone(Config.newConfig)
-      } else {
-        const secretsFile = join(Config.getLocalDir(), 'secrets.yaml')
-        let src: string = fs.readFileSync(yamlFile, { encoding: 'utf8' })
-        if (fs.existsSync(secretsFile)) {
-          let matches: IterableIterator<RegExpMatchArray>
-          const secrets = parse(fs.readFileSync(secretsFile, { encoding: 'utf8' }))
-          const srcLines = src.split('\n')
-          src = ''
-          srcLines.forEach((line) => {
-            const r1 = /"*!secret ([a-zA-Z0-9-_]*)"*/g
-            matches = line.matchAll(r1)
-            let skipLine = false
-            for (const match of matches) {
-              const key = match[1]
-              if (secrets[key] && secrets[key].length) {
-                line = line.replace(match[0], '"' + secrets[key] + '"')
-              } else {
-                skipLine = true
-                if (!secrets[key]) debug('no entry in secrets file for ' + key + ' line will be ignored')
-                else debug('secrets file entry contains !secret for ' + key + ' line will be ignored')
-              }
-            }
-            if (!skipLine) src = src.concat(line, '\n')
-          })
-        }
-        Config.config = parse(src)
+      if (configData) {
+        Config.config = configData
         if (Config.config.debugComponents && Config.config.debugComponents.length) Debug.enable(Config.config.debugComponents)
-
         if (Config.configDir.length == 0) log.log(LogLevelEnum.error, 'configDir not set')
+      } else {
+        if (!fs.existsSync(Config.configDir)) {
+          log.log(LogLevelEnum.info, 'configuration directory  not found ' + process.cwd() + '/' + Config.configDir)
+        } else {
+          log.log(LogLevelEnum.info, 'configuration file  not found ' + persistence.getConfigPath())
+        }
+        Config.config = structuredClone(Config.newConfig)
       }
+
       if (!Config.config || !Config.config.mqttconnect || !Config.isMqttConfigured(Config.config.mqttconnect)) {
         try {
           const mqttLoginData = await this.getMqttConnectOptions()
@@ -449,7 +404,6 @@ export class Config {
         } catch (reason) {
           log.log(LogLevelEnum.error, 'Unable to connect to mqtt ' + reason)
           Config.config.mqttusehassio = false
-          // This should not stop the application
         }
       }
     } catch (error: unknown) {
@@ -468,53 +422,16 @@ export class Config {
   }
 
   writeConfiguration(config: Iconfiguration) {
-    const cpConfig = structuredClone(config)
     Config.config = config
-    if (cpConfig.debugComponents && cpConfig.debugComponents.length) Debug.enable(cpConfig.debugComponents)
-    const secrets: {
-      mqttpassword?: string
-      mqttuser?: string
-      githubPersonalToken?: string
-      username?: string
-      password?: string
-    } = {}
-    if (cpConfig.mqttconnect.password) {
-      secrets.mqttpassword = cpConfig.mqttconnect.password as string
-      cpConfig.mqttconnect.password = '!secret mqttpassword'
-    }
-    if (cpConfig.mqttconnect.username) {
-      secrets.mqttuser = cpConfig.mqttconnect.username
-      cpConfig.mqttconnect.username = '!secret mqttuser'
-    }
-    if (cpConfig.githubPersonalToken) {
-      secrets.githubPersonalToken = cpConfig.githubPersonalToken
-      cpConfig.githubPersonalToken = '!secret githubPersonalToken'
-    }
-    if (cpConfig.username) {
-      secrets.username = cpConfig.username
-      cpConfig.username = '!secret username'
-    }
-    if (cpConfig.password) {
-      secrets.password = cpConfig.password
-      cpConfig.password = '!secret password'
-    }
-    const nonConfigs: string[] = ['mqttusehassio', 'filelocation', 'appVersion']
-    nonConfigs.forEach((name: string) => {
-      delete cpConfig[name as keyof Iconfiguration]
-    })
-    const filename = Config.getConfigPath()
-    const dir = path.dirname(filename)
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    let s = stringify(cpConfig)
-    fs.writeFileSync(filename, s, { encoding: 'utf8' })
-    s = stringify(secrets)
-    fs.writeFileSync(this.getSecretsPath(), s, { encoding: 'utf8' })
+    if (config.debugComponents && config.debugComponents.length) Debug.enable(config.debugComponents)
+    Config.ensurePersistence().write(config)
   }
+
   static getConfigPath() {
-    return join(Config.getLocalDir(), 'modbus2mqtt.yaml')
+    return Config.ensurePersistence().getConfigPath()
   }
   getSecretsPath() {
-    return join(Config.getLocalDir(), 'secrets.yaml')
+    return Config.ensurePersistence().getSecretsPath()
   }
 
   static resetForE2E(): void {
@@ -527,6 +444,8 @@ export class Config {
     // Reset to fresh config
     Config.config = structuredClone(Config.newConfig)
     Config.secret = undefined as unknown as string
+    // Reset persistence so it picks up new dirs
+    Config.persistence = undefined as unknown as ConfigPersistence
 
     // Restore preserved properties
     if (httpport) Config.config.httpport = httpport
@@ -534,16 +453,10 @@ export class Config {
     if (mqttusehassio) Config.config.mqttusehassio = mqttusehassio
     if (fakeModbus) Config.config.fakeModbus = fakeModbus
 
-    // Rewrite minimal YAML
-    const localDir = Config.getLocalDir()
-    if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true })
+    // Rewrite minimal YAML via persistence
     const minimalConfig: Record<string, unknown> = { httpport: Config.config.httpport }
     if (supervisor_host) minimalConfig.supervisor_host = supervisor_host
-    fs.writeFileSync(Config.getConfigPath(), stringify(minimalConfig), { encoding: 'utf8' })
-
-    // Delete secrets
-    const secretsPath = join(Config.getLocalDir(), 'secrets.yaml')
-    if (fs.existsSync(secretsPath)) fs.unlinkSync(secretsPath)
+    Config.ensurePersistence().resetForE2E(minimalConfig)
   }
   static setFakeModbus(newMode: boolean) {
     Config.config.fakeModbus = newMode
