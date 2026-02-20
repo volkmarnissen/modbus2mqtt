@@ -166,14 +166,12 @@ it('contribution', () => {
   singleMutex.runExclusive(() => {
     const cfg = new ConfigSpecification()
     const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
-    const contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
-    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
     const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
     fs.mkdirSync(publicSpecdir, { recursive: true })
 
     cleanWaterLevelTransmitter1(publicSpecdir)
-    cleanWaterLevelTransmitter1(contributedSpecdir)
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
+    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
     if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir)
     fs.copyFileSync(
       join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
@@ -184,34 +182,36 @@ it('contribution', () => {
     expect(g).toBeDefined()
     expect(g?.status).toBe(SpecificationStatus.added)
 
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    // Mark as contributed — spec stays in local dir, status persisted in JSON
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeFalsy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
-
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Verify contributed status survives readYaml() round-trip
+    cfg.readYaml()
+    g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
+    expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Back to added — still in local dir
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.added, undefined)
     expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.added)
+
+    // Back to contributed
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Mark as published — local files deleted
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.published, 1)
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
-
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.json'))).toBeFalsy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeFalsy()
     expect(g?.status).toBe(SpecificationStatus.published)
+
     cleanWaterLevelTransmitter1(publicSpecdir)
-    cleanWaterLevelTransmitter1(contributedSpecdir)
     cleanWaterLevelTransmitter1(localSpecdir)
   })
 })
@@ -229,11 +229,10 @@ it('contribution cloned', () => {
     const cfg = new ConfigSpecification()
     const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
     const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
-    const contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
     fs.mkdirSync(localSpecdir, { recursive: true })
+    fs.mkdirSync(publicSpecdir, { recursive: true })
     fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
     fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(publicSpecdir, 'waterleveltransmitter1.yaml'))
-    cleanWaterLevelTransmitter1(contributedSpecdir)
     const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
     const publicfilesDir = join(publicSpecdir, 'files/waterleveltransmitter1')
 
@@ -252,36 +251,36 @@ it('contribution cloned', () => {
     expect(g).toBeDefined()
     expect(g?.status).toBe(SpecificationStatus.cloned)
 
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(publicSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(publicSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    // Mark cloned spec as contributed — stays in local dir
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeFalsy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
-
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Verify contributed status survives readYaml() round-trip
+    cfg.readYaml()
+    g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
+    expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Back to cloned (public exists)
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.cloned, undefined)
     expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.cloned)
+
+    // Back to contributed
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Mark as published — local files deleted
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.published, 1)
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
-
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.json'))).toBeFalsy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeFalsy()
     expect(g?.status).toBe(SpecificationStatus.published)
+
     cleanWaterLevelTransmitter1(publicSpecdir)
-    cleanWaterLevelTransmitter1(contributedSpecdir)
     cleanWaterLevelTransmitter1(localSpecdir)
   })
 })

@@ -9,6 +9,7 @@ import {
   ModbusRegisterType,
   SPECIFICATION_FILES_VERSION,
   SPECIFICATION_VERSION,
+  SpecificationStatus,
   getBaseFilename,
 } from '../shared/specification/index.js'
 import { LogLevelEnum, Logger } from './log.js'
@@ -58,7 +59,7 @@ const FCOffset: number = 100000
 export class Migrator {
   constructor() {}
 
-  migrate(filecontent: any, directory?: string): IfileSpecification {
+  migrate(filecontent: any, directory?: string, publicNames?: Set<string>): IfileSpecification {
     let count = 0
     const maxCount = 5
     while (filecontent.version != undefined && count < maxCount) {
@@ -74,7 +75,7 @@ export class Migrator {
           filecontent = this.migrate0_3to0_4(filecontent)
           break
         case '0.4':
-          filecontent = this.migrate0_4to0_5(filecontent, directory)
+          filecontent = this.migrate0_4to0_5(filecontent, directory, publicNames)
           break
         case SPECIFICATION_VERSION:
           return filecontent
@@ -214,8 +215,13 @@ export class Migrator {
     return filecontent
   }
 
-  migrate0_4to0_5(filecontent: any, directory?: string): IfileSpecification {
+  migrate0_4to0_5(filecontent: any, directory?: string, publicNames?: Set<string>): IfileSpecification {
     filecontent.version = '0.5'
+    if (filecontent.status == undefined && publicNames && filecontent.filename) {
+      filecontent.status = publicNames.has(filecontent.filename)
+        ? SpecificationStatus.cloned
+        : SpecificationStatus.added
+    }
     // Embed files (base64) from files.yaml + binary files into IfileSpecification
     if (directory && filecontent.filename) {
       const filesYamlPath = join(directory, 'files', filecontent.filename, 'files.yaml')

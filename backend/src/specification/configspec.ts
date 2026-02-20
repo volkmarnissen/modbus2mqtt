@@ -40,15 +40,9 @@ export class ConfigSpecification {
   static getLocalDir(): string {
     return join(ConfigSpecification.configDir, 'modbus2mqtt')
   }
-  static getContributedDir(): string {
-    return join(ConfigSpecification.dataDir, 'contributed')
-  }
   constructor() {}
   private static getPublicSpecificationPath(spec: IbaseSpecification): string {
     return ConfigSpecification.getPublicDir() + '/specifications/' + spec.filename + '.yaml'
-  }
-  private static getContributedSpecificationPath(spec: IbaseSpecification): string {
-    return ConfigSpecification.getContributedDir() + '/specifications/' + spec.filename + '.yaml'
   }
   private static getSpecificationPath(spec: IbaseSpecification): string {
     return ConfigSpecification.getLocalDir() + '/specifications/' + spec.filename + '.yaml'
@@ -56,17 +50,11 @@ export class ConfigSpecification {
   private static getLocalJsonPath(spec: IbaseSpecification): string {
     return ConfigSpecification.getLocalDir() + '/specifications/' + spec.filename + '.json'
   }
-  private static getContributedJsonPath(spec: IbaseSpecification): string {
-    return ConfigSpecification.getContributedDir() + '/specifications/' + spec.filename + '.json'
-  }
   private static getLocalFilesPath(specfilename: string): string {
     return join(ConfigSpecification.getLocalDir(), getSpecificationImageOrDocumentUrl('', specfilename, ''))
   }
   private static getPublicFilesPath(specfilename: string): string {
     return join(ConfigSpecification.getPublicDir(), getSpecificationImageOrDocumentUrl('', specfilename, ''))
-  }
-  private static getContributedFilesPath(specfilename: string): string {
-    return join(ConfigSpecification.getContributedDir(), getSpecificationImageOrDocumentUrl('', specfilename, ''))
   }
   private static specifications: IfileSpecification[] = []
 
@@ -122,7 +110,9 @@ export class ConfigSpecification {
   }
 
   // READ-ONLY: reads both JSON and YAML specs from directory. Never writes.
-  private readspecifications(directory: string): IfileSpecification[] {
+  // publicNames: if provided, used to set status for YAML specs without status field
+  //   (filename in publicNames → cloned, otherwise → added)
+  private readspecifications(directory: string, publicNames?: Set<string>): IfileSpecification[] {
     const rc: IfileSpecification[] = []
     if (!fs.existsSync(directory)) {
       return rc
@@ -146,10 +136,13 @@ export class ConfigSpecification {
           let o: IfileSpecification = parse(src)
           o.filename = basename // set before migrate so migrator can find files
           if (o.version != SPECIFICATION_VERSION) {
-            o = new Migrator().migrate(o, directory)
+            o = new Migrator().migrate(o, directory, publicNames)
           } else {
             // Already at current version but from YAML: still need to load files
             this.readFilesYaml(directory, o)
+            if (o.status == undefined && publicNames) {
+              o.status = publicNames.has(basename) ? SpecificationStatus.cloned : SpecificationStatus.added
+            }
           }
           this.postProcessSpec(o)
           rc.push(o)
@@ -162,72 +155,46 @@ export class ConfigSpecification {
     return rc
   }
 
-  // set the base file for relative includes
+  // Reads all specifications from public + local directories.
+  // Status comes from JSON attribute (local) or is 'published' (public).
+  // For legacy YAML specs without status, it is derived from publicNames during read.
   readYaml(): void {
     try {
       const publishedSpecifications: IfileSpecification[] = this.readspecifications(
         ConfigSpecification.getPublicDir() + '/specifications'
       )
-      const contributedSpecifications: IfileSpecification[] = this.readspecifications(
-        ConfigSpecification.getContributedDir() + '/specifications'
-      )
-      ConfigSpecification.specifications = this.readspecifications(ConfigSpecification.getLocalDir() + '/specifications')
-      // Iterate over local files
-      ConfigSpecification.specifications.forEach((specification: IfileSpecification) => {
-        const published = publishedSpecifications.find((obj) => {
-          return obj.filename === specification.filename
-        })
-        if (!published)
-          specification.status = SpecificationStatus.added // local only
-        else {
-          specification.status = SpecificationStatus.cloned // contributed expect no local
-          specification.publicSpecification = published
-          // copy specification files.yaml if local list is empty
-          if (specification.files.length == 0 && published.files.length > 0) specification.files = structuredClone(published.files)
-        }
-      })
-      // Iterate over contributed files
-      contributedSpecifications.forEach((specification: IfileSpecification) => {
-        if (
-          -1 ==
-          ConfigSpecification.specifications.findIndex((obj) => {
-            return (
-              [SpecificationStatus.cloned, SpecificationStatus.added].includes(obj.status) &&
-              obj.filename === specification.filename
-            )
-          })
-        ) {
-          const published = publishedSpecifications.find((obj) => {
-            return obj.filename === specification.filename
-          })
-          if (published) specification.publicSpecification = published
-          specification.status = SpecificationStatus.contributed
-          if (specification.pullNumber == undefined)
-            log.log(LogLevelEnum.error, 'Contributed Specification w/o pull request number: ' + specification.filename)
-          ConfigSpecification.specifications.push(specification)
-        } else {
-          log.log(LogLevelEnum.error, 'Specification is local and contributed this is not supported: ' + specification.filename)
-        }
-      })
-      publishedSpecifications.forEach((specification: IfileSpecification) => {
-        if (
-          -1 ==
-          ConfigSpecification.specifications.findIndex((obj) => {
-            return obj.filename === specification.filename
-          })
-        ) {
-          specification.status = SpecificationStatus.published
-          ConfigSpecification.specifications.push(specification)
-        }
+      publishedSpecifications.forEach((spec) => {
+        spec.status = SpecificationStatus.published
       })
 
-      //debug("Number of specifications: " + ConfigSpecification.specifications.length);
+      const publicNames = new Set(publishedSpecifications.map((s) => s.filename))
+      ConfigSpecification.specifications = this.readspecifications(
+        ConfigSpecification.getLocalDir() + '/specifications',
+        publicNames
+      )
+
+      // Set publicSpecification references and copy files if needed
+      ConfigSpecification.specifications.forEach((specification: IfileSpecification) => {
+        const published = publishedSpecifications.find((obj) => obj.filename === specification.filename)
+        if (published) {
+          specification.publicSpecification = published
+          if (specification.files.length == 0 && published.files.length > 0)
+            specification.files = structuredClone(published.files)
+        }
+        if (specification.status === SpecificationStatus.contributed && specification.pullNumber == undefined)
+          log.log(LogLevelEnum.error, 'Contributed Specification w/o pull request number: ' + specification.filename)
+      })
+
+      // Add published specs that have no local counterpart
+      publishedSpecifications.forEach((specification: IfileSpecification) => {
+        if (!ConfigSpecification.specifications.find((obj) => obj.filename === specification.filename)) {
+          ConfigSpecification.specifications.push(specification)
+        }
+      })
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : String(error)
       log.log(LogLevelEnum.error, 'readyaml failed: ' + msg)
       throw error
-      // Expected output: ReferenceError: nonExistentFunction is not defined
-      // (Note: the exact output may be browser-dependent)
     }
   }
   filterAllSpecifications(specFunction: (spec: IfileSpecification) => void) {
@@ -291,8 +258,7 @@ export class ConfigSpecification {
     return fileSpec
   }
   private renameFilesPath(spec: IfileSpecification, oldfilename: string, newDirectory: string) {
-    let oldDirectory = ConfigSpecification.getLocalDir()
-    if (spec.status == SpecificationStatus.contributed) oldDirectory = ConfigSpecification.getContributedDir()
+    const oldDirectory = ConfigSpecification.getLocalDir()
     const oldPath = getSpecificationImageOrDocumentUrl(oldDirectory, oldfilename, '')
     const newPath = getSpecificationImageOrDocumentUrl(join(newDirectory), spec.filename, '')
     const newParentDir = path.dirname(newPath)
@@ -323,63 +289,42 @@ export class ConfigSpecification {
 
     delete spec.publicSpecification
     if ('identified' in (spec as object)) delete (spec as { identified?: unknown }).identified
-    if ('status' in (spec as object)) delete (spec as { status?: unknown }).status
+    // Never persist transient 'new' status
+    if (spec.status === SpecificationStatus.new) {
+      spec.status = SpecificationStatus.added
+    }
   }
   changeContributionStatus(filename: string, newStatus: SpecificationStatus, pullNumber?: number) {
-    // moves Specification files to contribution directory
-    let spec = ConfigSpecification.specifications.find((f) => f.filename == filename)
+    // Updates status in JSON only — no file moves between directories
+    const spec = ConfigSpecification.specifications.find((f) => f.filename == filename)
     if (!spec) throw new Error('Specification ' + filename + ' not found')
     if (newStatus && newStatus == spec.status) return
-    let newPath = ConfigSpecification.getContributedSpecificationPath(spec)
-    let oldPath = ConfigSpecification.getSpecificationPath(spec)
-    let newDirectory = ConfigSpecification.getContributedDir()
-    switch (newStatus) {
-      case SpecificationStatus.published:
-        oldPath = ConfigSpecification.getContributedSpecificationPath(spec)
-        newPath = ConfigSpecification.getPublicSpecificationPath(spec)
-        newDirectory = ConfigSpecification.getPublicDir()
-        break
-      case SpecificationStatus.cloned:
-      case SpecificationStatus.added:
-        if (spec.status == SpecificationStatus.contributed) {
-          const publicPath = ConfigSpecification.getPublicSpecificationPath(spec)
-          if (fs.existsSync(publicPath)) newStatus = SpecificationStatus.cloned
-          else newStatus = SpecificationStatus.added
-          newPath = ConfigSpecification.getSpecificationPath(spec)
-          newDirectory = ConfigSpecification.getLocalDir()
-          oldPath = ConfigSpecification.getContributedSpecificationPath(spec)
-        }
-        break
 
-      default: // contributed
+    // Determine actual status for added/cloned based on public spec existence
+    if (newStatus === SpecificationStatus.added || newStatus === SpecificationStatus.cloned) {
+      const publicPath = ConfigSpecification.getPublicSpecificationPath(spec)
+      newStatus = fs.existsSync(publicPath) ? SpecificationStatus.cloned : SpecificationStatus.added
+      delete spec.pullNumber
     }
-    // first move files, because spec.status must point to oldPath directory before calling it
-    // move spec file from oldpath to newpath
-    if (newDirectory != ConfigSpecification.getPublicDir()) {
-      this.renameFilesPath(spec, spec.filename, newDirectory)
-      // Move spec file: handle both YAML and JSON formats
-      if (fs.existsSync(oldPath)) fs.renameSync(oldPath, newPath)
-      const oldJsonPath = oldPath.replace(/\.yaml$/, '.json')
-      const newJsonPath = newPath.replace(/\.yaml$/, '.json')
-      if (fs.existsSync(oldJsonPath)) fs.renameSync(oldJsonPath, newJsonPath)
+
+    spec.status = newStatus
+
+    if (newStatus === SpecificationStatus.contributed) {
+      spec.pullNumber = pullNumber
+    }
+
+    if (newStatus === SpecificationStatus.published) {
+      // Delete local files — public directory already has the spec from GitHub fetch
+      const localJsonPath = ConfigSpecification.getLocalJsonPath(spec)
+      const localYamlPath = ConfigSpecification.getSpecificationPath(spec)
+      if (fs.existsSync(localJsonPath)) fs.unlinkSync(localJsonPath)
+      if (fs.existsSync(localYamlPath)) fs.unlinkSync(localYamlPath)
+      const filesPath = ConfigSpecification.getLocalFilesPath(spec.filename)
+      if (fs.existsSync(filesPath)) fs.rmSync(filesPath, { recursive: true })
     } else {
-      if (fs.existsSync(oldPath)) fs.rmSync(oldPath, { recursive: true }) // public directory was already fetched
-      const oldJsonPath = oldPath.replace(/\.yaml$/, '.json')
-      if (fs.existsSync(oldJsonPath)) fs.rmSync(oldJsonPath, { recursive: true })
-      const specDir = path.parse(oldPath).dir
-
-      const filesDir = join(specDir, 'files', spec.filename)
-      if (fs.existsSync(filesDir)) fs.rmSync(filesDir, { recursive: true }) // public directory was already fetched
-    }
-
-    // Now change the status in ConfigSpecification.specifications array
-    spec = ConfigSpecification.specifications.find((f) => f.filename == filename)
-    if (spec) {
-      spec.status = newStatus
-      if (newStatus == SpecificationStatus.contributed) {
-        ;(spec as IfileSpecification).pullNumber = pullNumber
-        this.writeSpecificationFromFileSpec(spec, spec.filename, pullNumber)
-      }
+      // Rewrite JSON to local dir with updated status
+      const jsonPath = ConfigSpecification.getLocalJsonPath(spec)
+      this.writeSpecAsJson(jsonPath, spec)
     }
   }
 
@@ -388,9 +333,7 @@ export class ConfigSpecification {
       throw new Error('No or invalid filename for specification')
     }
     const publicFilepath = ConfigSpecification.getPublicSpecificationPath(spec)
-    const contributedYamlPath = ConfigSpecification.getContributedSpecificationPath(spec)
-    const contributedJsonPath = ConfigSpecification.getContributedJsonPath(spec)
-    let jsonFilePath = ConfigSpecification.getLocalJsonPath(spec)
+    const jsonFilePath = ConfigSpecification.getLocalJsonPath(spec)
     if (spec) {
       if (spec.status == SpecificationStatus.new) {
         this.renameFilesPath(spec, '_new', ConfigSpecification.getLocalDir())
@@ -415,21 +358,23 @@ export class ConfigSpecification {
       } else throw new Error(spec.status + ' !=' + SpecificationStatus.new + ' and no originalfilename')
       if (spec.files && spec.files.length && [SpecificationStatus.published].includes(spec.status)) {
         // cloning with attached files
-        let filespath = ConfigSpecification.getPublicFilesPath(spec.filename)
-        if (SpecificationStatus.contributed == spec.status) filespath = ConfigSpecification.getContributedFilesPath(spec.filename)
+        const filespath = ConfigSpecification.getPublicFilesPath(spec.filename)
         const localFilesPath = ConfigSpecification.getLocalFilesPath(spec.filename)
         if (!fs.existsSync(localFilesPath) && fs.existsSync(filespath)) {
           fs.cpSync(filespath, localFilesPath, { recursive: true })
         }
       }
+      // Determine status — contributed status is preserved from changeContributionStatus()
       if (pullNumber != undefined) {
         spec.status = SpecificationStatus.contributed
-        jsonFilePath = contributedJsonPath
-      } else if (!fs.existsSync(publicFilepath)) spec.status = SpecificationStatus.added
-      else if (fs.existsSync(contributedYamlPath) || fs.existsSync(contributedJsonPath)) {
-        spec.status = SpecificationStatus.contributed
-        jsonFilePath = contributedJsonPath
-      } else spec.status = SpecificationStatus.cloned
+      } else {
+        const existingSpec = ConfigSpecification.specifications.find((s) => s.filename === spec.filename)
+        if (existingSpec?.status === SpecificationStatus.contributed) {
+          spec.status = SpecificationStatus.contributed
+          spec.pullNumber = existingSpec.pullNumber
+        } else if (!fs.existsSync(publicFilepath)) spec.status = SpecificationStatus.added
+        else spec.status = SpecificationStatus.cloned
+      }
     } else throw new Error('spec is undefined')
 
     // Write as JSON (new format - IfileSpecification already contains everything incl. base64)
@@ -551,15 +496,12 @@ export class ConfigSpecification {
 
   static createZipFromSpecification(specfilename: string, r: stream.Writable): void {
     const spec = { filename: specfilename } as unknown as IbaseSpecification
-    // Try JSON first, then YAML, then contributed, then public
+    // Try JSON first, then YAML, then public
     let specFilePath = ConfigSpecification.getLocalJsonPath(spec)
     if (!fs.existsSync(specFilePath)) specFilePath = ConfigSpecification.getSpecificationPath(spec)
-    if (!fs.existsSync(specFilePath)) specFilePath = ConfigSpecification.getContributedJsonPath(spec)
-    if (!fs.existsSync(specFilePath)) specFilePath = ConfigSpecification.getContributedSpecificationPath(spec)
     if (!fs.existsSync(specFilePath)) specFilePath = ConfigSpecification.getPublicSpecificationPath(spec)
 
     let fn = ConfigSpecification.getLocalFilesPath(specfilename)
-    if (!fs.existsSync(fn)) fn = ConfigSpecification.getContributedFilesPath(specfilename)
     if (!fs.existsSync(fn)) fn = ConfigSpecification.getPublicFilesPath(specfilename)
 
     if (!fs.existsSync(specFilePath)) throw new Error('no specification found at ' + specFilePath)
