@@ -1,5 +1,6 @@
 import { it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { TempConfigDirHelper } from './testhelper.js'
@@ -53,7 +54,7 @@ it('writeBus: creates bus directory with correct bus.yaml', () => {
   expect(bus.busId).toBeGreaterThan(0)
   expect(bus.slaves).toEqual([])
 
-  const busDir = join(Config.getLocalDir(), 'busses', `bus.${bus.busId}`)
+  const busDir = join(ConfigPersistence.getLocalDir(), 'busses', `bus.${bus.busId}`)
   expect(fs.existsSync(busDir)).toBe(true)
 
   const busYaml = fs.readFileSync(join(busDir, 'bus.yaml'), 'utf8')
@@ -80,7 +81,7 @@ it('writeSlave: writes slave YAML without runtime fields', () => {
 
   ConfigBus.writeslave(0, slave)
 
-  const slavePath = join(Config.getLocalDir(), 'busses', 'bus.0', 's99.yaml')
+  const slavePath = join(ConfigPersistence.getLocalDir(), 'busses', 'bus.0', 's99.yaml')
   expect(fs.existsSync(slavePath)).toBe(true)
 
   const content = fs.readFileSync(slavePath, 'utf8')
@@ -123,7 +124,7 @@ it('round-trip: writeBus + writeSlave then readAll returns matching data', () =>
 it('deleteBus: removes bus directory', () => {
   const connection = { serialport: '/dev/ttyUSB88', baudrate: 9600, timeout: 100 }
   const bus = ConfigBus.addBusProperties(connection)
-  const busDir = join(Config.getLocalDir(), 'busses', `bus.${bus.busId}`)
+  const busDir = join(ConfigPersistence.getLocalDir(), 'busses', `bus.${bus.busId}`)
   expect(fs.existsSync(busDir)).toBe(true)
 
   ConfigBus.deleteBusProperties(bus.busId)
@@ -138,7 +139,7 @@ it('deleteSlave: removes slave YAML file', () => {
     pollMode: 0,
   })
 
-  const slavePath = join(Config.getLocalDir(), 'busses', 'bus.0', 's88.yaml')
+  const slavePath = join(ConfigPersistence.getLocalDir(), 'busses', 'bus.0', 's88.yaml')
   expect(fs.existsSync(slavePath)).toBe(true)
 
   ConfigBus.deleteSlave(0, 88)

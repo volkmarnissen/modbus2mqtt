@@ -1,16 +1,12 @@
 import Debug from 'debug'
-import * as fs from 'fs'
-import * as path from 'path'
 import { join } from 'path'
 import packageJson from '../../package.json' with { type: 'json' }
-import stream from 'stream'
 import { Subject } from 'rxjs'
 import { getBaseFilename } from '../shared/specification/index.js'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
 import { LogLevelEnum, Logger, filesUrlPrefix } from '../specification/index.js'
 import { ImqttClient, AuthenticationErrors, Iconfiguration, IUserAuthenticationStatus } from '../shared/server/index.js'
-import AdmZip from 'adm-zip'
 import { Bus } from './bus.js'
 import { IClientOptions } from 'mqtt'
 import { ConfigPersistence } from './persistence/configPersistence.js'
@@ -38,7 +34,6 @@ export enum ConfigListenerEvent {
   deleteBus,
 }
 const log = new Logger('config')
-const debug = Debug('config')
 const debugAddon = Debug('config.addon')
 const saltRounds = 8
 const defaultTokenExpiryTime = 1000 * 60 * 60 * 24 // One day
@@ -117,10 +112,6 @@ export class Config {
     }
   }
 
-  static getLocalDir(): string {
-    return join(Config.configDir, 'modbus2mqtt')
-  }
-
   private static config: Iconfiguration
   private static secret: string
   private static specificationsChanged = new Subject<string>()
@@ -137,58 +128,16 @@ export class Config {
     noAuthentication: false,
   }
 
-  static configDir: string = ''
-  static dataDir: string = ''
-  static sslDir: string = ''
-
-  private static persistenceConfigDir: string = ''
-
   private static ensurePersistence(): ConfigPersistence {
-    if (!Config.persistence || Config.persistenceConfigDir !== Config.configDir) {
-      Config.persistence = new ConfigPersistence(Config.configDir, Config.getLocalDir())
-      Config.persistenceConfigDir = Config.configDir
+    if (!Config.persistence) {
+      Config.persistence = new ConfigPersistence()
     }
     return Config.persistence
   }
 
-  static getSecret(pathStr: string): string {
-    return ConfigPersistence.getSecret(pathStr)
-  }
   static getConfiguration(): Iconfiguration {
     if (Config.secret == undefined) {
-      // Use sslDir if explicitly set (Home Assistant case), otherwise use current working directory
-      const effectiveSslDir = Config.sslDir.length > 0 ? Config.sslDir : process.cwd()
-      const secretsfile = join(effectiveSslDir, 'secrets.txt')
-      const secretsDir = path.dirname(secretsfile)
-      // Only create the directory if we're going to write to it
-      if (secretsDir && !fs.existsSync(secretsfile) && !fs.existsSync(secretsDir)) {
-        fs.mkdirSync(secretsDir, { recursive: true })
-      }
-      // Check permissions before proceeding
-      if (fs.existsSync(secretsfile)) {
-        debug('secretsfile ' + secretsfile + ' exists')
-        try {
-          fs.accessSync(secretsfile, fs.constants.W_OK)
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : String(err)
-          const msg = `Secrets file ${secretsfile} is not writable! (error: ${message})`
-          log.log(LogLevelEnum.error, msg)
-          throw new Error(msg)
-        }
-      } else {
-        // File doesn't exist, check if we can write to the directory
-        try {
-          fs.accessSync(secretsDir, fs.constants.W_OK)
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : String(err)
-          const msg = `Secrets directory ${secretsDir} is not writable! (cwd: ${process.cwd()}, error: ${message})`
-          log.log(LogLevelEnum.error, msg)
-          throw new Error(msg)
-        }
-      }
-
-      debug('Config.getConfiguration: secretsfile permissions are OK ' + secretsfile)
-      Config.secret = Config.getSecret(secretsfile)
+      Config.secret = Config.ensurePersistence().ensureSecret()
     }
 
     if (Config.config) {
@@ -298,18 +247,12 @@ export class Config {
         log.log(LogLevelEnum.error, e.message)
       })
   }
-  private static readCertfile(filename?: string): string | undefined {
-    if (filename && Config.sslDir) {
-      const fn = join(Config.sslDir, filename)
-      if (fs.existsSync(fn)) return fs.readFileSync(fn, { encoding: 'utf8' }).toString()
-    }
-    return undefined
-  }
   static updateMqttTlsConfig(config: Iconfiguration) {
     if (config && config.mqttconnect) {
-      ;(config.mqttconnect as IClientOptions).key = this.readCertfile(config.mqttkeyFile)
-      ;(config.mqttconnect as IClientOptions).ca = this.readCertfile(config.mqttcaFile)
-      ;(config.mqttconnect as IClientOptions).cert = this.readCertfile(config.mqttcertFile)
+      const persistence = Config.ensurePersistence()
+      ;(config.mqttconnect as IClientOptions).key = persistence.readCertificateFile(config.mqttkeyFile)
+      ;(config.mqttconnect as IClientOptions).ca = persistence.readCertificateFile(config.mqttcaFile)
+      ;(config.mqttconnect as IClientOptions).cert = persistence.readCertificateFile(config.mqttcertFile)
     }
   }
 
@@ -377,7 +320,7 @@ export class Config {
   }
   async readYamlAsync(): Promise<void> {
     try {
-      if (!Config.configDir || Config.configDir.length == 0) {
+      if (!ConfigPersistence.configDir || ConfigPersistence.configDir.length == 0) {
         log.log(LogLevelEnum.error, 'configDir not defined in command line')
       }
 
@@ -387,13 +330,9 @@ export class Config {
       if (configData) {
         Config.config = configData
         if (Config.config.debugComponents && Config.config.debugComponents.length) Debug.enable(Config.config.debugComponents)
-        if (Config.configDir.length == 0) log.log(LogLevelEnum.error, 'configDir not set')
+        if (ConfigPersistence.configDir.length == 0) log.log(LogLevelEnum.error, 'configDir not set')
       } else {
-        if (!fs.existsSync(Config.configDir)) {
-          log.log(LogLevelEnum.info, 'configuration directory  not found ' + process.cwd() + '/' + Config.configDir)
-        } else {
-          log.log(LogLevelEnum.info, 'configuration file  not found ' + persistence.getConfigPath())
-        }
+        log.log(LogLevelEnum.info, 'configuration file not found ' + persistence.getConfigPath())
         Config.config = structuredClone(Config.newConfig)
       }
 
@@ -464,26 +403,8 @@ export class Config {
   static getFileNameFromSlaveId(slaveid: number): string {
     return 's' + slaveid
   }
-  static async createZipFromLocal(_filename: string, r: stream.Writable): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        const archive = new AdmZip()
-        const dir = Config.getLocalDir()
-        const files: string[] = fs.readdirSync(Config.getLocalDir(), { recursive: true }) as string[]
-        files.forEach((file) => {
-          const p = join(dir, file)
-          if (fs.statSync(p).isFile() && file.indexOf('secrets.yaml') < 0) {
-            archive.addLocalFile(p, path.dirname(file))
-          }
-        })
-        r.write(archive.toBuffer())
-        r.end(() => {
-          resolve()
-        })
-      } catch (error) {
-        reject(error)
-      }
-    })
+  static async createZipFromLocal(_filename: string, r: import('stream').Writable): Promise<void> {
+    return Config.ensurePersistence().createLocalExportZip(r)
   }
 }
 export function getSpecificationImageOrDocumentUrl(rootUrl: string | undefined, specName: string, url: string): string {

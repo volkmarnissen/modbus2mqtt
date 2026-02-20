@@ -1,6 +1,7 @@
 import { expect, it, beforeAll, afterAll } from '@jest/globals'
 import { HttpServer as HttpServer } from '../../src/server/httpserver.js'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import supertest from 'supertest'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { join } from 'path'
@@ -21,7 +22,7 @@ beforeAll(() => {
       HttpServer.prototype.authenticate = (req, res, next) => {
         next()
       }
-      httpServer = new HttpServer(join(Config.configDir, 'angular'))
+      httpServer = new HttpServer(join(ConfigPersistence.configDir, 'angular'))
 
       resolve()
     })

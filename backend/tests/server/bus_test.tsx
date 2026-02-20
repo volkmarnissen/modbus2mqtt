@@ -1,6 +1,7 @@
 import Debug from 'debug'
 import { expect, it, beforeAll, beforeEach, afterEach, vi, afterAll } from 'vitest'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { Bus } from '../../src/server/bus.js'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
 import { IdentifiedStates } from '../../src/shared/specification/index.js'
@@ -18,7 +19,7 @@ let tempHelper: TempConfigDirHelper
 beforeEach(() => {
   busTestHelper = new FileBackupHelper()
   // Backup all relevant bus files
-  const configDir = Config.configDir
+  const configDir = ConfigPersistence.configDir
   if (configDir) {
     busTestHelper.backup(`${configDir}/modbus2mqtt/busses/bus.0/s2.yaml`)
     busTestHelper.backup(`${configDir}/modbus2mqtt/specifications/files/waterleveltransmitter/files.yaml`)

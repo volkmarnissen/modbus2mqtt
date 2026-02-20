@@ -1,4 +1,5 @@
 import { Config } from './config.js'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 import { HttpServer } from './httpserver.js'
 import { Bus } from './bus.js'
 import { Command } from 'commander'
@@ -60,25 +61,25 @@ export class Modbus2Mqtt {
     cli.parse(process.argv)
     const options = cli.opts()
     if (options['data']) {
-      Config.dataDir = options['data']
+      ConfigPersistence.dataDir = options['data']
       ConfigSpecification.dataDir = options['data']
     } else {
-      Config.dataDir = '.'
+      ConfigPersistence.dataDir = '.'
       ConfigSpecification.dataDir = '.'
     }
     if (options['config']) {
-      Config.configDir = options['config']
+      ConfigPersistence.configDir = options['config']
       ConfigSpecification.configDir = options['config']
     } else {
-      Config.configDir = '.'
+      ConfigPersistence.configDir = '.'
       ConfigSpecification.configDir = '.'
     }
 
     // Perform migration from old structure (data/local) to new (config/modbus2mqtt)
-    if (CmdlineMigrate.needsMigration(Config.dataDir, Config.configDir)) {
+    if (CmdlineMigrate.needsMigration(ConfigPersistence.dataDir, ConfigPersistence.configDir)) {
       log.log(LogLevelEnum.info, 'Detected old directory structure, performing migration...')
       try {
-        CmdlineMigrate.migrate(Config.dataDir, Config.configDir)
+        CmdlineMigrate.migrate(ConfigPersistence.dataDir, ConfigPersistence.configDir)
         log.log(LogLevelEnum.info, 'Migration completed successfully')
       } catch (error) {
         log.log(LogLevelEnum.error, `Migration failed: ${error}`)
@@ -91,8 +92,8 @@ export class Modbus2Mqtt {
       process.on('SIGTERM', () => {
         process.exit(options['term'])
       })
-    if (options['ssl']) Config.sslDir = options['ssl']
-    else Config.sslDir = '.'
+    if (options['ssl']) ConfigPersistence.sslDir = options['ssl']
+    else ConfigPersistence.sslDir = '.'
 
     readConfig = new Config()
     readConfig.readYamlAsync

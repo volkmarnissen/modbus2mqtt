@@ -8,6 +8,7 @@ import {
   Converters,
 } from '../../src/shared/specification/index.js'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { FakeMqtt, FakeModes, initBussesForTest } from './configsbase.js'
 import supertest from 'supertest'
 import * as fs from 'fs'
@@ -130,7 +131,7 @@ beforeAll(() => {
         HttpServer.prototype.authenticate = (req, res, next) => {
           next()
         }
-        httpServer = new HttpServer(join(Config.configDir, 'angular'))
+        httpServer = new HttpServer(join(ConfigPersistence.configDir, 'angular'))
 
         httpServer.setModbusCacheAvailable()
         httpServer.init()

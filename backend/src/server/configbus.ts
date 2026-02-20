@@ -4,6 +4,7 @@ import { getSpecificationI18nEntityName, IidentEntity, Ispecification } from '..
 
 import Debug from 'debug'
 import { Config, ConfigListenerEvent } from './config.js'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 import { SerialPort } from 'serialport'
 import { BusPersistence } from './persistence/busPersistence.js'
 import * as fs from 'fs'
@@ -30,7 +31,7 @@ export class ConfigBus {
   private static persistenceLocalDir: string = ''
 
   private static ensurePersistence(): BusPersistence {
-    const localDir = Config.getLocalDir()
+    const localDir = ConfigPersistence.getLocalDir()
     if (!ConfigBus.persistence || ConfigBus.persistenceLocalDir !== localDir) {
       ConfigBus.persistence = new BusPersistence(localDir)
       ConfigBus.persistenceLocalDir = localDir

@@ -1,6 +1,7 @@
 import { it, expect, beforeAll, afterAll } from 'vitest'
 import { Config } from '../../src/server/config.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { TempConfigDirHelper } from './testhelper.js'
 import { setConfigsDirsForTest } from './configsbase.js'
 import { parse } from 'yaml'
@@ -47,7 +48,7 @@ it('write: secrets extracted with !secret placeholders', () => {
   expect(yamlStr).toContain('!secret mqttuser')
   expect(yamlStr).not.toContain('writetest_pw')
 
-  const secretsStr = fs.readFileSync(join(Config.getLocalDir(), 'secrets.yaml'), 'utf8')
+  const secretsStr = fs.readFileSync(join(ConfigPersistence.getLocalDir(), 'secrets.yaml'), 'utf8')
   const secrets = parse(secretsStr)
   expect(secrets.mqttpassword).toBe('writetest_pw')
   expect(secrets.mqttuser).toBe('writetest_user')
@@ -79,11 +80,11 @@ it('round-trip: write then read produces identical values', async () => {
 
 // Test 4: getSecret — creates secrets.txt with 256 characters when missing
 it('getSecret: creates secrets.txt with 256 characters when missing', () => {
-  const secretPath = join(Config.getLocalDir(), 'test_secrets_gen.txt')
+  const secretPath = join(ConfigPersistence.getLocalDir(), 'test_secrets_gen.txt')
   // Ensure it doesn't exist
   if (fs.existsSync(secretPath)) fs.unlinkSync(secretPath)
 
-  const secret = Config.getSecret(secretPath)
+  const secret = ConfigPersistence.getSecret(secretPath)
   expect(secret).toBeDefined()
   expect(secret.length).toBe(256)
   expect(fs.existsSync(secretPath)).toBe(true)
@@ -94,11 +95,11 @@ it('getSecret: creates secrets.txt with 256 characters when missing', () => {
 
 // Test 5: getSecret — returns same value on repeated calls
 it('getSecret: returns same value on repeated calls', () => {
-  const secretPath = join(Config.getLocalDir(), 'test_secrets_stable.txt')
+  const secretPath = join(ConfigPersistence.getLocalDir(), 'test_secrets_stable.txt')
   if (fs.existsSync(secretPath)) fs.unlinkSync(secretPath)
 
-  const secret1 = Config.getSecret(secretPath)
-  const secret2 = Config.getSecret(secretPath)
+  const secret1 = ConfigPersistence.getSecret(secretPath)
+  const secret2 = ConfigPersistence.getSecret(secretPath)
   expect(secret1).toBe(secret2)
 
   // Cleanup

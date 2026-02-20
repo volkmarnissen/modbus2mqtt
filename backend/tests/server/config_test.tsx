@@ -1,5 +1,6 @@
 import { expect, it, test, afterAll, beforeAll } from 'vitest'
 import { Config, MqttValidationResult } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { getFileNameFromName } from '../../src/shared/specification/index.js'
 import * as fs from 'fs'
 import { setConfigsDirsForTest } from './configsbase.js'
@@ -91,14 +92,14 @@ it('writeConfiguration change password ', () => {
   cr.writeConfiguration(cfg)
   expect(Config['config'].mqttconnect.password).toBe('testpassword')
   expect(cfg.mqttconnect.password).toBe('testpassword') // from secrets.yaml
-  let cfgStr = fs.readFileSync(Config.getLocalDir() + '/modbus2mqtt.yaml').toString()
+  let cfgStr = fs.readFileSync(ConfigPersistence.getLocalDir() + '/modbus2mqtt.yaml').toString()
   expect(cfgStr).toContain('!secret ')
   cfg.mqttconnect.password = oldpassword
   cr.writeConfiguration(cfg)
   expect(Config['config'].mqttconnect.password).toBe(oldpassword)
-  cfgStr = fs.readFileSync(Config.getLocalDir() + '/modbus2mqtt.yaml').toString()
+  cfgStr = fs.readFileSync(ConfigPersistence.getLocalDir() + '/modbus2mqtt.yaml').toString()
   expect(cfgStr).toContain('!secret ')
-  const secretsStr = fs.readFileSync(Config.getLocalDir() + '/secrets.yaml').toString()
+  const secretsStr = fs.readFileSync(ConfigPersistence.getLocalDir() + '/secrets.yaml').toString()
   expect(secretsStr).toContain(oldpassword)
 })
 

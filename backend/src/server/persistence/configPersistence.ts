@@ -3,23 +3,32 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { join } from 'path'
 import Debug from 'debug'
+import AdmZip from 'adm-zip'
+import stream from 'stream'
 import { Iconfiguration } from '../../shared/server/index.js'
 import { ISingletonPersistence } from './persistence.js'
+import { Logger, LogLevelEnum } from '../../specification/index.js'
 
 const debug = Debug('configPersistence')
+const log = new Logger('configPersistence')
 const secretsLength = 256
 
 export class ConfigPersistence implements ISingletonPersistence<Iconfiguration> {
-  constructor(
-    private configDir: string,
-    private localDir: string
-  ) {}
+  static configDir: string = ''
+  static sslDir: string = ''
+  static dataDir: string = ''
+
+  static getLocalDir(): string {
+    return join(ConfigPersistence.configDir, 'modbus2mqtt')
+  }
+
+  constructor() {}
 
   async read(): Promise<Iconfiguration | undefined> {
-    if (!this.configDir || this.configDir.length === 0) {
+    if (!ConfigPersistence.configDir || ConfigPersistence.configDir.length === 0) {
       return undefined
     }
-    if (!fs.existsSync(this.configDir)) {
+    if (!fs.existsSync(ConfigPersistence.configDir)) {
       return undefined
     }
 
@@ -28,7 +37,7 @@ export class ConfigPersistence implements ISingletonPersistence<Iconfiguration> 
       return undefined
     }
 
-    const secretsFile = join(this.localDir, 'secrets.yaml')
+    const secretsFile = join(ConfigPersistence.getLocalDir(), 'secrets.yaml')
     let src: string = fs.readFileSync(yamlFile, { encoding: 'utf8' })
     if (fs.existsSync(secretsFile)) {
       const secrets = parse(fs.readFileSync(secretsFile, { encoding: 'utf8' }))
@@ -100,12 +109,16 @@ export class ConfigPersistence implements ISingletonPersistence<Iconfiguration> 
     fs.writeFileSync(this.getSecretsPath(), s, { encoding: 'utf8' })
   }
 
+  getLocalDir(): string {
+    return ConfigPersistence.getLocalDir()
+  }
+
   getConfigPath(): string {
-    return join(this.localDir, 'modbus2mqtt.yaml')
+    return join(ConfigPersistence.getLocalDir(), 'modbus2mqtt.yaml')
   }
 
   getSecretsPath(): string {
-    return join(this.localDir, 'secrets.yaml')
+    return join(ConfigPersistence.getLocalDir(), 'secrets.yaml')
   }
 
   static getSecret(pathStr: string): string {
@@ -133,8 +146,69 @@ export class ConfigPersistence implements ISingletonPersistence<Iconfiguration> 
     return result
   }
 
+  ensureSecret(): string {
+    const effectiveSslDir = ConfigPersistence.sslDir.length > 0 ? ConfigPersistence.sslDir : process.cwd()
+    const secretsfile = join(effectiveSslDir, 'secrets.txt')
+    const secretsDir = path.dirname(secretsfile)
+    if (secretsDir && !fs.existsSync(secretsfile) && !fs.existsSync(secretsDir)) {
+      fs.mkdirSync(secretsDir, { recursive: true })
+    }
+    if (fs.existsSync(secretsfile)) {
+      debug('secretsfile ' + secretsfile + ' exists')
+      try {
+        fs.accessSync(secretsfile, fs.constants.W_OK)
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err)
+        const msg = `Secrets file ${secretsfile} is not writable! (error: ${message})`
+        log.log(LogLevelEnum.error, msg)
+        throw new Error(msg)
+      }
+    } else {
+      try {
+        fs.accessSync(secretsDir, fs.constants.W_OK)
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err)
+        const msg = `Secrets directory ${secretsDir} is not writable! (cwd: ${process.cwd()}, error: ${message})`
+        log.log(LogLevelEnum.error, msg)
+        throw new Error(msg)
+      }
+    }
+    debug('ensureSecret: secretsfile permissions are OK ' + secretsfile)
+    return ConfigPersistence.getSecret(secretsfile)
+  }
+
+  readCertificateFile(filename?: string): string | undefined {
+    if (filename && ConfigPersistence.sslDir) {
+      const fn = join(ConfigPersistence.sslDir, filename)
+      if (fs.existsSync(fn)) return fs.readFileSync(fn, { encoding: 'utf8' }).toString()
+    }
+    return undefined
+  }
+
+  async createLocalExportZip(writable: stream.Writable): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const archive = new AdmZip()
+        const dir = ConfigPersistence.getLocalDir()
+        const files: string[] = fs.readdirSync(dir, { recursive: true }) as string[]
+        files.forEach((file) => {
+          const p = join(dir, file)
+          if (fs.statSync(p).isFile() && file.indexOf('secrets.yaml') < 0) {
+            archive.addLocalFile(p, path.dirname(file))
+          }
+        })
+        writable.write(archive.toBuffer())
+        writable.end(() => {
+          resolve()
+        })
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
   resetForE2E(minimalConfig: Record<string, unknown>): void {
-    if (!fs.existsSync(this.localDir)) fs.mkdirSync(this.localDir, { recursive: true })
+    if (!fs.existsSync(ConfigPersistence.getLocalDir())) fs.mkdirSync(ConfigPersistence.getLocalDir(), { recursive: true })
     fs.writeFileSync(this.getConfigPath(), stringify(minimalConfig), { encoding: 'utf8' })
 
     const secretsPath = this.getSecretsPath()

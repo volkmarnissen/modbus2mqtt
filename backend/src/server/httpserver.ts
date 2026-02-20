@@ -5,6 +5,7 @@ import { Request as ExpressRequest } from 'express'
 import * as express from 'express'
 import { ConverterMap, filesUrlPrefix, M2mGitHub } from '../specification/index.js'
 import { Config, MqttValidationResult } from './config.js'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 import { Modbus } from './modbus.js'
 import {
   ImodbusSpecification,
@@ -222,8 +223,8 @@ export class HttpServer extends HttpServerBase {
     })
 
     this.get(apiUri.sslFiles, (req: ExpressRequest, res: http.ServerResponse) => {
-      if (Config.sslDir && Config.sslDir.length) {
-        const result = fs.readdirSync(Config.sslDir)
+      if (ConfigPersistence.sslDir && ConfigPersistence.sslDir.length) {
+        const result = fs.readdirSync(ConfigPersistence.sslDir)
         this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(result))
       } else {
         this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'not found')
@@ -836,7 +837,7 @@ export class HttpServer extends HttpServerBase {
     ConfigSpecification.resetForE2E()
 
     // Phase 3: Clean filesystem
-    const localDir = Config.getLocalDir()
+    const localDir = ConfigPersistence.getLocalDir()
     const bussesDir = localDir + '/busses'
     const specsDir = localDir + '/specifications'
     if (fs.existsSync(bussesDir)) fs.rmSync(bussesDir, { recursive: true })
