@@ -806,8 +806,58 @@ export class HttpServer extends HttpServerBase {
     }
   }
 
+  /**
+   * Connect a temporary MQTT client, collect all retained messages, then
+   * clear them by publishing empty payloads with retain=true.
+   */
+  private async clearRetainedMqttMessages(): Promise<void> {
+    const mqttConnect = Config.getConfiguration().mqttconnect
+    let mqttUrl = mqttConnect?.mqttserverurl
+    if (!mqttUrl && Config.mqttHassioLoginData?.mqttserverurl) {
+      mqttUrl = Config.mqttHassioLoginData.mqttserverurl
+    }
+    if (!mqttUrl) return // no MQTT configured – nothing to clear
+
+    const opts = Config.mqttHassioLoginData ?? mqttConnect
+    const { connect } = await import('mqtt')
+    return new Promise<void>((resolve) => {
+      const retainedTopics: string[] = []
+      const client = connect(mqttUrl!, {
+        username: opts.username,
+        password: opts.password as string | undefined,
+        clean: true,
+        clientId: 'e2e-reset-' + Date.now(),
+        connectTimeout: 5000,
+      })
+      const timer = setTimeout(() => {
+        // After collecting retained messages, clear them
+        for (const topic of retainedTopics) {
+          client.publish(topic, '', { retain: true })
+        }
+        client.end(false, () => resolve())
+      }, 1000)
+
+      client.on('error', () => {
+        clearTimeout(timer)
+        client.end(true)
+        resolve() // don't block reset if MQTT is unreachable
+      })
+      client.on('connect', () => {
+        client.subscribe('#', { qos: 0 })
+      })
+      client.on('message', (topic, _payload, packet) => {
+        if (packet.retain) {
+          retainedTopics.push(topic)
+        }
+      })
+    })
+  }
+
   private async resetForE2E(): Promise<void> {
     log.log(LogLevelEnum.info, 'E2E reset: starting')
+
+    // Phase 0: Clear retained MQTT messages before disconnecting
+    await this.clearRetainedMqttMessages()
 
     // Phase 1: Stop active processes
     Bus.resetForE2E()

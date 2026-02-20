@@ -2,9 +2,16 @@
 
 ## Context
 
-The three static classes `Config`, `ConfigBus`, and `ConfigSpecification` currently mix in-memory state management with filesystem I/O. Goal: Extract persistence logic into dedicated classes, introduce a generic in-memory store. Additionally: Specification files as base64 in the spec object (API/frontend), while remaining as binary files on disk.
+The three static classes `Config`, `ConfigBus`, and `ConfigSpecification` currently mix in-memory state management with filesystem I/O. Goal: Extract persistence logic into dedicated classes, introduce a generic in-memory store.
 
-**Risk minimization**: Only extract read/write. Business logic, events, and public API remain unchanged as much as possible. Filesystem format stays identical.
+**Risk minimization**: Only extract read/write. Business logic, events, and public API remain unchanged as much as possible.
+
+### Already Completed
+
+- **JSON single-file format**: Specifications are stored as single `.json` files with base64-embedded files (no separate `files.yaml` or binary files). Migrator handles YAML -> JSON conversion on read.
+- **Base64 files**: `IimageAndDocumentUrl` has `data` (base64) and `mimeType` fields. Upload endpoints removed, frontend uses `FileReader.readAsDataURL()`.
+- **Status as JSON attribute**: Status (`added`, `cloned`, `contributed`) is persisted in the JSON file. `readYaml()` is a pure reader — no status derivation logic. For legacy YAML specs, the Migrator derives status from `publicNames`.
+- **Two directories only**: `public/specifications/` (read-only, from GitHub) and `local/specifications/` (all local specs). No `contributed/` directory.
 
 ---
 
@@ -73,32 +80,33 @@ These tests document the filesystem contract. After refactoring they become `Con
 
 | # | Test (Given -> When -> Then) | What is secured |
 |---|---|---|
-| 1 | **Given** specifications/*.yaml in public + local + contributed -> **When** readAll per dir -> **Then** correct number of specs read | Read contract |
-| 2 | **Given** files/{specname}/files.yaml exists -> **When** readAll -> **Then** spec.files[] correctly populated, URLs built | Files read contract |
-| 3 | **Given** no files.yaml -> **When** readAll -> **Then** spec.files = [] | Edge case |
-| 4 | **Given** IfileSpecification -> **When** writeItem -> **Then** {filename}.yaml with correct YAML | Write contract |
-| 5 | **Given** writeItem -> **When** readAll -> **Then** identical spec | Round-trip |
-| 6 | **Given** IimageAndDocumentUrl[] -> **When** writeFiles -> **Then** files.yaml correct | Files write contract |
-| 7 | **Given** binary file in files/{spec}/ -> **When** readAll -> **Then** binary available | Binary file reading (basis for base64) |
-| 8 | **Given** spec in local -> **When** deleteItem -> **Then** YAML + files dir gone | Delete contract |
+| 1 | **Given** specifications/*.json in local -> **When** readAll -> **Then** correct number of specs, status from JSON | JSON read contract |
+| 2 | **Given** JSON spec with base64 files -> **When** readAll -> **Then** spec.files[] with data + mimeType | Base64 files contract |
+| 3 | **Given** old YAML spec in local + publicNames -> **When** readAll -> **Then** migrated to v0.5 with correct status (cloned/added) | Migrator + status contract |
+| 4 | **Given** old YAML spec in public dir -> **When** readAll -> **Then** migrated to v0.5, status = published | Public spec contract |
+| 5 | **Given** IfileSpecification -> **When** writeItem -> **Then** {filename}.json with correct content incl. status | Write contract (JSON) |
+| 6 | **Given** writeItem -> **When** readAll -> **Then** identical spec incl. status | Round-trip |
+| 7 | **Given** spec in local -> **When** deleteItem -> **Then** .json gone | Delete contract |
+| 8 | **Given** mix of .json + .yaml in same dir -> **When** readAll -> **Then** both read, JSON takes precedence | Dual-format read |
 
 ### 0e. ConfigSpecification Business Logic (`backend/tests/specification/configspec_logic_test.tsx`)
 
 | # | Test (Given -> When -> Then) | What is secured |
 |---|---|---|
-| 9 | **Given** specs from 3 tiers in store -> **When** readYaml merge logic -> **Then** status correct (published/cloned/added/contributed) | Three-tier merge |
-| 10 | **Given** specs in store -> **When** getSpecificationByFilename -> **Then** correct spec | Lookup |
-| 11 | **Given** specs in store -> **When** filterAllSpecifications(fn) -> **Then** fn called for each spec | Iteration |
-| 12 | **Given** spec with filename change -> **When** write -> **Then** rename logic correct | Rename |
+| 9 | **Given** local specs + published specs -> **When** readYaml -> **Then** publicSpecification references set correctly | Public reference linking |
+| 10 | **Given** local spec with empty files + published spec with files -> **When** readYaml -> **Then** files copied from published | Files inheritance |
+| 11 | **Given** specs in store -> **When** getSpecificationByFilename -> **Then** correct spec | Lookup |
+| 12 | **Given** specs in store -> **When** filterAllSpecifications(fn) -> **Then** fn called for each spec | Iteration |
+| 13 | **Given** spec with filename change -> **When** write -> **Then** rename logic correct | Rename |
 
-### Test Summary: ~26 New Tests
+### Test Summary: ~24 New Tests
 
 | Area | Persistence Contract | Business Logic | Total |
 |------|---------------------|----------------|-------|
 | Config | 5 | - | 5 |
 | ConfigBus | 6 | 3 | 9 |
-| ConfigSpecification | 8 | 4 | 12 |
-| **Total** | **19** | **7** | **26** |
+| ConfigSpecification | 8 | 5 | 13 |
+| **Total** | **19** | **8** | **27** |
 
 ---
 
@@ -237,101 +245,62 @@ ConfigBus.init(busStore, busPersistence)  // ConfigBus stores both for later wri
 - `private static specifications: IfileSpecification[]` -> `private static store = new Store<IfileSpecification>()`
 - Key: `filename`
 
-**Extracted:**
+### Current State of configspec.ts
+
+After the JSON single-file and status-as-attribute changes, `configspec.ts` is already significantly simplified:
+
+- **Format**: All specs written as single `.json` files (via `writeSpecAsJson()`). YAML only read for legacy/migration.
+- **Status**: Persisted in JSON. `readYaml()` is a pure reader — sets `publicSpecification` references and copies files from published specs, but does no status derivation.
+- **Directories**: Only `public/specifications/` (read-only) and `local/specifications/` (read/write).
+- **Migrator**: Receives `publicNames` and sets status during YAML -> v0.5 migration.
+
+### Extraction Plan
 
 | Method | Moves to Persistence | Stays in ConfigSpecification |
 |--------|---------------------|------------------------------|
-| `readspecifications()` (L154) | Dir scan, YAML parse, migration (incl. Migrator) | - (entirely persistence) |
-| `readFilesYaml()` (L133) | File read, files.yaml parse, migration (incl. Migrator) | - (entirely persistence) |
-| `readYaml()` (L197) | - | Stays! Three-tier merge logic (published/contributed/local) |
-| `writeSpecificationFromFileSpec()` (L451) | writeFileSync, mkdirSync | Status logic, store update, rename logic |
-| `deleteSpecification()` (L529) | unlinkSync, rmSync | Store update |
-| `appendSpecificationUrls()` (L73) | readFileSync, writeFileSync | Mutex, spec.files update |
-| `deleteSpecificationFile()` (L324) | unlinkSync, files.yaml update | - |
-| `changeContributionStatus()` (L399) | renameSync, rmSync, cpSync | Status determination |
-| `renameFilesPath()` (L362) | renameSync, mkdirSync | - (entirely persistence) |
+| `readspecifications()` | Dir scan, JSON parse, YAML parse + Migrator | - (entirely persistence) |
+| `readFilesYaml()` | Legacy YAML files reading | - (entirely persistence) |
+| `writeSpecAsJson()` | JSON.stringify, writeFileSync | - (entirely persistence) |
+| `readYaml()` | - | Stays: set publicSpecification refs, copy files, combine published + local |
+| `writeSpecificationFromFileSpec()` | writeFileSync (via writeSpecAsJson) | Status logic, store update, rename logic |
+| `deleteSpecification()` | unlinkSync, rmSync | Store update |
+| `changeContributionStatus()` | writeFileSync (via writeSpecAsJson) | Status update in store |
+| `renameFilesPath()` | renameSync, mkdirSync | - (entirely persistence) |
+| `cleanSpecForWriting()` | - | Stays: strip runtime fields before write |
 
-**Unchanged:** `filterAllSpecifications`, `getSpecificationByFilename`, `getSpecificationByName`, `toFileSpecification`, `cleanSpecForWriting`, `filesMutex`, zip functions
+**Unchanged:** `filterAllSpecifications`, `getSpecificationByFilename`, `getSpecificationByName`, `toFileSpecification`, zip functions
 
-### Migrator ([migrator.ts](../backend/src/specification/migrator.ts), 216 lines)
+### Migrator ([migrator.ts](../backend/src/specification/migrator.ts))
 
-The `Migrator` class handles backward compatibility when reading old file formats from disk. It moves entirely into the persistence layer:
+The `Migrator` class handles backward compatibility when reading old YAML formats. It moves entirely into the persistence layer:
 
-- `migrate()` - Spec version chain: 0.1 -> 0.2 -> 0.3 -> 0.4 (current `SPECIFICATION_VERSION`)
+- `migrate(filecontent, directory?, publicNames?)` - Spec version chain: 0.1 -> 0.2 -> 0.3 -> 0.4 -> 0.5
+- `migrate0_4to0_5()` - Embeds files as base64, sets status from `publicNames`
 - `migrateFiles()` - Files.yaml format migration
 
-**After refactoring:** `SpecPersistence.readAll()` calls the Migrator internally. Business classes (`ConfigSpecification`) only ever see current-version data structures. The Migrator import moves from `configspec.ts` to `specPersistence.ts`.
+**After refactoring:** `SpecPersistence.readAll()` calls the Migrator internally. Business classes only ever see current-version `IfileSpecification` objects with status set. The Migrator import moves from `configspec.ts` to `specPersistence.ts`.
 
 **Startup flow:**
 ```typescript
 const specPersistence = new SpecPersistence(configDir, dataDir)
 const specStore = new Store<IfileSpecification>()
-// Persistence reads from all 3 directories
-const specs = specPersistence.readAll()  // public + contributed + local (raw, without status merge)
-ConfigSpecification.init(specStore, specPersistence, specs)  // Merge logic stays here
+// Persistence reads from both directories
+const publicSpecs = specPersistence.readPublic()   // public dir, status = published
+const localSpecs = specPersistence.readLocal(publicNames)  // local dir, status from JSON
+ConfigSpecification.init(specStore, specPersistence, publicSpecs, localSpecs)
 ```
 
 ---
 
-## Step 5: Base64 Files in Specifications
-
-### 5a. Type Change
-
-In [types.ts](../backend/src/shared/specification/types.ts) L261-265:
-
-```typescript
-export interface IimageAndDocumentUrl {
-  url: string
-  fileLocation: FileLocation
-  usage: SpecificationFileUsage
-  data?: string      // NEW: base64-encoded content (local files)
-  mimeType?: string  // NEW: e.g., 'image/png'
-}
-```
-
-### 5b. SpecPersistence: base64 <-> Binary Conversion
-
-**On read** (`readAll`):
-1. Read spec YAML + files.yaml (as before)
-2. For each local file (`fileLocation == Local`): read binary file -> base64 -> set `data` and `mimeType`
-
-**On write** (`writeItem`):
-1. For each file with `data`: decode base64 -> write binary file to disk
-2. Remove `data` and `mimeType` from the copy written to files.yaml
-3. Write files.yaml + spec.yaml (format same as today)
-
-### 5c. Backend API Changes
-
-In [httpserver.ts](../backend/src/server/httpserver.ts):
-- **Remove**: `POST /api/upload` (multer, L735-775), `POST /api/addFilesUrl` (L713), `DELETE /api/upload` (L803)
-- **Modify**: `POST /api/specification` now contains files with base64
-- **Modify**: `GET /api/specification` returns files with base64
-- **Remove**: [httpFileUpload.ts](../backend/src/server/httpFileUpload.ts) (multer storage config)
-
-### 5d. Frontend Changes
-
-In [upload-files.component.ts](../frontend/src/app/specification/upload-files/upload-files.component.ts):
-- `onFileDropped()` (L115): `FileReader.readAsDataURL()` instead of FormData
-- Files are stored as base64 in `spec.files[]`
-- No separate upload API call needed
-- Display images via `data:${mimeType};base64,${data}` src
-
-In [api-service.ts](../frontend/src/app/services/api-service.ts):
-- Remove `postFile()` (L404)
-- Remove `postAddFilesUrl()` (L414)
-- Remove `deleteUploadedFile()` (L480)
-
----
-
-## Step 6: Cleanup + Tests
+## Step 5: Cleanup + Tests
 
 ### Tests
 - **Unit tests for Store**: get/add/update/delete/list with cloning verification
 - **Unit tests per persistence class**: temp directories, read/write round-trip
-- **Integration test base64**: Write spec with base64 image -> verify binary file on disk -> read back -> compare base64
+- **Integration test base64**: Write spec with base64 image -> read back -> compare base64
 
 ### Cleanup
-- Remove dead imports (multer, fs in refactored classes)
+- Remove dead imports (fs in refactored classes)
 - Update `resetForE2E()` in all classes to use Store/Persistence
 - Keep this document as reference
 
@@ -339,22 +308,17 @@ In [api-service.ts](../frontend/src/app/services/api-service.ts):
 
 ## Implementation Order
 
-0. **Safety tests** (see above)
-1. Store + Interfaces (no behavior change)
-2. ConfigPersistence + Config refactoring -> tests green
-3. BusPersistence + ConfigBus refactoring -> tests green
-4. SpecPersistence + ConfigSpecification refactoring -> tests green
-5. Base64 type change + persistence conversion
-6. Backend API (remove upload endpoints)
-7. Frontend (FileReader instead of FormData)
-8. Cleanup + tests for new functionality (Store, base64)
+1. Safety tests (Step 0)
+2. Store + Interfaces (Step 1) - no behavior change
+3. ConfigPersistence + Config refactoring (Step 2) -> tests green
+4. BusPersistence + ConfigBus refactoring (Step 3) -> tests green
+5. SpecPersistence + ConfigSpecification refactoring (Step 4) -> tests green
+6. Cleanup + tests for new functionality (Step 5)
 
 ## Verification
 
-- **After step 0**: All new tests green
-- **After steps 2-4**: All new + existing tests green (refactoring safety)
+- **After step 1**: All new tests green
+- **After steps 3-5**: All new + existing tests green (refactoring safety)
 - Backend compiles after each step
 - Manual test: Startup -> read config -> read busses -> read specs
 - Existing E2E tests (`resetForE2E` paths) work
-- File upload in frontend test (base64 round-trip)
-- Filesystem format identical to before (diff YAML files)
