@@ -215,8 +215,7 @@ export class M2mGitHub {
         } else if (existsSync(join(this.publicRoot, 'specifications'))) {
           log.log(LogLevelEnum.info, 'Public files directory exists without git repo, using existing specifications')
         } else {
-          log.log(LogLevelEnum.warn, 'Public files directory exists but has no specifications, removing and re-cloning')
-          fs.rmSync(this.publicRoot, { recursive: true })
+          log.log(LogLevelEnum.warn, 'Public files directory exists but has no specifications, cloning into it')
           this.clonePublicRepo()
         }
       } else {
