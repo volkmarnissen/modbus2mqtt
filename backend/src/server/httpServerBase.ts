@@ -96,7 +96,7 @@ export class HttpServerBase {
   }
 
   private getDirectoryForLanguage(req: Request): string {
-    let lang = req.acceptsLanguages(['en', 'fr'])
+    let lang = req.acceptsLanguages(['en'])
     if (!lang) lang = 'en'
     return this.statics.get(lang)!
   }
