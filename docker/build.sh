@@ -12,8 +12,12 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." >/dev/null 2>&1 && pwd -P)"
 # Get version from parameter or package.json
 BUILD_VERSION="${1:-$(cd "$PROJECT_ROOT" && node -p "require('./package.json').version" 2>/dev/null || echo "dev")}"
 
+# Read Node.js major version from .nvmrc
+NODE_MAJOR="$(cut -d. -f1 "$PROJECT_ROOT/.nvmrc" 2>/dev/null || echo "22")"
+
 echo "Building modbus2mqtt Docker image"
 echo "  Version: $BUILD_VERSION"
+echo "  Node.js: ${NODE_MAJOR}.x (from .nvmrc)"
 echo "  Project root: $PROJECT_ROOT"
 
 cd "$PROJECT_ROOT"
@@ -35,6 +39,7 @@ echo ""
 echo "=== Building Docker image ==="
 docker build -t modbus2mqtt \
     -f docker/Dockerfile.npm-pack \
+    --build-arg NODE_MAJOR="$NODE_MAJOR" \
     --build-arg BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
     --build-arg BUILD_DESCRIPTION="modbus2mqtt Docker Image" \
     --build-arg BUILD_NAME="modbus2mqtt" \

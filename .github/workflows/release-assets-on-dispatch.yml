@@ -80,6 +80,10 @@ jobs:
           mv docker/modbus2mqtt-*.tgz docker/modbus2mqtt.tgz
           echo "Tarball size: $(du -h docker/modbus2mqtt.tgz | cut -f1)"
 
+      - name: Read Node.js major version from .nvmrc
+        id: nodeversion
+        run: echo "major=$(cut -d. -f1 .nvmrc)" >> $GITHUB_OUTPUT
+
       - name: Setup QEMU (for arm64 emulation)
         uses: docker/setup-qemu-action@v3
 
@@ -106,6 +110,7 @@ jobs:
             ${{ env.main_docker_name }}:${{ steps.setver.outputs.resolved_version }}
             ${{ env.main_docker_name }}:latest
           build-args: |
+            NODE_MAJOR=${{ steps.nodeversion.outputs.major }}
             BUILD_VERSION=${{ steps.setver.outputs.resolved_version }}
             BUILD_REF=${{ github.sha }}
             BUILD_DATE=${{ github.run_started_at }}

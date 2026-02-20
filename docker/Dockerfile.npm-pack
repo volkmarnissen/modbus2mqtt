@@ -1,5 +1,6 @@
 # Runtime image built from the npm pack tarball
-FROM node:22-alpine
+ARG NODE_MAJOR=22
+FROM node:${NODE_MAJOR}-alpine
 
 # Build arguments
 ARG S6_OVERLAY_VERSION=3.2.0.2
@@ -39,7 +40,7 @@ RUN npm install -g /tmp/app.tgz --omit=dev && \
 
 # Create modbus2mqtt user with dialout group for serial port access
 # Fixed UID 1000 for predictable Docker volume permissions
-# node:22-alpine ships a 'node' user at UID 1000 – remove it first
+# node:*-alpine ships a 'node' user at UID 1000 – remove it first
 RUN deluser --remove-home node 2>/dev/null || true && \
     adduser -S -D -u 1000 -h /var/lib/modbus2mqtt -s /sbin/nologin \
       -G dialout -g modbus2mqtt modbus2mqtt
@@ -62,7 +63,7 @@ CMD ["/init"]
 
 # Health check
 HEALTHCHECK --interval=5s --timeout=5s --start-period=30s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1
+    CMD wget -q --tries=1 -O /dev/null http://127.0.0.1:3000/ || exit 1
 # Labels
 LABEL \
     io.hass.name="${BUILD_NAME}" \
