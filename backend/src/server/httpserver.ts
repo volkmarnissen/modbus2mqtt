@@ -12,7 +12,6 @@ import {
   Ispecification,
   SpecificationStatus,
   IimportMessages,
-  SpecificationFileUsage,
 } from '../shared/specification/index.js'
 import path, { join } from 'path'
 import multer from 'multer'
@@ -20,7 +19,7 @@ import multer from 'multer'
 // Alias for typed Express requests with query parameters
 // (no alias needed; use express.Request directly)
 
-import { fileStorage, zipStorage } from './httpFileUpload.js'
+import { zipStorage } from './httpFileUpload.js'
 import { Bus } from './bus.js'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
@@ -709,69 +708,6 @@ export class HttpServer extends HttpServerBase {
       const rc: Islave = bus.writeSlave(req.body)
       this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
     })
-    this.post(apiUri.addFilesUrl, (req: express.Request, res: http.ServerResponse) => {
-      try {
-        if (req.query['specification']) {
-          if (req.body) {
-            // req.body.documents
-            const config = new ConfigSpecification()
-            config.appendSpecificationUrls(String(req.query['specification']!), [req.body]).then((files) => {
-              if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-              else this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
-            })
-          } else {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
-          }
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification no passed')
-        }
-      } catch (e: unknown) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Adding URL failed: ' + (e as Error).message, e)
-      }
-    })
-
-    const upload = multer({ storage: fileStorage })
-    this.app.post(apiUri.upload, upload.array('documents'), (req: express.Request, res: http.ServerResponse) => {
-      try {
-        if (!req.query['usage']) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-          return
-        }
-
-        // const msg = this.checkBusidSlaveidParameter(req as GetRequestWithParameter)
-        // if (msg !== '') {
-        //   this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-        //   return
-        // } else {
-        debug('Files uploaded')
-        if (req.files) {
-          // req.body.documents
-          const config = new ConfigSpecification()
-          const f: string[] = []
-            ; (req.files as Express.Multer.File[])!.forEach((f0) => {
-              f.push(f0.originalname)
-            })
-          if (req.query['usage'] === undefined) {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-          }
-          config
-            .appendSpecificationFiles(
-              String(req.query['specification']!),
-              f,
-              String(req.query['usage']!) as unknown as SpecificationFileUsage
-            )
-            .then((files) => {
-              if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-              else this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
-            })
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
-        }
-        //}
-      } catch (e: unknown) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Upload failed: ' + (e as Error).message, e)
-      }
-    })
     this.app.post(
       apiUri.uploadSpec,
       multer({ storage: zipStorage }).array('zips'),
@@ -799,18 +735,6 @@ export class HttpServer extends HttpServerBase {
       }
     )
 
-    this.delete(apiUri.upload, (req: express.Request, res: http.ServerResponse) => {
-      if (req.query['specification'] && req.query['url'] && req.query['usage']) {
-        const files = ConfigSpecification.deleteSpecificationFile(
-          String(req.query['specification']),
-          String(req.query['url']),
-          String(req.query['usage']) as unknown as SpecificationFileUsage
-        )
-        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(files))
-      } else {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Invalid Usage')
-      }
-    })
     this.delete(apiUri.newSpecificationfiles, (req: ExpressRequest, res: http.ServerResponse) => {
       try {
         new ConfigSpecification().deleteNewSpecificationFiles()

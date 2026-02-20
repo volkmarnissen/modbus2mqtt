@@ -6,10 +6,8 @@ import { catchError, first, map } from 'rxjs/operators'
 import {
   ImodbusSpecification,
   ImodbusEntity,
-  IimageAndDocumentUrl,
   HttpErrorsEnum,
   Ispecification,
-  SpecificationFileUsage,
   editableConverters,
   Imessage,
   IimportMessages,
@@ -401,26 +399,6 @@ export class ApiService {
       })
     )
   }
-  postFile(specification: string, usage: SpecificationFileUsage, formData: FormData): Observable<IimageAndDocumentUrl[]> {
-    return this.httpClient
-      .post<IimageAndDocumentUrl[]>(this.getFullUri(apiUri.upload) + `?specification=${specification}&usage=${usage}`, formData)
-      .pipe(
-        catchError((err) => {
-          this.errorHandler(err)
-          return new Observable<IimageAndDocumentUrl[]>()
-        })
-      )
-  }
-  postAddFilesUrl(specification: string, url: IimageAndDocumentUrl): Observable<IimageAndDocumentUrl[]> {
-    return this.httpClient
-      .post<IimageAndDocumentUrl[]>(this.getFullUri(apiUri.addFilesUrl) + `?specification=${specification}`, url)
-      .pipe(
-        catchError((err) => {
-          this.errorHandler(err)
-          return new Observable<IimageAndDocumentUrl[]>()
-        })
-      )
-  }
   postSpecificationContribution(spec: string, note: string): Observable<number> {
     return this.httpClient.post<number>(this.getFullUri(apiUri.specficationContribute) + `?spec=${spec}`, {
       note: note,
@@ -476,15 +454,5 @@ export class ApiService {
         return new Observable<void>()
       })
     )
-  }
-  deleteUploadedFile(specfileName: string, url: string, usage: SpecificationFileUsage): Observable<IimageAndDocumentUrl[]> {
-    return this.httpClient
-      .delete<IimageAndDocumentUrl[]>(this.getFullUri(apiUri.upload) + `?specification=${specfileName}&url=${url}&usage=${usage}`)
-      .pipe(
-        catchError((err) => {
-          this.errorHandler(err)
-          return new Observable<IimageAndDocumentUrl[]>()
-        })
-      )
   }
 }

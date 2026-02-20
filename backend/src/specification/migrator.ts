@@ -1,3 +1,7 @@
+import * as fs from 'fs'
+import * as path from 'path'
+import { join } from 'path'
+import { parse } from 'yaml'
 import { IModbusData, Idata, IfileSpecification } from './ifilespecification.js'
 import {
   FileLocation,
@@ -5,9 +9,33 @@ import {
   ModbusRegisterType,
   SPECIFICATION_FILES_VERSION,
   SPECIFICATION_VERSION,
+  getBaseFilename,
 } from '../shared/specification/index.js'
 import { LogLevelEnum, Logger } from './log.js'
 const log = new Logger('migrator')
+
+const filesUrlPrefix = 'specifications/files'
+
+function getMimeType(filename: string): string {
+  const ext = path.extname(filename).toLowerCase()
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg'
+    case '.png':
+      return 'image/png'
+    case '.gif':
+      return 'image/gif'
+    case '.svg':
+      return 'image/svg+xml'
+    case '.webp':
+      return 'image/webp'
+    case '.pdf':
+      return 'application/pdf'
+    default:
+      return 'application/octet-stream'
+  }
+}
 
 export interface IimageAndDocumentFilesType {
   version: string
@@ -30,9 +58,9 @@ const FCOffset: number = 100000
 export class Migrator {
   constructor() {}
 
-  migrate(filecontent: any): IfileSpecification {
+  migrate(filecontent: any, directory?: string): IfileSpecification {
     let count = 0
-    const maxCount = 4
+    const maxCount = 5
     while (filecontent.version != undefined && count < maxCount) {
       count++
       switch (filecontent.version) {
@@ -44,6 +72,9 @@ export class Migrator {
           break
         case '0.3':
           filecontent = this.migrate0_3to0_4(filecontent)
+          break
+        case '0.4':
+          filecontent = this.migrate0_4to0_5(filecontent, directory)
           break
         case SPECIFICATION_VERSION:
           return filecontent
@@ -180,6 +211,39 @@ export class Migrator {
   migrate0_3to0_4(filecontent: any): IfileSpecification {
     filecontent.version = '0.4'
     if (filecontent.entities) filecontent.entities.forEach((e: any) => (e.converter = e.converter.name))
+    return filecontent
+  }
+
+  migrate0_4to0_5(filecontent: any, directory?: string): IfileSpecification {
+    filecontent.version = '0.5'
+    // Embed files (base64) from files.yaml + binary files into IfileSpecification
+    if (directory && filecontent.filename) {
+      const filesYamlPath = join(directory, 'files', filecontent.filename, 'files.yaml')
+      if (fs.existsSync(filesYamlPath)) {
+        const src = fs.readFileSync(filesYamlPath, { encoding: 'utf8' })
+        let f: IimageAndDocumentFilesType = parse(src)
+        f = this.migrateFiles(f)
+        filecontent.files = f.files
+        filecontent.files.forEach((file: IimageAndDocumentUrl) => {
+          if (file.fileLocation == FileLocation.Local) {
+            const baseFilename = getBaseFilename(file.url)
+            if (baseFilename) {
+              const binaryPath = join(directory, 'files', filecontent.filename, baseFilename)
+              if (fs.existsSync(binaryPath)) {
+                file.data = fs.readFileSync(binaryPath).toString('base64')
+                file.mimeType = getMimeType(baseFilename)
+              }
+            }
+            // Normalize URL to standard format
+            file.url = join(filesUrlPrefix, filecontent.filename, getBaseFilename(file.url))
+          }
+        })
+      } else {
+        if (!filecontent.files) filecontent.files = []
+      }
+    } else {
+      if (!filecontent.files) filecontent.files = []
+    }
     return filecontent
   }
   getConvertername0_1(converter: string): string {

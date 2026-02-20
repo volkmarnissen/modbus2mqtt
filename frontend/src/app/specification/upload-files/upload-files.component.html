@@ -10,7 +10,7 @@
         <mat-panel-description>
           <div class="flexcolumns" dragndropDirective (fileDropped)="onDocumentationDropped($event)">
             @if (documentUrls.length > 0) {
-              <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="documentUrls[0].url">
+              <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="getFileDisplayUrl(documentUrls[0])">
                 {{ getBaseFilename(documentUrls[0].url) }}
               </a>
             } @else {
@@ -22,7 +22,7 @@
       <div dragndropDirective (fileDropped)="onDocumentationDropped($event)">
         @for (doc of documentUrls; track $index) {
           <div class="bordervisible" dragndropDirective (fileDropped)="onDocumentationDropped($event)">
-            <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="doc.url">
+            <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="getFileDisplayUrl(doc)">
               {{ getBaseFilename(doc.url) }}
             </a>
             @if (currentSpecification != undefined) {
@@ -99,7 +99,7 @@
       <div class="bordervisible" dragndropDirective (fileDropped)="onImageDropped($event)">
         @for (image of imageUrls; track $index) {
           <div class="nodistance" dragndropDirective (fileDropped)="onImageDropped($event)">
-            <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="image.url">
+            <a class="nodistance clickable" target="_blank" rel="noopener noreferrer" [href]="getFileDisplayUrl(image)">
               {{ getBaseFilename(image.url) }}
             </a>
             @if (currentSpecification != undefined) {

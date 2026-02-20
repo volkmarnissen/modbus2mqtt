@@ -1,16 +1,12 @@
-import { HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http'
 import { OnChanges, Component, Input, ViewChild, Output, EventEmitter, OnInit } from '@angular/core'
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { GalleryItem, ImageItem, GalleryComponent } from 'ng-gallery'
 import {
   IimageAndDocumentUrl,
-  IbaseSpecification,
   SpecificationFileUsage,
   ImodbusSpecification,
   FileLocation,
-  SpecificationStatus,
 } from '@shared/specification'
-import { ApiService } from '../../services/api-service'
 import { MatIconButton } from '@angular/material/button'
 import { MatInput } from '@angular/material/input'
 import { MatFormField, MatLabel } from '@angular/material/form-field'
@@ -52,7 +48,6 @@ import {
 })
 export class UploadFilesComponent implements OnInit, OnChanges {
   constructor(
-    private entityApiService: ApiService,
     private fb: FormBuilder
   ) {
     this.uploadFilesForm = this.fb.group({
@@ -97,38 +92,57 @@ export class UploadFilesComponent implements OnInit, OnChanges {
     this.fileBrowseHandler(input, SpecificationFileUsage.documentation)
   }
 
-  getEventMessage(event: IimageAndDocumentUrl[] | HttpEvent<IimageAndDocumentUrl[]>): any {
-    switch ((event as HttpEvent<IimageAndDocumentUrl[]>).type) {
-      case HttpEventType.UploadProgress:
-        break
-      case HttpEventType.Response:
-        return (event as HttpResponse<IimageAndDocumentUrl[]>).body
-      default:
-        return `Upload event: ${(event as HttpEvent<IbaseSpecification>).type}.`
+  private getMimeType(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase() || ''
+    switch (ext) {
+      case 'jpg': case 'jpeg': return 'image/jpeg'
+      case 'png': return 'image/png'
+      case 'gif': return 'image/gif'
+      case 'svg': return 'image/svg+xml'
+      case 'webp': return 'image/webp'
+      case 'pdf': return 'application/pdf'
+      default: return 'application/octet-stream'
     }
   }
+
   getBaseFilename(filename: string): string {
     const idx = filename.lastIndexOf('/')
     if (idx >= 0) return filename.substring(idx + 1)
     return filename
   }
+
   onFileDropped(files: FileList, usage: SpecificationFileUsage) {
-    const fd = new FormData()
-    if (this.currentSpecification) {
-      Array.prototype.forEach.call(files, (element: File) => {
-        const specFiles = this.currentSpecification!.files
-        const found = specFiles.find((u) => u.url.endsWith(element.name) && u.usage == usage)
-        if (!found) {
-          fd.append('documents', element)
+    if (!this.currentSpecification) return
+    const specFiles = this.currentSpecification.files
+    let pending = 0
+
+    Array.prototype.forEach.call(files, (file: File) => {
+      const found = specFiles.find((u) => this.getBaseFilename(u.url).toLowerCase() === file.name.toLowerCase() && u.usage === usage)
+      if (found) return
+
+      pending++
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result as string
+        // dataUrl is "data:<mimeType>;base64,<data>" - extract the base64 part
+        const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1)
+        const entry: IimageAndDocumentUrl = {
+          url: file.name,
+          fileLocation: FileLocation.Local,
+          usage: usage,
+          data: base64,
+          mimeType: this.getMimeType(file.name),
         }
-      })
-      this.entityApiService.postFile(this.currentSpecification.filename, usage, fd).subscribe((event) => {
-        this.currentSpecification!.files = event
-        if (usage == SpecificationFileUsage.img) this.generateImageGalleryItems()
-        else this.generateDocumentUrls()
-        this.updateDocumentation.next(event)
-      })
-    }
+        specFiles.push(entry)
+        pending--
+        if (pending === 0) {
+          if (usage === SpecificationFileUsage.img) this.generateImageGalleryItems()
+          else this.generateDocumentUrls()
+          this.updateDocumentation.next(specFiles)
+        }
+      }
+      reader.readAsDataURL(file)
+    })
   }
   onImageDropped(event: FileList) {
     this.onFileDropped(event, SpecificationFileUsage.img)
@@ -140,23 +154,17 @@ export class UploadFilesComponent implements OnInit, OnChanges {
   private addDocument(control: FormControl, usage: SpecificationFileUsage) {
     const url = control.value
     if (url && this.currentSpecification) {
-      const found = this.currentSpecification.files.find((f) => f.url == url)
+      const found = this.currentSpecification.files.find((f) => f.url === url)
       if (!found) {
-        this.entityApiService
-          .postAddFilesUrl(
-            this.currentSpecification.status == SpecificationStatus.new ? '_new' : this.currentSpecification.filename,
-            {
-              url: url,
-              fileLocation: FileLocation.Global,
-              usage: usage,
-            }
-          )
-          .subscribe((files) => {
-            this.currentSpecification!.files = files as IimageAndDocumentUrl[]
-            if (usage == SpecificationFileUsage.img) this.generateImageGalleryItems()
-            else this.generateDocumentUrls()
-            this.updateDocumentation.next(files)
-          })
+        const entry: IimageAndDocumentUrl = {
+          url: url,
+          fileLocation: FileLocation.Global,
+          usage: usage,
+        }
+        this.currentSpecification.files.push(entry)
+        if (usage === SpecificationFileUsage.img) this.generateImageGalleryItems()
+        else this.generateDocumentUrls()
+        this.updateDocumentation.next(this.currentSpecification.files)
       }
     }
   }
@@ -170,6 +178,13 @@ export class UploadFilesComponent implements OnInit, OnChanges {
   }
   enableAddButton(event: Event, btn: MatIconButton) {
     btn.disabled = !event.target || (event.target as any).value == null || (event.target as any).value == ''
+  }
+
+  getFileDisplayUrl(file: IimageAndDocumentUrl): string {
+    if (file.fileLocation === FileLocation.Local && file.data) {
+      return `data:${file.mimeType || 'application/octet-stream'};base64,${file.data}`
+    }
+    return file.url
   }
 
   generateDocumentUrls() {
@@ -186,7 +201,8 @@ export class UploadFilesComponent implements OnInit, OnChanges {
     const rd: IimageAndDocumentUrl[] = []
     this.currentSpecification?.files.forEach((img) => {
       if (img.usage == SpecificationFileUsage.img) {
-        rc.push(new ImageItem({ src: img.url, thumb: img.url }))
+        const displayUrl = this.getFileDisplayUrl(img)
+        rc.push(new ImageItem({ src: displayUrl, thumb: displayUrl }))
         rd.push(img)
       }
     })
@@ -194,13 +210,13 @@ export class UploadFilesComponent implements OnInit, OnChanges {
     this.galleryItems = rc
   }
   deleteFile(uploadedFile: IimageAndDocumentUrl) {
-    if (this.currentSpecification)
-      this.entityApiService
-        .deleteUploadedFile(this.currentSpecification.filename, uploadedFile.url, uploadedFile.usage)
-        .subscribe((files) => {
-          this.currentSpecification!.files = files
-          if (uploadedFile.usage == SpecificationFileUsage.img) this.generateImageGalleryItems()
-          else this.generateDocumentUrls()
-        })
+    if (!this.currentSpecification) return
+    const idx = this.currentSpecification.files.indexOf(uploadedFile)
+    if (idx >= 0) {
+      this.currentSpecification.files.splice(idx, 1)
+      if (uploadedFile.usage === SpecificationFileUsage.img) this.generateImageGalleryItems()
+      else this.generateDocumentUrls()
+      this.updateDocumentation.next(this.currentSpecification.files)
+    }
   }
 }

@@ -228,7 +228,7 @@ export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntit
 // Removed incorrect global Array interface augmentation that broke TypeScript's
 // built-in Array types and caused widespread compile errors.
 
-export const SPECIFICATION_VERSION = '0.4'
+export const SPECIFICATION_VERSION = '0.5'
 export const SPECIFICATION_FILES_VERSION = '0.1'
 
 export enum SpecificationStatus {
@@ -262,6 +262,8 @@ export interface IimageAndDocumentUrl {
   url: string
   fileLocation: FileLocation
   usage: SpecificationFileUsage
+  data?: string // base64-encoded content (Local files)
+  mimeType?: string // e.g., 'image/jpeg'
 }
 export interface ISpecificationText {
   textId: string
