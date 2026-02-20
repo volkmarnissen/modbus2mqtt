@@ -76,6 +76,10 @@ export class MqttConnector {
     } else callback(false, 'no mqttserverlurl passed')
   }
 
+  isConnected(): boolean {
+    return this.client != undefined && this.client.connected
+  }
+
   getMqttClient(onConnectCallback: (connection: MqttClient) => void): void {
     this.onConnectCallbacks.push(onConnectCallback)
     this.connectMqtt(undefined)

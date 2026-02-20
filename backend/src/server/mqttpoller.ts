@@ -26,6 +26,10 @@ export class MqttPoller {
   // Depending on the pollinterval of the slaves it triggers publication of the current state of the slave
   private poll(bus: Bus): Promise<void> {
     return new Promise<void>((resolve) => {
+      if (!this.connector.isConnected()) {
+        resolve()
+        return
+      }
       const needPolls: Slave[] = []
 
       bus.getSlaves().forEach((slave) => {
