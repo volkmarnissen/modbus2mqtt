@@ -141,7 +141,7 @@ export class Modbus {
       if (spec) {
         Modbus.getModbusSpecificationFromData(task, modbusAPI, slave.slaveid, spec, rc)
       } else {
-        const msg = 'No specification passed  ' + specificationFilename
+        const msg = 'Specification not found: ' + specificationFilename
         failedFunction(new Error(msg))
       }
     } else {

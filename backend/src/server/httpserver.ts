@@ -272,7 +272,6 @@ export class HttpServer extends HttpServerBase {
       let ghToken = Config.getConfiguration().githubPersonalToken
       ghToken = ghToken == undefined ? '' : ghToken
       new M2mGitHub(ghToken, ConfigSpecification.getPublicDir()).fetchPublicFiles()
-      new ConfigSpecification().readYaml()
       this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify({ result: 'OK' }))
     })
 
