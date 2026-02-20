@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'Version (without leading v). If omitted, read from package.json.'
+        description: 'Version: patch|minor|major or explicit (e.g. 1.2.3). If omitted, read from package.json.'
         required: false
         type: string
     outputs:
@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (without leading v). If omitted, read from package.json.'
+        description: 'Version: patch|minor|major or explicit (e.g. 1.2.3). If omitted, read from package.json.'
         required: false
         type: string
 
@@ -41,17 +41,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      - name: Read version
+      - name: Resolve version
         id: setver
         run: |
+          set -euo pipefail
           if [ -n "${{ inputs.version }}" ]; then
-            echo "resolved_version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            git config --global user.email "noreply@github.com"
+            git config --global user.name "Workflow User"
+            resolved="$(npm version ${{ inputs.version }} | sed -e 's/^v//g')"
+            git push --follow-tags
           else
-            PKG_VERSION=$(node -p "require('./package.json').version")
-            echo "resolved_version=$PKG_VERSION" >> $GITHUB_OUTPUT
+            resolved="$(node -p "require('./package.json').version")"
           fi
-          echo "Using version: $(grep resolved_version $GITHUB_OUTPUT)"
+          echo "resolved_version=$resolved" >> $GITHUB_OUTPUT
+          echo "Using version: $resolved"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
