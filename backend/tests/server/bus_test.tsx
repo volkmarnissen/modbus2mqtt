@@ -36,11 +36,10 @@ afterEach(() => {
 beforeAll(() => {
   vi.restoreAllMocks()
   vi.clearAllMocks()
-  initBussesForTest()
-  setConfigsDirsForTest()
   // Use a per-test temporary config/data directory to avoid races
   tempHelper = new TempConfigDirHelper('bus_test')
   tempHelper.setup()
+  initBussesForTest()
   new ConfigSpecification().readYaml()
   return new Promise<void>((resolve, reject) => {
     new Config()

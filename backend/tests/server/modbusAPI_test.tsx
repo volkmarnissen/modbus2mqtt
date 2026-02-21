@@ -22,11 +22,10 @@ let tempHelper: TempConfigDirHelper
 beforeAll(async () => {
   vi.restoreAllMocks()
   vi.clearAllMocks()
-  initBussesForTest()
-  setConfigsDirsForTest()
   // Isolate this suite with a temp config/data directory
   tempHelper = new TempConfigDirHelper('modbusAPI_test')
   tempHelper.setup()
+  initBussesForTest()
   new ConfigSpecification().readYaml()
   await new Config().readYamlAsync()
 })

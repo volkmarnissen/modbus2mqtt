@@ -365,9 +365,25 @@ export class TempConfigDirHelper {
     this.tempDataDir = join(this.tempRoot, 'data-dir')
   }
 
-  /** Recursively copy a directory */
+  /** Recursively copy a directory and ensure copies are writable */
   private copyDirSync(src: string, dest: string): void {
     fs.cpSync(src, dest, { recursive: true })
+    this.makeWritableRecursive(dest)
+  }
+
+  /** Ensure all files and directories are writable (source may be readonly) */
+  private makeWritableRecursive(dir: string): void {
+    const stat = fs.statSync(dir)
+    fs.chmodSync(dir, stat.mode | 0o700)
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        this.makeWritableRecursive(fullPath)
+      } else {
+        const fileStat = fs.statSync(fullPath)
+        fs.chmodSync(fullPath, fileStat.mode | 0o600)
+      }
+    }
   }
 
   /** Set up temp dirs and switch Config/ConfigSpecification to use them */

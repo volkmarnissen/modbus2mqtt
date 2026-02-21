@@ -8,13 +8,17 @@ import { join } from 'path'
 import AdmZip from 'adm-zip'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { setConfigsDirsForTest } from './configsbase.js'
+import { TempConfigDirHelper } from './testhelper.js'
 setConfigsDirsForTest()
-new ConfigSpecification().readYaml()
 
 let httpServer: HttpServer
+let tempHelper: TempConfigDirHelper
 
 const oldAuthenticate: (req: any, res: any, next: () => void) => void = HttpServer.prototype.authenticate
 beforeAll(() => {
+  tempHelper = new TempConfigDirHelper('httpserver_fakeTimer')
+  tempHelper.setup()
+  new ConfigSpecification().readYaml()
   return new Promise<void>((resolve) => {
     const cfg = new Config()
     cfg.readYamlAsync().then(() => {
@@ -30,6 +34,7 @@ beforeAll(() => {
 })
 afterAll(() => {
   HttpServer.prototype.authenticate = oldAuthenticate
+  if (tempHelper) tempHelper.cleanup()
 })
 
 it('GET download/local', async () => {
