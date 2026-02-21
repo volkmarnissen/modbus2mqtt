@@ -177,6 +177,7 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
 
   writeItem(key: string, item: IfileSpecification): void {
     this.writeSpecAsJson(this.getLocalJsonPath(key), item)
+    Migrator.cleanOldFiles(key, this.getLocalSpecDir())
   }
 
   writeSpecAsJson(filepath: string, spec: IfileSpecification): void {
@@ -238,14 +239,6 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
     }
   }
 
-  cleanOldYaml(filename: string): void {
-    const yamlPath = this.getLocalYamlPath(filename)
-    if (fs.existsSync(yamlPath)) {
-      try {
-        fs.unlinkSync(yamlPath)
-      } catch { /* ignore */ }
-    }
-  }
 
   private cleanSpecForWriting(spec: IfileSpecification): void {
     spec.entities.forEach((e) => {

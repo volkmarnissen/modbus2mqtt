@@ -283,4 +283,15 @@ export class Migrator {
     }
     return fileContent
   }
+
+  static cleanOldFiles(filename: string, directory: string): void {
+    const yamlPath = join(directory, filename + '.yaml')
+    if (fs.existsSync(yamlPath)) {
+      try {
+        fs.unlinkSync(yamlPath)
+      } catch {
+        /* ignore */
+      }
+    }
+  }
 }

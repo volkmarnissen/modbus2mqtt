@@ -218,9 +218,8 @@ export class ConfigSpecification {
       }
     }
 
-    // 4. Write + cleanup
+    // 4. Write (cleanup of old YAML is handled by writeItem via Migrator)
     persistence.writeItem(spec.filename, spec)
-    persistence.cleanOldYaml(spec.filename)
 
     // 5. Update in-memory array
     const idx = ConfigSpecification.specifications.findIndex((cspec) => {
