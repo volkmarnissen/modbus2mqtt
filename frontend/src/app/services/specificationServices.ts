@@ -1,6 +1,6 @@
 import {
-  IbaseSpecification,
   Imessage,
+  ISpecificationTexts,
   MessageTypes,
   SpecificationStatus,
   getSpecificationI18nEntityName,
@@ -18,7 +18,7 @@ export class SpecificationServices {
 
     return this.apiService.getForSpecificationValidation(specfilename, this.mqttdiscoverylanguage)
   }
-  getValidationMessage(spec: IbaseSpecification, message: Imessage): string {
+  getValidationMessage(spec: { i18n: ISpecificationTexts[] }, message: Imessage): string {
     switch (message.type) {
       case MessageTypes.noDocumentation:
         return $localize`No documentation file or URL`

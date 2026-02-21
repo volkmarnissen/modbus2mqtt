@@ -228,7 +228,7 @@ export function instanceOfIModbusEntity(object: unknown): object is ImodbusEntit
 // Removed incorrect global Array interface augmentation that broke TypeScript's
 // built-in Array types and caused widespread compile errors.
 
-export const SPECIFICATION_VERSION = '0.4'
+export const SPECIFICATION_VERSION = '0.5'
 export const SPECIFICATION_FILES_VERSION = '0.1'
 
 export enum SpecificationStatus {
@@ -262,6 +262,23 @@ export interface IimageAndDocumentUrl {
   url: string
   fileLocation: FileLocation
   usage: SpecificationFileUsage
+  data?: string // base64-encoded content (Local files)
+  mimeType?: string // e.g., 'image/jpeg'
+}
+
+export interface IfileReference {
+  url: string
+  usage: SpecificationFileUsage
+}
+
+export interface IspecificationSummary {
+  filename: string
+  model?: string
+  manufacturer?: string
+  files: IfileReference[]
+  status: SpecificationStatus
+  i18n: ISpecificationTexts[]
+  pullUrl?: string
 }
 export interface ISpecificationText {
   textId: string
@@ -301,7 +318,7 @@ export interface ImodbusSpecificationAndMessages {
   messages: string[]
 }
 export function getSpecificationI18nText(
-  spec: IbaseSpecification,
+  spec: Pick<IbaseSpecification, 'i18n'>,
   language: string,
   textId: string,
   noFallbackLanguage: boolean = false
@@ -351,14 +368,14 @@ export function deleteSpecificationI18nText(spec: IbaseSpecification, textId: st
 }
 
 export function getSpecificationI18nName(
-  spec: IbaseSpecification,
+  spec: Pick<IbaseSpecification, 'i18n'>,
   language: string,
   noFallbackLanguage: boolean = false
 ): string | null {
   return getSpecificationI18nText(spec, language, 'name', noFallbackLanguage)
 }
 export function getSpecificationI18nEntityName(
-  spec: IbaseSpecification,
+  spec: Pick<IbaseSpecification, 'i18n'>,
   language: string,
   entityId: number,
   noFallbackLanguage: boolean = false
@@ -366,7 +383,7 @@ export function getSpecificationI18nEntityName(
   return getSpecificationI18nText(spec, language, 'e' + entityId, noFallbackLanguage)
 }
 export function getSpecificationI18nEntityOptionName(
-  spec: IbaseSpecification,
+  spec: Pick<IbaseSpecification, 'i18n'>,
   language: string,
   entityId: number,
   modbusValue: number,
@@ -407,7 +424,7 @@ export function deleteSpecificationI18nEntityNameAndOptions(spec: IbaseSpecifica
 }
 
 export function getSpecificationI18nEntityOptionId(
-  spec: IbaseSpecification,
+  spec: Pick<IbaseSpecification, 'i18n'>,
   language: string,
   entityId: number,
   mqttValue: string,

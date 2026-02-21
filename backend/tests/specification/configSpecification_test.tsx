@@ -5,9 +5,9 @@ import * as fs from 'fs'
 import { join } from 'path'
 import { configDir, singleMutex, dataDir } from './configsbase.js'
 import {
-  IbaseSpecification,
   SPECIFICATION_VERSION,
   SpecificationFileUsage,
+  FileLocation,
   SpecificationStatus,
   getFileNameFromName,
   getSpecificationI18nName,
@@ -42,12 +42,12 @@ it('check device type status', () => {
   const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
   const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
   fs.mkdirSync(publicSpecdir, { recursive: true })
-  const pwtl1 = join(publicSpecdir, 'waterleveltransmitter.yaml')
-  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pwtl1)
-  const pdy = join(publicSpecdir, 'deyeinverter.yaml')
-  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pdy)
+  const pwtl1 = join(publicSpecdir, 'waterleveltransmitter.json')
+  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), pwtl1)
+  const pdy = join(publicSpecdir, 'deyeinverter.json')
+  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), pdy)
 
-  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
+  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(localSpecdir, 'waterleveltransmitter1.json'))
 
   const configSpec = new ConfigSpecification()
   configSpec.readYaml()
@@ -60,8 +60,8 @@ it('check device type status', () => {
 })
 it('write/Migrate', () => {
   fs.copyFileSync(
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter.yaml'),
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.yaml')
+    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter.json'),
+    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.json')
   )
 
   const configSpec = new ConfigSpecification()
@@ -71,16 +71,14 @@ it('write/Migrate', () => {
   configSpec.readYaml()
   wl = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')!
   expect(wl.version).toBe(SPECIFICATION_VERSION)
-  fs.copyFileSync(
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.yaml'),
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter.yaml')
-  )
-  fs.unlinkSync(join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.yaml'))
+  fs.unlinkSync(join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.json'))
 })
 
 function cleanDimplexLocal() {
-  const filePath = join(ConfigSpecification.getLocalDir() + '/specifications', 'dimplexpco5.yaml')
-  if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+  const yamlPath = join(ConfigSpecification.getLocalDir() + '/specifications', 'dimplexpco5.yaml')
+  const jsonPath = join(ConfigSpecification.getLocalDir() + '/specifications', 'dimplexpco5.json')
+  if (fs.existsSync(yamlPath)) fs.unlinkSync(yamlPath)
+  if (fs.existsSync(jsonPath)) fs.unlinkSync(jsonPath)
   fs.rmSync(join(ConfigSpecification.getLocalDir() + '/specifications/files/dimplexpco5'), { recursive: true, force: true })
 }
 
@@ -92,9 +90,10 @@ it('write cloned file', () => {
 
   configSpec.writeSpecificationFromFileSpec(wl, wl.filename)
   const specsDir = join(ConfigSpecification.getLocalDir() + '/specifications')
-  expect(fs.existsSync(join(specsDir, 'dimplexpco5.yaml'))).toBeTruthy()
-  expect(fs.existsSync(join(specsDir, 'files/dimplexpco5', 'files.yaml'))).toBeTruthy()
-  expect(fs.existsSync(join(specsDir, 'files/dimplexpco5', 'IMG_1552.jpg'))).toBeTruthy()
+  expect(fs.existsSync(join(specsDir, 'dimplexpco5.json'))).toBeTruthy()
+  // Files are now embedded as base64 in the JSON spec (no separate files.yaml)
+  const written = JSON.parse(fs.readFileSync(join(specsDir, 'dimplexpco5.json'), 'utf8'))
+  expect(written.files.length).toBeGreaterThan(0)
   configSpec.readYaml()
   wl = ConfigSpecification.getSpecificationByFilename('dimplexpco5')!
   expect(wl.version).toBe(SPECIFICATION_VERSION)
@@ -117,242 +116,197 @@ it('getSpecificationI18nName ', () => {
   expect(fn).toBe('asdf+-_.')
 })
 
-it('add new specification, add files, set filename', async () => {
+it('add new specification, add files (base64), set filename', () => {
   const cfgSpec = new ConfigSpecification()
   cfgSpec.readYaml()
 
-  const fdir = join(ConfigSpecification.getLocalDir(), '/specifications/files')
-  const fdirNew = join(fdir, '_new')
-  const fdirAddSpecTest = join(fdir, 'addspectest')
-  fs.rmSync(fdirNew, { recursive: true, force: true })
-  fs.rmSync(fdirAddSpecTest, { recursive: true, force: true })
-  fs.rmSync(join(ConfigSpecification.getLocalDir(), '/specifications/files', 'addspectest.yaml'), { recursive: true, force: true })
-  fs.mkdirSync(fdirNew, { recursive: true })
-  fs.writeFileSync(join(fdirNew, 'test.pdf'), 'test')
   const mspec = newSpecification
-  const spec = ConfigSpecification.toFileSpecification(mspec)
-  cfgSpec.appendSpecificationFiles(spec.filename, ['test.pdf'], SpecificationFileUsage.documentation)
-  fs.writeFileSync(join(fdirNew, 'test.jpg'), 'test')
-  cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img)
-  let g = ConfigSpecification.getSpecificationByFilename('_new')
-  expect(g).not.toBeNull()
-  expect(g!.files.find((f) => f.url.endsWith('/_new/test.jpg'))).not.toBeNull()
-  expect(g!.files.find((f) => f.url.endsWith('/_new/test.pdf'))).not.toBeNull()
-  expect(g).not.toBeNull()
-  await cfgSpec.appendSpecificationFiles(spec.filename, ['test.jpg'], SpecificationFileUsage.img).then(() => {
-    mspec.filename = 'addspectest'
-    let wasCalled = false
+  // Add files as base64 directly (no separate upload)
+  mspec.files = [
+    { url: 'test.pdf', fileLocation: FileLocation.Local, usage: SpecificationFileUsage.documentation, data: Buffer.from('test').toString('base64'), mimeType: 'application/pdf' },
+    { url: 'test.jpg', fileLocation: FileLocation.Local, usage: SpecificationFileUsage.img, data: Buffer.from('test').toString('base64'), mimeType: 'image/jpeg' },
+  ]
+  // _new returns an empty template (files are base64-embedded in the spec, not on disk)
+  const g0 = ConfigSpecification.getSpecificationByFilename('_new')
+  expect(g0).toBeDefined()
+  expect(g0!.files).toHaveLength(0)
+  expect(g0!.status).toBe(SpecificationStatus.new)
 
-    cfgSpec.writeSpecification(
-      mspec,
-      (filename) => {
-        expect(filename).toBe(mspec.filename)
-        wasCalled = true
-      },
-      null
-    )
-    expect(wasCalled).toBeTruthy()
-    expect(fs.existsSync(fdirNew)).toBeFalsy()
-    g = ConfigSpecification.getSpecificationByFilename('addspectest')
-    expect(g).not.toBeNull()
-    expect(g!.files.length).toBe(2)
-    spec.filename = 'modifiedfilename'
-    wasCalled = false
-    cfgSpec.writeSpecification(
-      mspec,
-      (filename) => {
-        expect(filename).toBe(mspec.filename)
-        wasCalled = true
-      },
-      null
-    )
-    cfgSpec.deleteSpecification('addspectest')
-  })
+  mspec.filename = 'addspectest'
+  let wasCalled = false
+
+  cfgSpec.writeSpecification(
+    mspec,
+    (filename) => {
+      expect(filename).toBe(mspec.filename)
+      wasCalled = true
+    },
+    null
+  )
+  expect(wasCalled).toBeTruthy()
+  const g = ConfigSpecification.getSpecificationByFilename('addspectest')
+  expect(g).not.toBeNull()
+  expect(g!.files.length).toBe(2)
+
+  wasCalled = false
+  cfgSpec.writeSpecification(
+    mspec,
+    (filename) => {
+      expect(filename).toBe(mspec.filename)
+      wasCalled = true
+    },
+    null
+  )
+  cfgSpec.deleteSpecification('addspectest')
 })
 it('contribution', () => {
   singleMutex.runExclusive(() => {
     const cfg = new ConfigSpecification()
     const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
-    const contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
-    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
     const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
     fs.mkdirSync(publicSpecdir, { recursive: true })
 
     cleanWaterLevelTransmitter1(publicSpecdir)
-    cleanWaterLevelTransmitter1(contributedSpecdir)
-    if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir)
-    fs.copyFileSync(
-      join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
-      join(localSpecdir, 'files/waterleveltransmitter1/files.yaml')
-    )
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(localSpecdir, 'waterleveltransmitter1.json'))
     cfg.readYaml()
     let g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g).toBeDefined()
     expect(g?.status).toBe(SpecificationStatus.added)
 
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    // Mark as contributed — spec stays in local dir, status persisted in JSON
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeFalsy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
-
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Verify contributed status survives readYaml() round-trip
+    cfg.readYaml()
+    g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
+    expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Back to added — still in local dir
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.added, undefined)
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.added)
+
+    // Back to contributed
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Mark as published — local files deleted
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.published, 1)
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
-
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))).toBeFalsy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeFalsy()
     expect(g?.status).toBe(SpecificationStatus.published)
+
     cleanWaterLevelTransmitter1(publicSpecdir)
-    cleanWaterLevelTransmitter1(contributedSpecdir)
     cleanWaterLevelTransmitter1(localSpecdir)
   })
 })
 
-function cleanWaterLevelTransmitter1(contributedSpecdir: string) {
-  if (fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1')))
-    fs.rmSync(join(contributedSpecdir, 'files/waterleveltransmitter1'), { recursive: true })
-  if (fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml')))
-    fs.unlinkSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))
+function cleanWaterLevelTransmitter1(specdir: string) {
+  if (fs.existsSync(join(specdir, 'files/waterleveltransmitter1')))
+    fs.rmSync(join(specdir, 'files/waterleveltransmitter1'), { recursive: true })
+  if (fs.existsSync(join(specdir, 'waterleveltransmitter1.yaml')))
+    fs.unlinkSync(join(specdir, 'waterleveltransmitter1.yaml'))
+  if (fs.existsSync(join(specdir, 'waterleveltransmitter1.json')))
+    fs.unlinkSync(join(specdir, 'waterleveltransmitter1.json'))
 }
 it('contribution cloned', () => {
   singleMutex.runExclusive(() => {
     const cfg = new ConfigSpecification()
     const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
     const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
-    const contributedSpecdir = ConfigSpecification.getContributedDir() + '/specifications'
     fs.mkdirSync(localSpecdir, { recursive: true })
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(publicSpecdir, 'waterleveltransmitter1.yaml'))
-    cleanWaterLevelTransmitter1(contributedSpecdir)
-    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
-    const publicfilesDir = join(publicSpecdir, 'files/waterleveltransmitter1')
-
-    if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true })
-    if (!fs.existsSync(publicfilesDir)) fs.mkdirSync(publicfilesDir, { recursive: true })
-    fs.copyFileSync(
-      join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
-      join(localSpecdir, 'files/waterleveltransmitter1/files.yaml')
-    )
-    fs.copyFileSync(
-      join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
-      join(publicSpecdir, 'files/waterleveltransmitter1/files.yaml')
-    )
+    fs.mkdirSync(publicSpecdir, { recursive: true })
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(localSpecdir, 'waterleveltransmitter1.json'))
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(publicSpecdir, 'waterleveltransmitter1.json'))
     cfg.readYaml()
     let g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g).toBeDefined()
     expect(g?.status).toBe(SpecificationStatus.cloned)
 
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(publicSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(publicSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    // Mark cloned spec as contributed — stays in local dir
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeFalsy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
-
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Verify contributed status survives readYaml() round-trip
+    cfg.readYaml()
+    g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
+    expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Back to cloned (public exists)
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.cloned, undefined)
-    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(localSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.cloned)
+
+    // Back to contributed
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.contributed, 1)
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))).toBeTruthy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeTruthy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeTruthy()
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g?.status).toBe(SpecificationStatus.contributed)
+
+    // Mark as published — local files deleted
     cfg.changeContributionStatus('waterleveltransmitter1', SpecificationStatus.published, 1)
     g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
-
-    expect(fs.existsSync(join(contributedSpecdir, 'waterleveltransmitter1.yaml'))).toBeFalsy()
-    expect(fs.existsSync(join(contributedSpecdir, 'files/waterleveltransmitter1/files.yaml'))).toBeFalsy()
+    expect(fs.existsSync(join(localSpecdir, 'waterleveltransmitter1.json'))).toBeFalsy()
     expect(g?.status).toBe(SpecificationStatus.published)
+
     cleanWaterLevelTransmitter1(publicSpecdir)
-    cleanWaterLevelTransmitter1(contributedSpecdir)
     cleanWaterLevelTransmitter1(localSpecdir)
   })
 })
 
-it.skip('importSpecificationZip existing Specification', () => {
-  return new Promise<void>((resolve) => {
-    const zipFile = 'spec.zip'
-    const s = fs.createWriteStream(zipFile)
-    ConfigSpecification.createZipFromSpecification('waterleveltransmitter', s)
-    const errors = ConfigSpecification.importSpecificationZip(zipFile)
-    expect(errors.errors).not.toBe('')
-    resolve()
-  })
+it('importSpecificationJson with existing spec shows warning', () => {
+  const cfgSpec = new ConfigSpecification()
+  cfgSpec.readYaml()
+  const existing = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')
+  expect(existing).toBeDefined()
+
+  const errors = ConfigSpecification.importSpecificationJson(existing!)
+  expect(errors.errors).toBe('')
+  expect(errors.warnings).toContain('already exists')
 })
 
-function removeLocal(specPath: string, specFilesPath: string) {
-  fs.rmSync(specFilesPath, { recursive: true, force: true })
-  try {
-    fs.rmSync(specPath, { recursive: true, force: true })
-  } catch (e: any) {
-    if (e.code != 'ENOENT') console.log('error ' + e.message)
+it('importSpecificationJson with new spec', () => {
+  const cfgSpec = new ConfigSpecification()
+  cfgSpec.readYaml()
+
+  const newSpec = {
+    filename: 'importtest',
+    entities: [],
+    files: [],
+    i18n: [{ key: 'name', texts: [{ language: 'en', text: 'Import Test' }] }],
+    version: SPECIFICATION_VERSION,
+    testdata: { holdingRegisters: [], coils: [], analogInputs: [], discreteInputs: [] },
   }
-}
-it('importSpecificationZip ', () => {
-  return new Promise<void>((resolve) => {
-    const filename = 'eastronsdm720-m'
-    const zipFile = join(ConfigSpecification.configDir, filename + '.zip')
-    const specPath = ConfigSpecification['getSpecificationPath']({ filename: filename } as IbaseSpecification)
-    const specFilesPath = ConfigSpecification['getLocalFilesPath'](filename)
 
-    removeLocal(specPath, specFilesPath)
+  const errors = ConfigSpecification.importSpecificationJson(newSpec)
+  expect(errors.errors).toBe('')
+  expect(errors.warnings).toBe('')
 
-    // Create the specification locally to be able to create the zip file in the next step
+  const imported = ConfigSpecification.getSpecificationByFilename('importtest')
+  expect(imported).toBeDefined()
+  expect(imported!.filename).toBe('importtest')
+  expect(imported!.status).toBe(SpecificationStatus.added)
 
-    const s = fs.createWriteStream(zipFile)
-    s.on('end', () => {
-      console.log('Write finished')
-    })
-    s.on('error', () => {
-      console.log('Write finished')
-    })
-    s.on('finish', () => {
-      s.end()
-      // Remove specification to be able to import it w/o error
-      removeLocal(specPath, specFilesPath)
+  // Cleanup
+  cfgSpec.deleteSpecification('importtest')
+})
 
-      ConfigSpecification.importSpecificationZip(zipFile)
-      expect(fs.existsSync(specPath)).toBeTruthy()
-      expect(fs.existsSync(specFilesPath)).toBeTruthy()
-      removeLocal(specPath, specFilesPath)
-      resolve()
-    })
+it('importSpecificationJson validates required fields', () => {
+  let errors = ConfigSpecification.importSpecificationJson(null)
+  expect(errors.errors).toContain('Invalid JSON data')
 
-    // Ensure public spec + files exist in temp data dir for zip creation
-    const publicFilesPath = ConfigSpecification['getPublicFilesPath'](filename)
-    const publicSpecPath = ConfigSpecification['getPublicSpecificationPath']({ filename } as IbaseSpecification)
-    fs.mkdirSync(publicFilesPath, { recursive: true })
-    fs.mkdirSync(join(publicSpecPath, '..'), { recursive: true })
-    try {
-      fs.writeFileSync(join(publicFilesPath, 'files.yaml'), 'files:\n', { encoding: 'utf8' })
-    } catch {}
-    try {
-      fs.writeFileSync(publicSpecPath, `filename: ${filename}\nentities: []\n`, { encoding: 'utf8' })
-    } catch {}
+  errors = ConfigSpecification.importSpecificationJson({ entities: [] })
+  expect(errors.errors).toContain('filename')
 
-    ConfigSpecification.createZipFromSpecification(filename, s)
-    // s.on( finish will be called after createZipFromSpecification
-  })
+  errors = ConfigSpecification.importSpecificationJson({ filename: 'test' })
+  expect(errors.errors).toContain('entities')
 })

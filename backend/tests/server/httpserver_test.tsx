@@ -3,17 +3,16 @@ import { parse } from 'yaml'
 import {
   ImodbusEntity,
   ModbusRegisterType,
-  IimageAndDocumentUrl,
   IdentifiedStates,
   HttpErrorsEnum,
-  FileLocation,
   Converters,
 } from '../../src/shared/specification/index.js'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { FakeMqtt, FakeModes, initBussesForTest } from './configsbase.js'
 import supertest from 'supertest'
 import * as fs from 'fs'
-import { ImodbusSpecification, SpecificationFileUsage, getSpecificationI18nName } from '../../src/shared/specification/index.js'
+import { ImodbusSpecification, getSpecificationI18nName } from '../../src/shared/specification/index.js'
 import { Bus } from '../../src/server/bus.js'
 import { VERSION } from 'ts-node'
 import {
@@ -132,7 +131,7 @@ beforeAll(() => {
         HttpServer.prototype.authenticate = (req, res, next) => {
           next()
         }
-        httpServer = new HttpServer(join(Config.configDir, 'angular'))
+        httpServer = new HttpServer(join(ConfigPersistence.configDir, 'angular'))
 
         httpServer.setModbusCacheAvailable()
         httpServer.init()
@@ -253,7 +252,19 @@ it('supervisor login', async () => {
 it('GET /' + apiUri.specifications, async () => {
   const response = await supertest(httpServer['app']).get(apiUri.specifications).expect(200)
   expect(response.body.length).toBeGreaterThan(0)
-  expect(response.body[0]).toHaveProperty('filename')
+  const summary = response.body[0]
+  expect(summary).toHaveProperty('filename')
+  expect(summary).toHaveProperty('status')
+  expect(summary).toHaveProperty('i18n')
+  expect(summary).toHaveProperty('files')
+  expect(summary).not.toHaveProperty('entities')
+  expect(summary).not.toHaveProperty('identified')
+  if (summary.files.length > 0) {
+    expect(summary.files[0]).toHaveProperty('url')
+    expect(summary.files[0]).toHaveProperty('usage')
+    expect(summary.files[0]).not.toHaveProperty('data')
+    expect(summary.files[0]).not.toHaveProperty('fileLocation')
+  }
 })
 
 test('GET /converters', async () => {
@@ -307,20 +318,17 @@ describe('http ADD/DELETE /busses', () => {
     Bus.addBus = orig
   })
 
-  test('post specification zip', async () => {
-    // Expect 406 with a non-zip body; force text parsing to avoid JSON parser errors
+  test('post specification json with invalid data', async () => {
     await supertest(httpServer['app'])
       .post(apiUri.uploadSpec)
-      .accept('text/plain')
-      .send('Just some text to make sure it fails')
-      .set('Content-Type', 'application/zip')
+      .send({ noFilename: true })
       .parse((res, cb) => {
         let data = ''
         res.setEncoding('utf8')
         res.on('data', (chunk) => (data += chunk))
         res.on('end', () => cb(null, data))
       })
-      .expect(HttpErrorsEnum.ErrNotAcceptable)
+      .expect(HttpErrorsEnum.ErrBadRequest)
   })
   test('POST /mqtt/validate', async () => {
     const oldConfig = Config.getConfiguration()
@@ -350,7 +358,7 @@ describe('http POST', () => {
 
     const spec1: ImodbusSpecification = Object.assign(spec)
 
-    const p = ConfigSpecification['getSpecificationPath'](spec1)
+    const p = ConfigSpecification.getLocalDir() + '/specifications/' + spec1.filename + '.yaml'
     if (fs.existsSync(p)) fs.unlinkSync(p)
     const url = apiUri.specfication + '?busid=0&slaveid=2&originalFilename=waterleveltransmitter'
 
@@ -378,7 +386,7 @@ describe('http POST', () => {
       .send(spec1)
       .expect(HttpErrorsEnum.OkCreated)
     const found = ConfigSpecification.getSpecificationByFilename(spec1.filename)! as any
-    const newFilename = ConfigSpecification['getSpecificationPath'](response.body)
+    const newFilename = ConfigSpecification.getLocalDir() + '/specifications/' + response.body.filename + '.json'
     expect(fs.existsSync(newFilename)).toBeTruthy()
     expect(getSpecificationI18nName(found!, 'en')).toBe('Water Level Transmitter')
     expect(response)
@@ -415,57 +423,7 @@ describe('http POST', () => {
     expect(Bus.getBus(0)!.properties.connectionData.timeout).toBe(100)
   })
 
-  test('POST /upload: upload files, delete uploaded file, add url, delete url', async () => {
-    const lspec = ConfigSpecification.getLocalDir() + '/specifications/'
-    const _response = await supertest(httpServer['app'])
-      .post('/api/upload?specification=waterleveltransmitter&usage=doc')
-      .attach('documents', Buffer.from('whatever'), { filename: testPdf })
-      .attach('documents', Buffer.from('whatever2'), { filename: test1 })
-    const d = _response.body as IimageAndDocumentUrl[]
-    expect(
-      d.find((ul) => ul.url.endsWith('waterleveltransmitter' + '/' + testPdf) && ul.usage === SpecificationFileUsage.documentation)
-    ).toBeTruthy()
-    expect(
-      d.find((ul) => ul.url.endsWith('waterleveltransmitter' + '/' + test1) && ul.usage === SpecificationFileUsage.documentation)
-    ).toBeTruthy()
-    expect(fs.existsSync(lspec + '/files/waterleveltransmitter/' + testPdf)).toBeTruthy()
-    expect(fs.existsSync(lspec + '/files/waterleveltransmitter/' + test1)).toBeTruthy()
-    await supertest(httpServer['app']).delete(
-      '/api/upload?specification=waterleveltransmitter&url=specifications/files/waterleveltransmitter/' +
-        testPdf +
-        '&usage=' +
-        SpecificationFileUsage.documentation
-    )
-    const i = {
-      url: 'http://www.spiegel.de',
-      fileLocation: FileLocation.Global,
-      usage: SpecificationFileUsage.documentation,
-    }
-    const response = await supertest(httpServer['app'])
-      .post('/api/addFilesUrl?specification=waterleveltransmitter')
-      .set('Content-Type', 'application/json; charset=utf-8')
-      .send(i)
-      .expect(201)
-    // After uploading (2 files) and one delete, AddFilesUrl entry length should be 2
-    expect(response.body.length).toBe(2)
-    const responseDelete = await supertest(httpServer['app'])
-      .delete(
-        '/api/upload?specification=waterleveltransmitter&url=http://www.spiegel.de&usage=' + SpecificationFileUsage.documentation
-      )
-      .expect(200)
-    // One global URL entry removed -> length 1
-    expect(responseDelete.body.length).toBe(1)
-    const responseDelete2 = await supertest(httpServer['app'])
-      .delete(
-        '/api/upload?specification=waterleveltransmitter&url=' +
-          responseDelete.body[0].url +
-          '&usage=' +
-          SpecificationFileUsage.documentation
-      )
-      .expect(200)
-    // Local file was already deleted once; after the second delete the list should have 0 entries
-    expect(responseDelete2.body.length).toBe(0)
-  })
+  // Upload endpoints removed: files are now managed as base64 in the specification object
 })
 
 // Global cleanup for secrets.yaml

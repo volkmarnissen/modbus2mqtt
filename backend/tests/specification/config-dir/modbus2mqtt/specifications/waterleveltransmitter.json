@@ -1,0 +1,63 @@
+{
+  "filename": "waterleveltransmitter",
+  "entities": [
+    {
+      "id": 1,
+      "mqttname": "waterleveltransmitter",
+      "converter": "number",
+      "modbusAddress": 3,
+      "converterParameters": {
+        "multiplier": 0.01,
+        "identification": {
+          "min": 0,
+          "max": 1
+        },
+        "numberFormat": 0
+      },
+      "registerType": 3,
+      "readonly": true
+    },
+    {
+      "id": 2,
+      "mqttname": "",
+      "converter": "number",
+      "modbusAddress": 4,
+      "converterParameters": {
+        "multiplier": 0.01,
+        "numberFormat": 0
+      },
+      "variableConfiguration": {
+        "targetParameter": 2,
+        "entityId": 1
+      },
+      "registerType": 3,
+      "readonly": true
+    }
+  ],
+  "i18n": [
+    {
+      "lang": "en",
+      "texts": [
+        {
+          "textId": "name",
+          "text": "Water Level Transmitter"
+        },
+        {
+          "textId": "e1",
+          "text": "Water Level Transmitter"
+        }
+      ]
+    }
+  ],
+  "version": "0.5",
+  "testdata": {},
+  "nextEntityId": 2,
+  "status": 2,
+  "files": [
+    {
+      "url": "specifications/files/waterleveltransmitter/test.pdf",
+      "fileLocation": 0,
+      "usage": "doc"
+    }
+  ]
+}

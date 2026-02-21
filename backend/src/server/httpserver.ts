@@ -5,22 +5,17 @@ import { Request as ExpressRequest } from 'express'
 import * as express from 'express'
 import { ConverterMap, filesUrlPrefix, M2mGitHub } from '../specification/index.js'
 import { Config, MqttValidationResult } from './config.js'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 import { Modbus } from './modbus.js'
 import {
   ImodbusSpecification,
   HttpErrorsEnum,
   Ispecification,
+  IspecificationSummary,
   SpecificationStatus,
   IimportMessages,
-  SpecificationFileUsage,
 } from '../shared/specification/index.js'
-import path, { join } from 'path'
-import multer from 'multer'
-
-// Alias for typed Express requests with query parameters
-// (no alias needed; use express.Request directly)
-
-import { fileStorage, zipStorage } from './httpFileUpload.js'
+import { join } from 'path'
 import { Bus } from './bus.js'
 import { Subject } from 'rxjs'
 import * as fs from 'fs'
@@ -229,8 +224,8 @@ export class HttpServer extends HttpServerBase {
     })
 
     this.get(apiUri.sslFiles, (req: ExpressRequest, res: http.ServerResponse) => {
-      if (Config.sslDir && Config.sslDir.length) {
-        const result = fs.readdirSync(Config.sslDir)
+      if (ConfigPersistence.sslDir && ConfigPersistence.sslDir.length) {
+        const result = fs.readdirSync(ConfigPersistence.sslDir)
         this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(result))
       } else {
         this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'not found')
@@ -261,9 +256,17 @@ export class HttpServer extends HttpServerBase {
     })
     this.get(apiUri.specifications, (req: ExpressRequest, res: http.ServerResponse) => {
       debug(req.url)
-      const rc: ImodbusSpecification[] = []
+      const rc: IspecificationSummary[] = []
       new ConfigSpecification().filterAllSpecifications((spec) => {
-        rc.push(M2mSpecification.fileToModbusSpecification(spec))
+        rc.push({
+          filename: spec.filename,
+          model: spec.model,
+          manufacturer: spec.manufacturer,
+          files: spec.files.map((f) => ({ url: f.url, usage: f.usage })),
+          status: spec.status,
+          i18n: spec.i18n,
+          pullUrl: spec.pullUrl,
+        })
       })
       this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(rc))
     })
@@ -371,40 +374,35 @@ export class HttpServer extends HttpServerBase {
     })
     this.get(apiUri.download, (req: express.Request, res: http.ServerResponse) => {
       debug(req.url)
-      let downloadMethod: (filename: string, r: Writable) => Promise<void>
-      let filename = 'local.zip'
-      if (req.params && req.params['what'] && req.params['what'] == 'local') downloadMethod = Config.createZipFromLocal
-      else {
-        const whatParam = Array.isArray(req.params['what']) ? req.params['what'][0] : (req.params['what'] as string)
-        filename = whatParam + '.zip'
-        downloadMethod = (file: string, r: Writable) => {
-          return new Promise<void>((resolve, reject) => {
-            try {
-              ConfigSpecification.createZipFromSpecification(file, r)
-              resolve()
-            } catch (e: unknown) {
-              reject(e)
-            }
-          })
-        }
-      }
-      res.setHeader('Content-Type', 'application/zip')
-      res.setHeader('Content-disposition', 'attachment; filename=' + filename)
-      // Tell the browser that this is a zip file.
       if (req.params && req.params['what']) {
         const whatParam = Array.isArray(req.params['what']) ? req.params['what'][0] : (req.params['what'] as string)
-        downloadMethod(whatParam, res)
-          .then(() => {
-            super.returnResult(req, res, HttpErrorsEnum.OK, undefined)
-          })
-          .catch((e) => {
-            this.returnResult(
-              req,
-              res,
-              HttpErrorsEnum.SrvErrInternalServerError,
-              JSON.stringify('download Zip ' + whatParam + e.message)
-            )
-          })
+        if (whatParam === 'local') {
+          // Local config download stays as zip
+          res.setHeader('Content-Type', 'application/zip')
+          res.setHeader('Content-disposition', 'attachment; filename=local.zip')
+          Config.createZipFromLocal('local', res as unknown as Writable)
+            .then(() => {
+              super.returnResult(req, res, HttpErrorsEnum.OK, undefined)
+            })
+            .catch((e) => {
+              this.returnResult(
+                req,
+                res,
+                HttpErrorsEnum.SrvErrInternalServerError,
+                JSON.stringify('download local: ' + e.message)
+              )
+            })
+        } else {
+          // Spec download as JSON
+          const spec = ConfigSpecification.getSpecificationByFilename(whatParam)
+          if (!spec) {
+            this.returnResult(req, res, HttpErrorsEnum.ErrNotFound, 'Specification not found: ' + whatParam)
+            return
+          }
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Content-disposition', 'attachment; filename=' + whatParam + '.json')
+          res.end(JSON.stringify(spec, null, 2))
+        }
       }
     })
     this.post(apiUri.specficationContribute, (req: express.Request, res: http.ServerResponse) => {
@@ -709,116 +707,18 @@ export class HttpServer extends HttpServerBase {
       const rc: Islave = bus.writeSlave(req.body)
       this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(rc))
     })
-    this.post(apiUri.addFilesUrl, (req: express.Request, res: http.ServerResponse) => {
+    this.post(apiUri.uploadSpec, (req: ExpressRequest, res: http.ServerResponse) => {
       try {
-        if (req.query['specification']) {
-          if (req.body) {
-            // req.body.documents
-            const config = new ConfigSpecification()
-            config.appendSpecificationUrls(String(req.query['specification']!), [req.body]).then((files) => {
-              if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-              else this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
-            })
-          } else {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification not found')
-          }
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, ' specification no passed')
-        }
+        const errors = ConfigSpecification.importSpecificationJson(req.body)
+        if (errors.errors.length > 0)
+          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Import failed: ' + errors.errors, errors)
+        else this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(errors))
       } catch (e: unknown) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Adding URL failed: ' + (e as Error).message, e)
+        const errors: IimportMessages = { errors: 'Import error: ' + (e as Error).message, warnings: '' }
+        this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, errors.errors, errors)
       }
     })
 
-    const upload = multer({ storage: fileStorage })
-    this.app.post(apiUri.upload, upload.array('documents'), (req: express.Request, res: http.ServerResponse) => {
-      try {
-        if (!req.query['usage']) {
-          this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-          return
-        }
-
-        // const msg = this.checkBusidSlaveidParameter(req as GetRequestWithParameter)
-        // if (msg !== '') {
-        //   this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, msg)
-        //   return
-        // } else {
-        debug('Files uploaded')
-        if (req.files) {
-          // req.body.documents
-          const config = new ConfigSpecification()
-          const f: string[] = []
-            ; (req.files as Express.Multer.File[])!.forEach((f0) => {
-              f.push(f0.originalname)
-            })
-          if (req.query['usage'] === undefined) {
-            this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'No Usage passed')
-          }
-          config
-            .appendSpecificationFiles(
-              String(req.query['specification']!),
-              f,
-              String(req.query['usage']!) as unknown as SpecificationFileUsage
-            )
-            .then((files) => {
-              if (files) this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(files))
-              else this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
-            })
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.OkNoContent, ' specification not found or no files passed')
-        }
-        //}
-      } catch (e: unknown) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Upload failed: ' + (e as Error).message, e)
-      }
-    })
-    this.app.post(
-      apiUri.uploadSpec,
-      multer({ storage: zipStorage }).array('zips'),
-      (req: ExpressRequest, res: http.ServerResponse) => {
-        if (req.files) {
-          // req.body.documents
-
-          ; (req.files as Express.Multer.File[])!.forEach((f) => {
-            try {
-              const zipfilename = join(f.destination, f.filename)
-              const errors = ConfigSpecification.importSpecificationZip(zipfilename)
-              fs.rmdirSync(path.dirname(zipfilename), { recursive: true })
-
-              if (errors.errors.length > 0)
-                this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Import failed: ' + errors.errors, errors)
-              else this.returnResult(req, res, HttpErrorsEnum.OkCreated, JSON.stringify(errors))
-            } catch (e: unknown) {
-              const errors: IimportMessages = { errors: 'Import error: ' + (e as Error).message, warnings: '' }
-              this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, errors.errors, errors)
-            }
-          })
-        } else {
-          this.returnResult(req, res, HttpErrorsEnum.ErrNotAcceptable, 'No or incorrect files passed')
-        }
-      }
-    )
-
-    this.delete(apiUri.upload, (req: express.Request, res: http.ServerResponse) => {
-      if (req.query['specification'] && req.query['url'] && req.query['usage']) {
-        const files = ConfigSpecification.deleteSpecificationFile(
-          String(req.query['specification']),
-          String(req.query['url']),
-          String(req.query['usage']) as unknown as SpecificationFileUsage
-        )
-        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(files))
-      } else {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'Invalid Usage')
-      }
-    })
-    this.delete(apiUri.newSpecificationfiles, (req: ExpressRequest, res: http.ServerResponse) => {
-      try {
-        new ConfigSpecification().deleteNewSpecificationFiles()
-        this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify('OK'))
-      } catch (err: unknown) {
-        this.returnResult(req, res, HttpErrorsEnum.ErrBadRequest, 'deletion failed: ' + (err as Error).message, err)
-      }
-    })
     // app.post('/specification',  ( req:express.TypedRequestBody<IfileSpecification>) =>{
     //         debug( req.body.name);
     //    });
@@ -882,8 +782,58 @@ export class HttpServer extends HttpServerBase {
     }
   }
 
+  /**
+   * Connect a temporary MQTT client, collect all retained messages, then
+   * clear them by publishing empty payloads with retain=true.
+   */
+  private async clearRetainedMqttMessages(): Promise<void> {
+    const mqttConnect = Config.getConfiguration().mqttconnect
+    let mqttUrl = mqttConnect?.mqttserverurl
+    if (!mqttUrl && Config.mqttHassioLoginData?.mqttserverurl) {
+      mqttUrl = Config.mqttHassioLoginData.mqttserverurl
+    }
+    if (!mqttUrl) return // no MQTT configured – nothing to clear
+
+    const opts = Config.mqttHassioLoginData ?? mqttConnect
+    const { connect } = await import('mqtt')
+    return new Promise<void>((resolve) => {
+      const retainedTopics: string[] = []
+      const client = connect(mqttUrl!, {
+        username: opts.username,
+        password: opts.password as string | undefined,
+        clean: true,
+        clientId: 'e2e-reset-' + Date.now(),
+        connectTimeout: 5000,
+      })
+      const timer = setTimeout(() => {
+        // After collecting retained messages, clear them
+        for (const topic of retainedTopics) {
+          client.publish(topic, '', { retain: true })
+        }
+        client.end(false, () => resolve())
+      }, 1000)
+
+      client.on('error', () => {
+        clearTimeout(timer)
+        client.end(true)
+        resolve() // don't block reset if MQTT is unreachable
+      })
+      client.on('connect', () => {
+        client.subscribe('#', { qos: 0 })
+      })
+      client.on('message', (topic, _payload, packet) => {
+        if (packet.retain) {
+          retainedTopics.push(topic)
+        }
+      })
+    })
+  }
+
   private async resetForE2E(): Promise<void> {
     log.log(LogLevelEnum.info, 'E2E reset: starting')
+
+    // Phase 0: Clear retained MQTT messages before disconnecting
+    await this.clearRetainedMqttMessages()
 
     // Phase 1: Stop active processes
     Bus.resetForE2E()
@@ -896,7 +846,7 @@ export class HttpServer extends HttpServerBase {
     ConfigSpecification.resetForE2E()
 
     // Phase 3: Clean filesystem
-    const localDir = Config.getLocalDir()
+    const localDir = ConfigPersistence.getLocalDir()
     const bussesDir = localDir + '/busses'
     const specsDir = localDir + '/specifications'
     if (fs.existsSync(bussesDir)) fs.rmSync(bussesDir, { recursive: true })

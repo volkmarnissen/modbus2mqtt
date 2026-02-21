@@ -7,7 +7,6 @@
     { "path": "scripts" },
     { "path": "docs" },
     { "path": "../lxc-manager" },
-    { "path": "../modbus2mqtt.config" },
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",

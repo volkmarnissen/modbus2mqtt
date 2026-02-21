@@ -2,6 +2,7 @@ import { Command } from 'commander'
 import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
 
 import { Config } from './config.js'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 import process from 'process'
 import { startModbusTCPserver } from './modbusTCPserver.js'
 const log = new Logger('modbusTCPserver')
@@ -14,17 +15,17 @@ cli.option('-b, --busid <bus id>', 'starts Modbus TCP server for the given yaml-
 cli.parse(process.argv)
 const options = cli.opts()
 if (options['config']) {
-  Config.configDir = options['config']
+  ConfigPersistence.configDir = options['config']
   ConfigSpecification.configDir = options['config']
 } else {
-  Config.configDir = '.'
+  ConfigPersistence.configDir = '.'
   ConfigSpecification.configDir = '.'
 }
 if (options['data']) {
-  Config.dataDir = options['data']
+  ConfigPersistence.dataDir = options['data']
   ConfigSpecification.dataDir = options['data']
 } else {
-  Config.dataDir = '.'
+  ConfigPersistence.dataDir = '.'
   ConfigSpecification.dataDir = '.'
 }
 if (options['busid']) {

@@ -6,6 +6,7 @@ import { IModbusAPI } from '../../src/server/modbusWorker.js'
 import { ModbusTasks } from '../../src/shared/server/index.js'
 import * as fs from 'fs'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { join } from 'path'
 
@@ -80,12 +81,12 @@ export class ConfigTestHelper {
 
   constructor(testName?: string) {
     // Ensure configuration directories are set
-    if (!Config.configDir || Config.configDir.length === 0) {
-      throw new Error('Config.configDir must be set before creating ConfigTestHelper')
+    if (!ConfigPersistence.configDir || ConfigPersistence.configDir.length === 0) {
+      throw new Error('ConfigPersistence.configDir must be set before creating ConfigTestHelper')
     }
 
     this.helper = new FileBackupHelper(testName)
-    this.originalSecretsPath = Config.getLocalDir() + '/secrets.yaml'
+    this.originalSecretsPath = ConfigPersistence.getLocalDir() + '/secrets.yaml'
   }
 
   setup(): void {
@@ -93,7 +94,7 @@ export class ConfigTestHelper {
     this.helper.backup(this.originalSecretsPath)
 
     // Also back up bus and specification files
-    const configDir = Config.configDir
+    const configDir = ConfigPersistence.configDir
     if (configDir) {
       this.helper.backup(`${configDir}/modbus2mqtt/busses/bus.0/s2.yaml`)
       this.helper.backup(`${configDir}/modbus2mqtt/specifications/files/waterleveltransmitter/files.yaml`)
@@ -355,18 +356,34 @@ export class TempConfigDirHelper {
   private tempDataDir: string
 
   constructor(private name: string = 'temp') {
-    this.originalConfigDir = ConfigSpecification.configDir || Config.configDir
-    this.originalDataDir = ConfigSpecification.dataDir || Config.dataDir
-    this.originalSslDir = Config.sslDir
+    this.originalConfigDir = ConfigSpecification.configDir || ConfigPersistence.configDir
+    this.originalDataDir = ConfigSpecification.dataDir || ConfigPersistence.dataDir
+    this.originalSslDir = ConfigPersistence.sslDir
     const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     this.tempRoot = join('/tmp', `modbus2mqtt-${this.name}-${stamp}`)
     this.tempConfigDir = join(this.tempRoot, 'config-dir')
     this.tempDataDir = join(this.tempRoot, 'data-dir')
   }
 
-  /** Recursively copy a directory */
+  /** Recursively copy a directory and ensure copies are writable */
   private copyDirSync(src: string, dest: string): void {
     fs.cpSync(src, dest, { recursive: true })
+    this.makeWritableRecursive(dest)
+  }
+
+  /** Ensure all files and directories are writable (source may be readonly) */
+  private makeWritableRecursive(dir: string): void {
+    const stat = fs.statSync(dir)
+    fs.chmodSync(dir, stat.mode | 0o700)
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        this.makeWritableRecursive(fullPath)
+      } else {
+        const fileStat = fs.statSync(fullPath)
+        fs.chmodSync(fullPath, fileStat.mode | 0o600)
+      }
+    }
   }
 
   /** Set up temp dirs and switch Config/ConfigSpecification to use them */
@@ -378,9 +395,9 @@ export class TempConfigDirHelper {
     // Point runtime to the temp directories
     ConfigSpecification.configDir = this.tempConfigDir
     ConfigSpecification.dataDir = this.tempDataDir
-    Config.configDir = this.tempConfigDir
-    Config.dataDir = this.tempDataDir
-    Config.sslDir = this.tempConfigDir
+    ConfigPersistence.configDir = this.tempConfigDir
+    ConfigPersistence.dataDir = this.tempDataDir
+    ConfigPersistence.sslDir = this.tempConfigDir
   }
 
   /** Restore original directories and remove temp dirs */
@@ -388,9 +405,9 @@ export class TempConfigDirHelper {
     // Restore paths
     ConfigSpecification.configDir = this.originalConfigDir
     ConfigSpecification.dataDir = this.originalDataDir
-    Config.configDir = this.originalConfigDir
-    Config.dataDir = this.originalDataDir
-    Config.sslDir = this.originalSslDir
+    ConfigPersistence.configDir = this.originalConfigDir
+    ConfigPersistence.dataDir = this.originalDataDir
+    ConfigPersistence.sslDir = this.originalSslDir
 
     // Remove temp root
     if (fs.existsSync(this.tempRoot)) {

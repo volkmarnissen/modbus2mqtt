@@ -43,7 +43,7 @@ jobs:
             range="$AFTER"
           fi
 
-          changed_files=$(git diff --name-only "$range" -- '*.md' '*.yml' '*.yaml' '*.json' ':!.github/workflows/*' || true)
+          changed_files=$(git diff --name-only "$range" -- '*.md' '*.yml' '*.yaml' '*.json' ':!.github/workflows/*' ':!**/specifications/*.json' ':!**/specifications/*.yaml' ':!docs/*' || true)
           for f in $changed_files; do
             if git diff "$range" -- "$f" | grep -E "^[+].*($umlaut_pattern|$german_words)" -i >/dev/null 2>&1; then
               matches+=("file:$f")

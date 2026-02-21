@@ -1,14 +1,13 @@
 import { IBus, IModbusConnection, Islave, Slave } from '../shared/server/index.js'
 import { ConfigSpecification, Logger, LogLevelEnum } from '../specification/index.js'
 import { getSpecificationI18nEntityName, IidentEntity, Ispecification } from '../shared/specification/index.js'
-import { parse, stringify } from 'yaml'
-import * as fs from 'fs'
-import * as path from 'path'
 
 import Debug from 'debug'
-import { join } from 'path'
 import { Config, ConfigListenerEvent } from './config.js'
+import { ConfigPersistence } from './persistence/configPersistence.js'
 import { SerialPort } from 'serialport'
+import { BusPersistence } from './persistence/busPersistence.js'
+import * as fs from 'fs'
 const log = new Logger('config')
 const debug = Debug('configbus')
 
@@ -23,15 +22,27 @@ interface HassioHardwareInfo {
 
 export class ConfigBus {
   private static busses: IBus[]
+  private static persistence: BusPersistence
   private static listeners: {
     event: ConfigListenerEvent
     listener: ((arg: Slave, spec: Ispecification | undefined) => void) | ((arg: number) => void)
   }[] = []
+
+  private static persistenceLocalDir: string = ''
+
+  private static ensurePersistence(): BusPersistence {
+    const localDir = ConfigPersistence.getLocalDir()
+    if (!ConfigBus.persistence || ConfigBus.persistenceLocalDir !== localDir) {
+      ConfigBus.persistence = new BusPersistence(localDir)
+      ConfigBus.persistenceLocalDir = localDir
+    }
+    return ConfigBus.persistence
+  }
+
   static addListener(event: ConfigListenerEvent, listener: ((arg: Slave) => void) | ((arg: number) => void)) {
     ConfigBus.listeners.push({ event: event, listener: listener })
   }
   private static emitSlaveEvent(event: ConfigListenerEvent, arg: Slave) {
-    //TODO arg.specification(spec)
     ConfigBus.listeners.forEach((eventListener) => {
       if (eventListener.event == event)
         (eventListener.listener as (arg: Slave) => Promise<void>)(arg)
@@ -52,6 +63,7 @@ export class ConfigBus {
   static resetForE2E(): void {
     ConfigBus.busses = []
     ConfigBus.listeners = []
+    ConfigBus.persistence = undefined as unknown as BusPersistence
   }
 
   static getBussesProperties(): IBus[] {
@@ -60,53 +72,20 @@ export class ConfigBus {
 
   static readBusses() {
     ConfigBus.busses = []
-    const busDir = Config.getLocalDir() + '/busses'
-    if (fs.existsSync(busDir)) {
-      const busDirs: fs.Dirent[] = fs.readdirSync(busDir, {
-        withFileTypes: true,
-      })
-      busDirs.forEach((de) => {
-        if (de.isDirectory() && de.name.startsWith('bus.')) {
-          const busid = Number.parseInt(de.name.substring(4))
-          const busYaml = join(busDir, de.name, 'bus.yaml')
-          let connectionData: IModbusConnection
-          if (fs.existsSync(busYaml)) {
-            const src: string = fs.readFileSync(busYaml, {
-              encoding: 'utf8',
-            })
-            try {
-              connectionData = parse(src)
-              ConfigBus.busses.push({
-                busId: busid,
-                connectionData: connectionData,
-                slaves: [],
-              })
-              const devFiles: string[] = fs.readdirSync(Config.getLocalDir() + '/busses/' + de.name)
+    const persistence = ConfigBus.ensurePersistence()
+    const busData = persistence.readAll()
 
-              devFiles.forEach(function (file: string) {
-                if (file.endsWith('.yaml') && file !== 'bus.yaml') {
-                  const src: string = fs.readFileSync(Config.getLocalDir() + '/busses/' + de.name + '/' + file, {
-                    encoding: 'utf8',
-                  })
-                  const o: Islave = parse(src)
-                  if (o.specificationid && o.specificationid.length) {
-                    ConfigBus.busses[ConfigBus.busses.length - 1].slaves.push(o)
-                    ConfigBus.addSpecification(o)
-                    ConfigBus.emitSlaveEvent(
-                      ConfigListenerEvent.addSlave,
-                      new Slave(busid, o, Config.getConfiguration().mqttbasetopic)
-                    )
-                  }
-                }
-              })
-            } catch (e: unknown) {
-              if (e instanceof Error)
-                log.log(LogLevelEnum.error, 'Unable to parse bus os slave file: ' + busYaml + 'error:' + e.message)
-            }
-          }
-        }
+    busData.forEach((bus) => {
+      ConfigBus.busses.push(bus)
+      bus.slaves.forEach((slave) => {
+        ConfigBus.addSpecification(slave)
+        ConfigBus.emitSlaveEvent(
+          ConfigListenerEvent.addSlave,
+          new Slave(bus.busId, slave, Config.getConfiguration().mqttbasetopic)
+        )
       })
-    }
+    })
+
     debug('config: busses.length: ' + ConfigBus.busses.length)
   }
 
@@ -128,33 +107,23 @@ export class ConfigBus {
         connectionData: connection,
         slaves: [],
       }) - 1
-    const busDir = Config.getLocalDir() + '/busses/bus.' + maxBusId
-    if (!fs.existsSync(busDir)) {
-      fs.mkdirSync(busDir, { recursive: true })
-      debug('creating slaves path: ' + busDir)
-    }
-    const src = stringify(connection)
-    fs.writeFileSync(join(busDir, 'bus.yaml'), src, { encoding: 'utf8' })
+
+    ConfigBus.ensurePersistence().writeBus(maxBusId, connection)
     return ConfigBus.busses[busArrayIndex]
   }
+
   static updateBusProperties(bus: IBus, connection: IModbusConnection): IBus {
     bus.connectionData = connection
-    const busDir = Config.getLocalDir() + '/busses/bus.' + bus.busId
-    if (!fs.existsSync(busDir)) {
-      fs.mkdirSync(busDir, { recursive: true })
-      debug('creating slaves path: ' + busDir)
-    }
-    const src = stringify(connection)
-    fs.writeFileSync(join(busDir, 'bus.yaml'), src, { encoding: 'utf8' })
+    ConfigBus.ensurePersistence().writeBus(bus.busId, connection)
     return bus
   }
+
   static deleteBusProperties(busid: number) {
     const idx = ConfigBus.busses.findIndex((b) => b.busId == busid)
     if (idx >= 0) {
       ConfigBus.emitBusEvent(ConfigListenerEvent.deleteBus, busid)
-      const busDir = Config.getLocalDir() + '/busses/bus.' + busid
       ConfigBus.busses.splice(idx, 1)
-      fs.rmSync(busDir, { recursive: true })
+      ConfigBus.ensurePersistence().deleteBusDir(busid)
     }
   }
 
@@ -165,9 +134,7 @@ export class ConfigBus {
     }
     return addresses
   }
-  private static getslavePath(busid: number, slave: Islave): string {
-    return Config.getLocalDir() + '/busses/bus.' + busid + '/s' + slave.slaveid + '.yaml'
-  }
+
   static getIdentityEntities(spec: Ispecification, language?: string): IidentEntity[] {
     return spec.entities.map((se) => {
       let name: string | undefined = undefined
@@ -189,38 +156,12 @@ export class ConfigBus {
     const spec = ConfigSpecification.getSpecificationByFilename(slave.specificationid)
     slave.specification = spec
   }
-  static writeslave(busid: number, slave: Islave): void {
-    // Make sure slaveid is unique
-    const oldFilePath = ConfigBus.getslavePath(busid, slave)
-    const filename = Config.getFileNameFromSlaveId(slave.slaveid)
-    const newFilePath = ConfigBus.getslavePath(busid, slave)
-    const dir = path.dirname(newFilePath)
-    if (!fs.existsSync(dir))
-      try {
-        fs.mkdirSync(dir, { recursive: true })
-      } catch (e) {
-        debug('Unable to create directory ' + dir + ' + e')
-        throw e
-      }
-    const o = structuredClone(slave)
-    for (const prop in o) {
-      if (Object.prototype.hasOwnProperty.call(o, prop)) {
-        const deletables: string[] = [
-          'specification',
-          'durationOfLongestModbusCall',
-          'triggerPollTopic',
-          'modbusErrorStatistic',
-          'modbusStatusForSlave',
-        ]
-        if (deletables.includes(prop)) delete (o as never)[prop]
-      }
-    }
-    if (o.noDiscovery != undefined && o.noDiscovery == false) delete o['noDiscovery']
-    if (o.noDiscoverEntities != undefined && o.noDiscoverEntities.length == 0) delete o['noDiscoverEntities']
 
-    const s = stringify(o)
-    fs.writeFileSync(newFilePath, s, { encoding: 'utf8' })
-    if (oldFilePath !== newFilePath && fs.existsSync(oldFilePath)) fs.unlink(oldFilePath, () => {})
+  static writeslave(busid: number, slave: Islave): void {
+    const filename = Config.getFileNameFromSlaveId(slave.slaveid)
+
+    ConfigBus.ensurePersistence().writeSlave(busid, slave)
+
     if (slave.specificationid) {
       ConfigBus.addSpecification(slave)
       const o = new Slave(busid, slave, Config.getConfiguration().mqttbasetopic)
@@ -259,10 +200,7 @@ export class ConfigBus {
 
         if (slave.slaveid === slaveid) {
           found = true
-          if (fs.existsSync(ConfigBus.getslavePath(busid, slave)))
-            fs.unlink(ConfigBus.getslavePath(busid, slave), (err) => {
-              if (err) debug(err)
-            })
+          ConfigBus.ensurePersistence().deleteSlaveFile(busid, slave)
           ConfigBus.addSpecification(slave)
           const o = new Slave(busid, slave, Config.getConfiguration().mqttbasetopic)
           ConfigBus.emitSlaveEvent(ConfigListenerEvent.deleteSlave, o)

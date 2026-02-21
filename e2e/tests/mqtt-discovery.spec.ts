@@ -54,16 +54,24 @@ test.describe('MQTT Discovery Tests', () => {
         })
         .toBeTruthy();
 
+      // Check for 2 unique homeassistant discovery topics (retained messages may cause duplicates)
       await expect
-        .poll(() => mqttHelper.getTopicAndPayloads().filter((tp) => tp.topic.startsWith('homeassistant/')), {
+        .poll(() => {
+          const uniqueTopics = new Set(
+            mqttHelper.getTopicAndPayloads()
+              .filter((tp) => tp.topic.startsWith('homeassistant/'))
+              .map((tp) => tp.topic)
+          );
+          return uniqueTopics.size;
+        }, {
           timeout: 15_000,
-          message: 'Waiting for 2 homeassistant discovery topics',
+          message: 'Waiting for 2 unique homeassistant discovery topics',
         })
-        .toHaveLength(2);
+        .toBe(2);
 
-      // Validate specification file was created on disk
+      // Validate specification file was created on disk (now saved as JSON)
       const tmpdir = getTempDir(String(PORTS.modbus2mqttAddon));
-      const specFile = `${tmpdir}/modbus2mqtt/specifications/files/thespec/files.yaml`;
+      const specFile = `${tmpdir}/modbus2mqtt/specifications/thespec.json`;
       // Wait up to 60s for file to appear
       await expect
         .poll(() => existsSync(specFile), { timeout: 60_000, message: `Waiting for ${specFile}` })

@@ -1,6 +1,7 @@
 import { Mutex } from 'async-mutex'
 import Debug from 'debug'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import { ImqttClient } from '../../src/shared/server/index.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { Bus } from '../../src/server/bus.js'
@@ -21,14 +22,14 @@ const debug = Debug('configsbase')
 export function setConfigsDirsForTest(): void {
   ConfigSpecification.configDir = configDir
   ConfigSpecification.dataDir = dataDir
-  Config.configDir = configDir
-  Config.sslDir = configDir
+  ConfigPersistence.configDir = configDir
+  ConfigPersistence.sslDir = configDir
 }
 export function setConfigsDirsBackendTCPForTest() {
   ConfigSpecification.configDir = backendTCPConfigDir
   ConfigSpecification.dataDir = backendTCPDataDir
-  Config.configDir = backendTCPConfigDir
-  Config.sslDir = backendTCPConfigDir
+  ConfigPersistence.configDir = backendTCPConfigDir
+  ConfigPersistence.sslDir = backendTCPConfigDir
 }
 export class FakeMqtt {
   disconnected = false

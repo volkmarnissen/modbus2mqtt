@@ -3,12 +3,13 @@ import { ItopicAndPayloads, MqttDiscover } from '../../src/server/mqttdiscover.j
 import { MqttClient } from 'mqtt'
 import { FakeModes, FakeMqtt, initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
 import { Bus } from '../../src/server/bus.js'
-import { expect, test, beforeAll } from 'vitest'
+import { expect, test, beforeAll, afterAll } from 'vitest'
 import { Slave } from '../../src/shared/server/index.js'
 import { ConfigBus } from '../../src/server/configbus.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'
 import { MqttPoller } from '../../src/server/mqttpoller.js'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
+import { TempConfigDirHelper } from './testhelper.js'
 
 const topic4Deletion = {
   topic: 'homeassistant/sensor/1s0/e1/topic4Deletion',
@@ -52,14 +53,20 @@ function copySubscribedSlaves(toA: Slave[], fromA: Slave[]) {
     toA.push(s.clone())
   })
 }
+let tempHelper: TempConfigDirHelper
 beforeAll(async () => {
   // Fix ModbusCache ModbusCache.prototype.submitGetHoldingRegisterRequest = submitGetHoldingRegisterRequest
   setConfigsDirsForTest()
+  tempHelper = new TempConfigDirHelper('mqttpoller_test')
+  tempHelper.setup()
   Config['config'] = {} as any
   const readConfig: Config = new Config()
   await readConfig.readYamlAsync()
   fakeDiscovery = getFakeDiscovery()
   initBussesForTest()
+})
+afterAll(() => {
+  if (tempHelper) tempHelper.cleanup()
 })
 
 test('poll', async () => {

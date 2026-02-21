@@ -18,15 +18,22 @@ import { getReadRegisterResult } from '../../src/server/submitRequestMock.js'
 import { initBussesForTest, setConfigsDirsForTest } from './configsbase.js'
 import { Islave, ModbusTasks } from '../../src/shared/server/index.js'
 import { ConfigSpecification, IfileSpecification, emptyModbusValues } from '../../src/specification/index.js'
-import { expect, it, describe, beforeEach, beforeAll } from 'vitest'
+import { expect, it, describe, beforeEach, beforeAll, afterAll } from 'vitest'
 import Debug from 'debug'
 import { ConfigBus } from '../../src/server/configbus.js'
+import { TempConfigDirHelper } from './testhelper.js'
 setConfigsDirsForTest()
 const debug = Debug('modbus_test')
 
+let tempHelper: TempConfigDirHelper
 beforeAll(() => {
   // TODO Fix test ModbusCache.prototype.submitGetHoldingRegisterRequest = submitGetHoldingRegisterRequest
+  tempHelper = new TempConfigDirHelper('modbus_test')
+  tempHelper.setup()
   initBussesForTest()
+})
+afterAll(() => {
+  if (tempHelper) tempHelper.cleanup()
 })
 beforeEach(() => {
   spec = {

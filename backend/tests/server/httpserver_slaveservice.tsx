@@ -1,6 +1,7 @@
-import { expect, it, test, jest, beforeAll } from '@jest/globals'
+import { expect, it, test, jest, beforeAll, afterAll } from '@jest/globals'
 import { HttpServer as HttpServer } from '../../src/server/httpserver.js'
 import { Config } from '../../src/server/config.js'
+import { ConfigPersistence } from '../../src/server/persistence/configPersistence.js'
 import supertest from 'supertest'
 import { ImodbusSpecification } from '../../src/shared/specification/index.js'
 import { Bus } from '../../src/server/bus.js'
@@ -29,16 +30,20 @@ function executeHassioGetRequest<T>(_url: string, next: (_dev: T) => void, rejec
   else next({ data: mqttService } as T)
 }
 
+import { TempConfigDirHelper } from './testhelper.js'
+
 const log = new Logger('httpserverTest')
 setConfigsDirsForTest()
-new ConfigSpecification().readYaml()
 Config['executeHassioGetRequest'] = executeHassioGetRequest
 
 let httpServer: HttpServer
+let tempHelper: TempConfigDirHelper
 
 beforeAll(() => {
+  tempHelper = new TempConfigDirHelper('httpserver_slaveservice')
+  tempHelper.setup()
+  new ConfigSpecification().readYaml()
   return new Promise<void>((resolve) => {
-    setConfigsDirsForTest()
     const cfg = new Config()
     cfg.readYamlAsync().then(() => {
       ConfigBus.readBusses()
@@ -49,13 +54,16 @@ beforeAll(() => {
       HttpServer.prototype.authenticate = (req, res, next) => {
         next()
       }
-      httpServer = new HttpServer(join(Config.configDir, 'angular'))
+      httpServer = new HttpServer(join(ConfigPersistence.configDir, 'angular'))
 
       httpServer.setModbusCacheAvailable()
       httpServer.init()
       resolve()
     })
   })
+})
+afterAll(() => {
+  if (tempHelper) tempHelper.cleanup()
 })
 
 class MockMqttSubsctription {

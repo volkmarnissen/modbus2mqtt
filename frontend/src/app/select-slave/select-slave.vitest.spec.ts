@@ -29,6 +29,21 @@ describe('Select Slave tests (vitest)', () => {
     }
   }
 
+  /** Flush any pending GET /api/specification?spec=... requests with proper spec data */
+  function flushSpecFetches(): void {
+    httpMock.match((r) => r.url.includes('/api/specification?spec=')).forEach((r) => {
+      const url = new URL(r.request.urlWithParams, 'http://localhost')
+      const specName = url.searchParams.get('spec')
+      r.flush({
+        filename: specName,
+        status: 0,
+        entities: [{ id: 1, name: specName + '.entity1', readonly: true, mqttname: 'e1' }],
+        i18n: [{ lang: 'en', texts: [{ textId: 'name', text: specName }] }],
+        files: [],
+      })
+    })
+  }
+
   async function mount(): Promise<void> {
     ;(window as any).configuration = { rootUrl: '/' }
     ev = new EventEmitter<number | undefined>()
@@ -59,6 +74,9 @@ describe('Select Slave tests (vitest)', () => {
     httpMock.expectOne((r) => r.url.includes('/api/specifications')).flush(specificationsFixture)
     httpMock.expectOne((r) => r.url.includes('/api/bus')).flush(busFixture)
     httpMock.expectOne((r) => r.url.includes('/api/slaves')).flush(slavesFixture)
+
+    // Flush on-demand full spec fetches triggered by addSpecificationToUiSlave
+    flushSpecFetches()
 
     // Multiple change detection cycles to stabilize
     safeDetectChanges()
@@ -108,8 +126,9 @@ describe('Select Slave tests (vitest)', () => {
     component.saveSlave(uiSlave)
     safeDetectChanges()
 
-    // Flush any intermediate GET requests
-    httpMock.match((r) => r.method === 'GET').forEach((r) => r.flush([]))
+    // Flush on-demand spec fetch triggered by saveSlave -> addSpecificationToUiSlave
+    flushSpecFetches()
+    safeDetectChanges()
 
     // Verify the POST request
     const postReq = httpMock.expectOne((r) => r.method === 'POST' && r.url.includes('/api/slave'))
@@ -150,7 +169,8 @@ describe('Select Slave tests (vitest)', () => {
     postReq.flush(postReq.request.body)
     safeDetectChanges()
 
-    // Flush any subsequent requests (slaves reload, etc.)
+    // Flush on-demand spec fetches and any subsequent requests
+    flushSpecFetches()
     const remaining = httpMock.match(() => true)
     remaining.forEach((r) => r.flush([]))
   })

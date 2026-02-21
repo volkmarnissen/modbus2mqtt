@@ -13,12 +13,16 @@ import { join } from 'path'
 import { ConfigSpecification } from '../../src/specification/index.js'
 import { MqttSubscriptions } from '../../src/server/mqttsubscriptions.js'
 import { MqttConnector } from '../../src/server/mqttconnector.js'
+import { TempConfigDirHelper } from './testhelper.js'
 let httpServer: HttpServer
+let tempHelper: TempConfigDirHelper
 
 beforeAll(async() => {
- 
+
   // fake MQTT: avoid reconnect
     setConfigsDirsBackendTCPForTest()
+    tempHelper = new TempConfigDirHelper('httpserver_get_spec')
+    tempHelper.setup()
 
     const conn = new MqttConnector()
     const msub = new MqttSubscriptions(conn)
@@ -42,6 +46,7 @@ beforeAll(async() => {
 })
 afterAll(() => {
   stopModbusTCPServer()
+  if (tempHelper) tempHelper.cleanup()
 })
 
 it('Discrete Inputs definition provided check', async () => {

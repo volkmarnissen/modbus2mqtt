@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core'
 import { HttpClient, HttpErrorResponse } from '@angular/common/http'
-import { Observable, Subject } from 'rxjs'
+import { Observable, Subject, of } from 'rxjs'
 import { catchError, first, map } from 'rxjs/operators'
 //we've defined our base url here in the env
 import {
   ImodbusSpecification,
   ImodbusEntity,
-  IimageAndDocumentUrl,
   HttpErrorsEnum,
   Ispecification,
-  SpecificationFileUsage,
+  IspecificationSummary,
   editableConverters,
   Imessage,
   IimportMessages,
@@ -222,12 +221,12 @@ export class ApiService {
       })
     )
   }
-  getSpecifications(): Observable<ImodbusSpecification[]> {
-    return this.httpClient.get<ImodbusSpecification[]>(this.getFullUri(apiUri.specifications)).pipe(
-      catchError((err): Observable<ImodbusSpecification[]> => {
+  getSpecifications(): Observable<IspecificationSummary[]> {
+    return this.httpClient.get<IspecificationSummary[]>(this.getFullUri(apiUri.specifications)).pipe(
+      catchError((err): Observable<IspecificationSummary[]> => {
         this.loadingError$.next(true)
         this.errorHandler(err)
-        return new Observable<ImodbusSpecification[]>()
+        return new Observable<IspecificationSummary[]>()
       })
     )
   }
@@ -342,15 +341,6 @@ export class ApiService {
         })
       )
   }
-  deleteNewSpecfiles() {
-    return this.httpClient.delete<void>(this.getFullUri(apiUri.newSpecificationfiles)).pipe(
-      catchError((err): Observable<void> => {
-        this.loadingError$.next(true)
-        this.errorHandler(err)
-        return new Observable<void>()
-      })
-    )
-  }
   postModbusWriteMqtt(
     spec: ImodbusSpecification,
     entityid: number,
@@ -393,33 +383,13 @@ export class ApiService {
       }
     } else throw new Error('entityid ' + entityid + ' not found ')
   }
-  postZip(formData: FormData): Observable<IimportMessages> {
-    return this.httpClient.post<IimportMessages>(this.getFullUri(apiUri.uploadSpec), formData).pipe(
+  importSpecification(spec: object): Observable<IimportMessages> {
+    return this.httpClient.post<IimportMessages>(this.getFullUri(apiUri.uploadSpec), spec).pipe(
       catchError((err) => {
         this.errorHandler(err)
         return new Observable<IimportMessages>()
       })
     )
-  }
-  postFile(specification: string, usage: SpecificationFileUsage, formData: FormData): Observable<IimageAndDocumentUrl[]> {
-    return this.httpClient
-      .post<IimageAndDocumentUrl[]>(this.getFullUri(apiUri.upload) + `?specification=${specification}&usage=${usage}`, formData)
-      .pipe(
-        catchError((err) => {
-          this.errorHandler(err)
-          return new Observable<IimageAndDocumentUrl[]>()
-        })
-      )
-  }
-  postAddFilesUrl(specification: string, url: IimageAndDocumentUrl): Observable<IimageAndDocumentUrl[]> {
-    return this.httpClient
-      .post<IimageAndDocumentUrl[]>(this.getFullUri(apiUri.addFilesUrl) + `?specification=${specification}`, url)
-      .pipe(
-        catchError((err) => {
-          this.errorHandler(err)
-          return new Observable<IimageAndDocumentUrl[]>()
-        })
-      )
   }
   postSpecificationContribution(spec: string, note: string): Observable<number> {
     return this.httpClient.post<number>(this.getFullUri(apiUri.specficationContribute) + `?spec=${spec}`, {
@@ -432,7 +402,7 @@ export class ApiService {
       .pipe(
         catchError((err) => {
           this.errorHandler(err)
-          return new Observable<Imessage[]>()
+          return of([])
         })
       )
   }
@@ -476,15 +446,5 @@ export class ApiService {
         return new Observable<void>()
       })
     )
-  }
-  deleteUploadedFile(specfileName: string, url: string, usage: SpecificationFileUsage): Observable<IimageAndDocumentUrl[]> {
-    return this.httpClient
-      .delete<IimageAndDocumentUrl[]>(this.getFullUri(apiUri.upload) + `?specification=${specfileName}&url=${url}&usage=${usage}`)
-      .pipe(
-        catchError((err) => {
-          this.errorHandler(err)
-          return new Observable<IimageAndDocumentUrl[]>()
-        })
-      )
   }
 }
