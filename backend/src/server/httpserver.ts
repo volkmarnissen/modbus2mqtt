@@ -11,6 +11,7 @@ import {
   ImodbusSpecification,
   HttpErrorsEnum,
   Ispecification,
+  IspecificationSummary,
   SpecificationStatus,
   IimportMessages,
 } from '../shared/specification/index.js'
@@ -255,9 +256,17 @@ export class HttpServer extends HttpServerBase {
     })
     this.get(apiUri.specifications, (req: ExpressRequest, res: http.ServerResponse) => {
       debug(req.url)
-      const rc: ImodbusSpecification[] = []
+      const rc: IspecificationSummary[] = []
       new ConfigSpecification().filterAllSpecifications((spec) => {
-        rc.push(M2mSpecification.fileToModbusSpecification(spec))
+        rc.push({
+          filename: spec.filename,
+          model: spec.model,
+          manufacturer: spec.manufacturer,
+          files: spec.files.map((f) => ({ url: f.url, usage: f.usage })),
+          status: spec.status,
+          i18n: spec.i18n,
+          pullUrl: spec.pullUrl,
+        })
       })
       this.returnResult(req, res, HttpErrorsEnum.OK, JSON.stringify(rc))
     })

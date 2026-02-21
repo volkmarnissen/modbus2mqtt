@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core'
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 import { ApiService } from '../services/api-service'
 import { FormBuilder } from '@angular/forms'
 import { Router } from '@angular/router'
 import { Observable, Subject, catchError, first, forkJoin, map } from 'rxjs'
 import {
-  IbaseSpecification,
   Imessage,
-  ImodbusSpecification,
+  IspecificationSummary,
   SpecificationFileUsage,
   SpecificationStatus,
   getSpecificationI18nName,
@@ -22,7 +21,7 @@ import { MatCard, MatCardHeader, MatCardTitle, MatCardContent } from '@angular/m
 import { SessionStorage } from '../services/SessionStorage'
 import { InfoboxComponent } from '../infobox/infobox.component'
 
-interface ImodbusSpecificationWithMessages extends ImodbusSpecification {
+interface IspecificationSummaryWithMessages extends IspecificationSummary {
   messages: Imessage[]
 }
 
@@ -47,16 +46,17 @@ export class SpecificationsComponent implements OnInit {
   config: Iconfiguration | undefined
   private specServices: SpecificationServices | undefined
   private authStatus: IUserAuthenticationStatus | undefined = undefined
-  specifications: ImodbusSpecificationWithMessages[] | undefined
+  specifications: IspecificationSummaryWithMessages[] | undefined
   galleryItems: Map<string, GalleryItem[]> = new Map<string, GalleryItem[]>()
   message: Subject<string> = new Subject<string>()
   constructor(
     private apiService: ApiService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
   contributing: boolean = false
-  fillSpecifications(specs: ImodbusSpecification[]) {
+  fillSpecifications(specs: IspecificationSummary[]) {
     if (!this.config) return
     const a: any = {}
     this.galleryItems = new Map<string, GalleryItem[]>()
@@ -72,9 +72,10 @@ export class SpecificationsComponent implements OnInit {
     forkJoin(a).subscribe((o: any) => {
       Object.entries(o).forEach(([key, value]) => {
         const s: any = specs.find((spec) => spec.filename == key)
-        if (s) (s as ImodbusSpecificationWithMessages).messages = value as any
+        if (s) (s as IspecificationSummaryWithMessages).messages = value as any
       })
-      this.specifications = specs as ImodbusSpecificationWithMessages[]
+      this.specifications = specs as IspecificationSummaryWithMessages[]
+      this.cdr.markForCheck()
     })
   }
   ngOnInit(): void {
@@ -91,10 +92,10 @@ export class SpecificationsComponent implements OnInit {
   importSpecification() {
     throw new Error('Method not implemented.')
   }
-  exportSpecification(_spec: ImodbusSpecification) {
+  exportSpecification(_spec: IspecificationSummary) {
     throw new Error('Method not implemented.')
   }
-  deleteSpecification(spec: ImodbusSpecification) {
+  deleteSpecification(spec: IspecificationSummary) {
     if ([SpecificationStatus.added, SpecificationStatus.new, SpecificationStatus.cloned].includes(spec.status)) {
       if (confirm('Are you sure to delete ' + this.getTranslatedSpecName(spec))) {
         this.apiService.deleteSpecification(spec.filename).subscribe(() => {
@@ -106,12 +107,12 @@ export class SpecificationsComponent implements OnInit {
       alert(this.getTranslatedSpecName(spec) + ' is not local. Only local specifications can be deleted')
     }
   }
-  getTranslatedSpecName(spec: IbaseSpecification): string | null {
+  getTranslatedSpecName(spec: IspecificationSummary): string | null {
     if (this.config && this.config.mqttdiscoverylanguage && spec)
-      return getSpecificationI18nName(spec!, this.config.mqttdiscoverylanguage)
+      return getSpecificationI18nName(spec, this.config.mqttdiscoverylanguage)
     return null
   }
-  contributeSpecification(spec: ImodbusSpecification) {
+  contributeSpecification(spec: IspecificationSummary) {
     this.contributing = true
     this.apiService
       .postSpecificationContribution(spec.filename, 'My test note')
@@ -129,7 +130,7 @@ export class SpecificationsComponent implements OnInit {
       })
   }
 
-  canContribute(spec: ImodbusSpecification): Observable<boolean> {
+  canContribute(spec: IspecificationSummary): Observable<boolean> {
     const rc = ![SpecificationStatus.published, SpecificationStatus.contributed].includes(spec.status)
     if (!rc || !this.config) {
       const s = new Subject<boolean>()
@@ -148,7 +149,7 @@ export class SpecificationsComponent implements OnInit {
     )
   }
 
-  getValidationMessage(spec: IbaseSpecification, message: Imessage): string {
+  getValidationMessage(spec: IspecificationSummary, message: Imessage): string {
     if (this.specServices) return this.specServices.getValidationMessage(spec, message)
     else return 'unknown message'
   }
@@ -165,7 +166,7 @@ export class SpecificationsComponent implements OnInit {
       this.message.next('Public directory updated')
     })
   }
-  generateImageGalleryItems(spec: ImodbusSpecification): void {
+  generateImageGalleryItems(spec: IspecificationSummary): void {
     const rc: GalleryItem[] = []
     spec.files.forEach((img) => {
       if (img.usage == SpecificationFileUsage.img) {

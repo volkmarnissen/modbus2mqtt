@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import { HttpClient, HttpErrorResponse } from '@angular/common/http'
-import { Observable, Subject } from 'rxjs'
+import { Observable, Subject, of } from 'rxjs'
 import { catchError, first, map } from 'rxjs/operators'
 //we've defined our base url here in the env
 import {
@@ -8,6 +8,7 @@ import {
   ImodbusEntity,
   HttpErrorsEnum,
   Ispecification,
+  IspecificationSummary,
   editableConverters,
   Imessage,
   IimportMessages,
@@ -220,12 +221,12 @@ export class ApiService {
       })
     )
   }
-  getSpecifications(): Observable<ImodbusSpecification[]> {
-    return this.httpClient.get<ImodbusSpecification[]>(this.getFullUri(apiUri.specifications)).pipe(
-      catchError((err): Observable<ImodbusSpecification[]> => {
+  getSpecifications(): Observable<IspecificationSummary[]> {
+    return this.httpClient.get<IspecificationSummary[]>(this.getFullUri(apiUri.specifications)).pipe(
+      catchError((err): Observable<IspecificationSummary[]> => {
         this.loadingError$.next(true)
         this.errorHandler(err)
-        return new Observable<ImodbusSpecification[]>()
+        return new Observable<IspecificationSummary[]>()
       })
     )
   }
@@ -401,7 +402,7 @@ export class ApiService {
       .pipe(
         catchError((err) => {
           this.errorHandler(err)
-          return new Observable<Imessage[]>()
+          return of([])
         })
       )
   }

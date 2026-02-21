@@ -146,7 +146,6 @@ export class Modbus2Mqtt {
                       log.log(LogLevelEnum.info, 'Running inside Home Assistant Add-On environment')
                     }
                     log.log(LogLevelEnum.info, `modbus2mqtt listening on  ${os.hostname()}: ${Config.getConfiguration().httpport}`)
-                    new ConfigSpecification().deleteNewSpecificationFiles()
                     // clean cache once per hour
                     setInterval(
                       () => {

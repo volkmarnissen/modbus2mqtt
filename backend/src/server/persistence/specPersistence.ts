@@ -175,6 +175,7 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
         if (!o.nextEntityId || entity.id > o.nextEntityId + 1) o.nextEntityId = entity.id + 1
       })
     if (o.pullNumber) o.pullUrl = M2mGitHub.getPullRequestUrl(o.pullNumber)
+    if (!o.i18n) o.i18n = []
     if (!o.files) o.files = []
   }
 

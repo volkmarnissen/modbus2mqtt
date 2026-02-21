@@ -252,7 +252,19 @@ it('supervisor login', async () => {
 it('GET /' + apiUri.specifications, async () => {
   const response = await supertest(httpServer['app']).get(apiUri.specifications).expect(200)
   expect(response.body.length).toBeGreaterThan(0)
-  expect(response.body[0]).toHaveProperty('filename')
+  const summary = response.body[0]
+  expect(summary).toHaveProperty('filename')
+  expect(summary).toHaveProperty('status')
+  expect(summary).toHaveProperty('i18n')
+  expect(summary).toHaveProperty('files')
+  expect(summary).not.toHaveProperty('entities')
+  expect(summary).not.toHaveProperty('identified')
+  if (summary.files.length > 0) {
+    expect(summary.files[0]).toHaveProperty('url')
+    expect(summary.files[0]).toHaveProperty('usage')
+    expect(summary.files[0]).not.toHaveProperty('data')
+    expect(summary.files[0]).not.toHaveProperty('fileLocation')
+  }
 })
 
 test('GET /converters', async () => {
