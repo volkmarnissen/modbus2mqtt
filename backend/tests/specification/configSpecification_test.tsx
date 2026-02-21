@@ -42,12 +42,12 @@ it('check device type status', () => {
   const localSpecdir = ConfigSpecification.getLocalDir() + '/specifications'
   const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
   fs.mkdirSync(publicSpecdir, { recursive: true })
-  const pwtl1 = join(publicSpecdir, 'waterleveltransmitter.yaml')
-  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pwtl1)
-  const pdy = join(publicSpecdir, 'deyeinverter.yaml')
-  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), pdy)
+  const pwtl1 = join(publicSpecdir, 'waterleveltransmitter.json')
+  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), pwtl1)
+  const pdy = join(publicSpecdir, 'deyeinverter.json')
+  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), pdy)
 
-  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
+  fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(localSpecdir, 'waterleveltransmitter1.json'))
 
   const configSpec = new ConfigSpecification()
   configSpec.readYaml()
@@ -60,8 +60,8 @@ it('check device type status', () => {
 })
 it('write/Migrate', () => {
   fs.copyFileSync(
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter.yaml'),
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.yaml')
+    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter.json'),
+    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.json')
   )
 
   const configSpec = new ConfigSpecification()
@@ -71,11 +71,7 @@ it('write/Migrate', () => {
   configSpec.readYaml()
   wl = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')!
   expect(wl.version).toBe(SPECIFICATION_VERSION)
-  fs.copyFileSync(
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.yaml'),
-    join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter.yaml')
-  )
-  fs.unlinkSync(join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.yaml'))
+  fs.unlinkSync(join(ConfigSpecification.getLocalDir() + '/specifications', 'waterleveltransmitter1.json'))
 })
 
 function cleanDimplexLocal() {
@@ -95,8 +91,9 @@ it('write cloned file', () => {
   configSpec.writeSpecificationFromFileSpec(wl, wl.filename)
   const specsDir = join(ConfigSpecification.getLocalDir() + '/specifications')
   expect(fs.existsSync(join(specsDir, 'dimplexpco5.json'))).toBeTruthy()
-  expect(fs.existsSync(join(specsDir, 'files/dimplexpco5', 'files.yaml'))).toBeTruthy()
-  expect(fs.existsSync(join(specsDir, 'files/dimplexpco5', 'IMG_1552.jpg'))).toBeTruthy()
+  // Files are now embedded as base64 in the JSON spec (no separate files.yaml)
+  const written = JSON.parse(fs.readFileSync(join(specsDir, 'dimplexpco5.json'), 'utf8'))
+  expect(written.files.length).toBeGreaterThan(0)
   configSpec.readYaml()
   wl = ConfigSpecification.getSpecificationByFilename('dimplexpco5')!
   expect(wl.version).toBe(SPECIFICATION_VERSION)
@@ -170,13 +167,7 @@ it('contribution', () => {
     fs.mkdirSync(publicSpecdir, { recursive: true })
 
     cleanWaterLevelTransmitter1(publicSpecdir)
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
-    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
-    if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir)
-    fs.copyFileSync(
-      join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
-      join(localSpecdir, 'files/waterleveltransmitter1/files.yaml')
-    )
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(localSpecdir, 'waterleveltransmitter1.json'))
     cfg.readYaml()
     let g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g).toBeDefined()
@@ -231,21 +222,8 @@ it('contribution cloned', () => {
     const publicSpecdir = ConfigSpecification.getPublicDir() + '/specifications'
     fs.mkdirSync(localSpecdir, { recursive: true })
     fs.mkdirSync(publicSpecdir, { recursive: true })
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(localSpecdir, 'waterleveltransmitter1.yaml'))
-    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.yaml'), join(publicSpecdir, 'waterleveltransmitter1.yaml'))
-    const filesDir = join(localSpecdir, 'files/waterleveltransmitter1')
-    const publicfilesDir = join(publicSpecdir, 'files/waterleveltransmitter1')
-
-    if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true })
-    if (!fs.existsSync(publicfilesDir)) fs.mkdirSync(publicfilesDir, { recursive: true })
-    fs.copyFileSync(
-      join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
-      join(localSpecdir, 'files/waterleveltransmitter1/files.yaml')
-    )
-    fs.copyFileSync(
-      join(localSpecdir, 'files/waterleveltransmitter/files.yaml'),
-      join(publicSpecdir, 'files/waterleveltransmitter1/files.yaml')
-    )
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(localSpecdir, 'waterleveltransmitter1.json'))
+    fs.copyFileSync(join(localSpecdir, 'waterleveltransmitter.json'), join(publicSpecdir, 'waterleveltransmitter1.json'))
     cfg.readYaml()
     let g = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter1')
     expect(g).toBeDefined()

@@ -114,6 +114,9 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
           const src = fs.readFileSync(join(directory, file), { encoding: 'utf8' })
           const o: IfileSpecification = JSON.parse(src)
           o.filename = file.replace('.json', '')
+          if (publicNames && o.status !== SpecificationStatus.contributed) {
+            o.status = publicNames.has(o.filename) ? SpecificationStatus.cloned : SpecificationStatus.added
+          }
           this.postProcessSpec(o)
           rc.push(o)
         } else if (file.endsWith('.yaml')) {
@@ -127,7 +130,7 @@ export class SpecPersistence implements ICollectionPersistence<IfileSpecificatio
             o = new Migrator().migrate(o, directory, publicNames)
           } else {
             this.readFilesYaml(directory, o)
-            if (o.status == undefined && publicNames) {
+            if (publicNames && o.status !== SpecificationStatus.contributed) {
               o.status = publicNames.has(basename) ? SpecificationStatus.cloned : SpecificationStatus.added
             }
           }

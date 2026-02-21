@@ -45,7 +45,7 @@ async function testWait(github: M2mGitHub): Promise<void> {
   debug('Commit created successfully')
   await github.createPullrequest(title, content, 'waterleveltransmitter')
 }
-it('checkFiles files.yaml exists, other file is missing=> OK', () => {
+it('checkFiles existing file OK, missing file skipped', () => {
   const localRoot = ConfigSpecification.getLocalDir()
   const github = new M2mGitHub(null, localRoot)
   const oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
@@ -53,7 +53,7 @@ it('checkFiles files.yaml exists, other file is missing=> OK', () => {
     .fn<(root: string, filemname: string) => Promise<any>>()
     .mockResolvedValue({})
   const a = github['checkFiles'](localRoot, [
-    '/specifications/files/waterleveltransmitter/files.yaml',
+    '/specifications/waterleveltransmitter.json',
     '/specifications/files/waterleveltransmitter/test.png',
   ])
   expect(a.length).toBe(1)

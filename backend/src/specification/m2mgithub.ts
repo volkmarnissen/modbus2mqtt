@@ -187,42 +187,33 @@ export class M2mGitHub {
         auth: personalAccessToken,
       })
   }
-  private clonePublicRepo(): void {
-    log.log(
-      LogLevelEnum.info,
-      execSync(
-        'git clone https://github.com/' +
-          githubPublicNames.publicModbus2mqttOwner +
-          '/' +
-          githubPublicNames.modbus2mqttRepo +
-          '.git ' +
-          this.publicRoot
-      ).toString()
-    )
-  }
-
   fetchPublicFiles(): void {
     debug('Fetch public files')
-    try {
-      if (existsSync(this.publicRoot)) {
-        if (existsSync(join(this.publicRoot, '.git'))) {
-          try {
-            const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
-            if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
-          } catch (e: unknown) {
-            log.log(LogLevelEnum.warn, 'git pull failed, continuing with existing files: ' + (e instanceof Error ? e.message : String(e)))
-          }
-        } else if (existsSync(join(this.publicRoot, 'specifications'))) {
-          log.log(LogLevelEnum.info, 'Public files directory exists without git repo, using existing specifications')
-        } else {
-          log.log(LogLevelEnum.warn, 'Public files directory exists but has no specifications, cloning into it')
-          this.clonePublicRepo()
+    // If directory exists and is a git repo, pull. If it exists but isn't a repo, skip cloning.
+    if (existsSync(this.publicRoot)) {
+      if (existsSync(join(this.publicRoot, '.git'))) {
+        try {
+          const msg = execSync('git pull', { cwd: this.publicRoot }).toString()
+          if (msg.split(/\r\n|\r|\n/).length > 2) log.log(LogLevelEnum.info, msg)
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e)
+          log.log(LogLevelEnum.warn, 'git pull failed: ' + msg)
         }
       } else {
-        this.clonePublicRepo()
+        log.log(LogLevelEnum.info, 'Public files directory exists, skipping git clone')
       }
-    } catch (e: unknown) {
-      log.log(LogLevelEnum.error, 'fetchPublicFiles failed: ' + (e instanceof Error ? e.message : String(e)))
+    } else {
+      log.log(
+        LogLevelEnum.info,
+        execSync(
+          'git clone https://github.com/' +
+            githubPublicNames.publicModbus2mqttOwner +
+            '/' +
+            githubPublicNames.modbus2mqttRepo +
+            '.git ' +
+            this.publicRoot
+        ).toString()
+      )
     }
     new ConfigSpecification().readYaml()
   }

@@ -28,24 +28,21 @@ it('readYaml: publicSpecification references set for cloned specs', () => {
   const publicSpecDir = join(ConfigSpecification.getPublicDir(), 'specifications')
   fs.mkdirSync(publicSpecDir, { recursive: true })
 
-  // Copy waterleveltransmitter to public dir
-  const srcYaml = join(localSpecDir, 'waterleveltransmitter.yaml')
-  if (fs.existsSync(srcYaml)) {
-    fs.copyFileSync(srcYaml, join(publicSpecDir, 'waterleveltransmitter.yaml'))
-  }
+  // Copy waterleveltransmitter to public dir (as JSON)
+  const srcJson = join(localSpecDir, 'waterleveltransmitter.json')
+  const pubJson = join(publicSpecDir, 'waterleveltransmitter.json')
+  fs.copyFileSync(srcJson, pubJson)
 
   const cfgSpec = new ConfigSpecification()
   cfgSpec.readYaml()
 
   const spec = ConfigSpecification.getSpecificationByFilename('waterleveltransmitter')
   expect(spec).toBeDefined()
-  // publicSpecification is stripped by getSpecificationByFilename (clearModbusData),
-  // but the internal spec should have it. Check status instead.
+  // Status is always derived from file presence: local + public = cloned
   expect(spec!.status).toBe(SpecificationStatus.cloned)
 
   // Cleanup
-  const pubFile = join(publicSpecDir, 'waterleveltransmitter.yaml')
-  if (fs.existsSync(pubFile)) fs.unlinkSync(pubFile)
+  if (fs.existsSync(pubJson)) fs.unlinkSync(pubJson)
 })
 
 // Test 10: Files inheritance — local spec with empty files inherits from published
