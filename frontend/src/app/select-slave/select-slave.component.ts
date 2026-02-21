@@ -531,7 +531,7 @@ export class SelectSlaveComponent extends SessionStorage implements OnInit {
     })
     const spec: IidentificationSpecification = uiSlave.slaveForm.get('specificationid')!.value
     const selectedEntities: number[] = uiSlave.slaveForm.get('discoverEntitiesList')!.value
-    if (spec) {
+    if (spec && spec.filename) {
       uiSlave.slave.specificationid = spec.filename
       this.addSpecificationToUiSlave(uiSlave, () => {
         uiSlave.slave.noDiscoverEntities = []
