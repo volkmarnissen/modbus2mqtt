@@ -10,7 +10,7 @@ import {
   getSpecificationI18nName,
 } from '../shared/specification/index.js'
 import { IfileSpecification } from './ifilespecification.js'
-import { SpecPersistence } from '../server/persistence/specPersistence.js'
+import { SpecPersistence } from './specPersistence.js'
 
 const log = new Logger('specification')
 export const filesUrlPrefix = 'specifications/files'

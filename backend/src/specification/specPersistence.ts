@@ -10,12 +10,12 @@ import {
   SPECIFICATION_VERSION,
   SpecificationStatus,
   getBaseFilename,
-} from '../../shared/specification/index.js'
-import { IfileSpecification } from '../../specification/ifilespecification.js'
-import { IimageAndDocumentFilesType, Migrator } from '../../specification/migrator.js'
-import { M2mGitHub } from '../../specification/m2mgithub.js'
-import { ICollectionPersistence } from './persistence.js'
-import { LogLevelEnum, Logger } from '../../specification/log.js'
+} from '../shared/specification/index.js'
+import { IfileSpecification } from './ifilespecification.js'
+import { IimageAndDocumentFilesType, Migrator } from './migrator.js'
+import { M2mGitHub } from './m2mgithub.js'
+import { ICollectionPersistence } from '../server/persistence/persistence.js'
+import { LogLevelEnum, Logger } from './log.js'
 
 const log = new Logger('specPersistence')
 const debug = Debug('specPersistence')
