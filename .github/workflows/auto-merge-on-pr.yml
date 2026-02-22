@@ -12,8 +12,11 @@ jobs:
   auto-merge:
     name: Enable auto-merge (squash)
     runs-on: ubuntu-latest
-    # Skip Release Please PRs (those should be merged manually)
-    if: ${{ github.actor != 'github-actions[bot]' }}
+    # Only for trusted contributors (not bots, not external)
+    if: >-
+      ${{ github.actor != 'github-actions[bot]'
+      && (github.event.pull_request.head.repo.full_name == github.repository
+      || github.actor == 'volkmarnissen') }}
     steps:
       - uses: actions/checkout@v5
       - run: gh pr merge ${{ github.event.pull_request.number }} --auto --squash
