@@ -2,7 +2,7 @@ name: "On pull request: Enable Auto-Merge"
 
 on:
   pull_request_target:
-    types: [opened, reopened]
+    types: [opened, reopened, ready_for_review]
 
 permissions:
   contents: write
