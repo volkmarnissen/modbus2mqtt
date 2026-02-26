@@ -1,103 +1,45 @@
 import { githubPublicNames } from './m2mgithub.js'
-import { Octokit } from '@octokit/rest'
-import path from 'path'
+import { execFile as execFileCb } from 'child_process'
+import { promisify } from 'util'
+
+const execFile = promisify(execFileCb)
+
 export interface IpullRequest {
   files?: string[]
   merged: boolean
   closed: boolean
   pullNumber: number
 }
+
 export class M2mGithubValidate {
-  private octokit: Octokit | null
-  constructor(personalAccessToken: string | null) {
-    this.octokit = null
-    if (personalAccessToken)
-      this.octokit = new Octokit({
-        auth: personalAccessToken,
-      })
+  private repo: string
+
+  constructor() {
+    this.repo = `${githubPublicNames.publicModbus2mqttOwner}/${githubPublicNames.modbus2mqttRepo}`
   }
 
-  listPullRequestFiles(owner: string, pull_number: number): Promise<{ pr_number: number; files: string[] }> {
-    return new Promise<{ pr_number: number; files: string[] }>((resolve, reject) => {
-      this.octokit!.pulls.listFiles({
-        owner: githubPublicNames.publicModbus2mqttOwner,
-        repo: githubPublicNames.modbus2mqttRepo,
-        pull_number: pull_number,
-      })
-        .then((files) => {
-          const f: string[] = []
-          files.data.forEach((file) => {
-            if (['added', 'modified', 'renamed', 'copied', 'changed'].includes(file.status)) f.push(file.filename)
-          })
-          resolve({ pr_number: pull_number, files: f })
-        })
-        .catch(reject)
-    })
-  }
-  closePullRequest(pullNumber: number): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.octokit!.pulls.update({
-        owner: githubPublicNames.publicModbus2mqttOwner,
-        repo: githubPublicNames.modbus2mqttRepo,
-        pull_number: pullNumber,
-        state: 'closed',
-      })
-        .then((res) => {
-          this.octokit!.issues.update({
-            owner: githubPublicNames.publicModbus2mqttOwner,
-            repo: githubPublicNames.modbus2mqttRepo,
-            issue_number: parseInt(path.basename(res.data.issue_url)),
-            state: 'closed',
-          })
-            .then(() => {
-              resolve()
-            })
-            .catch((e) => {
-              e.step = 'closeIssue'
-              reject(e)
-            })
-        })
-        .catch((e) => {
-          e.step = 'closePullRequest'
-          reject(e)
-        })
-    })
+  async listPullRequestFiles(_owner: string, pull_number: number): Promise<{ pr_number: number; files: string[] }> {
+    const { stdout } = await execFile('gh', [
+      'api',
+      `repos/${this.repo}/pulls/${pull_number}/files`,
+      '--jq',
+      '[.[] | select(.status == "added" or .status == "modified" or .status == "renamed" or .status == "copied" or .status == "changed") | .filename]',
+    ])
+    const files: string[] = JSON.parse(stdout)
+    return { pr_number: pull_number, files }
   }
 
-  addIssueComment(pullNumber: number, text: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.octokit!.issues.createComment({
-        owner: githubPublicNames.publicModbus2mqttOwner,
-        repo: githubPublicNames.modbus2mqttRepo,
-        issue_number: pullNumber,
-        body: text,
-      })
-        .then(() => {
-          resolve()
-        })
-        .catch((e) => {
-          e.step = 'addIssueComment'
-          reject(e)
-        })
-    })
+  async closePullRequest(pullNumber: number): Promise<void> {
+    await execFile('gh', ['pr', 'close', String(pullNumber), '--repo', this.repo])
   }
 
-  mergePullRequest(pullNumber: number, title?: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this.octokit!.pulls.merge({
-        owner: githubPublicNames.publicModbus2mqttOwner,
-        repo: githubPublicNames.modbus2mqttRepo,
-        pull_number: pullNumber,
-        commit_title: title,
-        merge_method: 'squash',
-      })
-        .then(() => {
-          resolve()
-        })
-        .catch((e) => {
-          e.step = 'mergePullRequest'
-          reject(e)
-        })
-    })
+  async addIssueComment(pullNumber: number, text: string): Promise<void> {
+    await execFile('gh', ['pr', 'comment', String(pullNumber), '--repo', this.repo, '--body', text])
+  }
+
+  async mergePullRequest(pullNumber: number, title?: string): Promise<void> {
+    const args = ['pr', 'merge', String(pullNumber), '--repo', this.repo, '--squash']
+    if (title) args.push('--subject', title)
+    await execFile('gh', args)
   }
 }

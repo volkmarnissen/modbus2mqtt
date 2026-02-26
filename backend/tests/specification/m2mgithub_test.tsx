@@ -1,100 +1,277 @@
-import Debug from 'debug'
-import { M2mGitHub } from '../../src/specification/index.js'
-import { configDir, dataDir } from './configsbase.js'
-import { join } from 'path'
-import { ConfigSpecification } from '../../src/specification/index.js'
-import { beforeAll, expect, it, describe, jest } from '@jest/globals'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const { mockExecFile } = vi.hoisted(() => {
+  return { mockExecFile: vi.fn() }
+})
+
+vi.mock('child_process', () => {
+  const fn: any = vi.fn()
+  fn[Symbol.for('nodejs.util.promisify.custom')] = mockExecFile
+  return {
+    execFile: fn,
+    execSync: vi.fn(),
+  }
+})
+
+import { M2mGitHub } from '../../src/specification/m2mgithub.js'
+
+vi.mock('../../src/specification/configspec.js', () => ({
+  ConfigSpecification: class {
+    static getPublicDir = vi.fn(() => '/tmp/public')
+    static getLocalDir = vi.fn(() => '/tmp/local')
+    readYaml = vi.fn()
+  },
+}))
+
+vi.mock('fs', async () => {
+  const actual = await vi.importActual('fs')
+  return {
+    ...actual,
+    existsSync: vi.fn(() => false),
+    mkdtempSync: vi.fn(() => '/tmp/m2m-commit-test'),
+    copyFileSync: vi.fn(),
+    mkdirSync: vi.fn(),
+    rmSync: vi.fn(),
+  }
+})
+
+import { execSync } from 'child_process'
 import * as fs from 'fs'
 
-const debug = Debug('m2mgithub')
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      GITHUB_TOKEN: string
-    }
-  }
-}
-
-Debug.enable('m2mgithub')
-ConfigSpecification['configDir'] = configDir
-ConfigSpecification['dataDir'] = dataDir
-ConfigSpecification.setMqttdiscoverylanguage('en', process.env.GITHUB_TOKEN)
-beforeAll(() => {
-  ConfigSpecification['configDir'] = configDir
-  new ConfigSpecification().readYaml()
-  M2mGitHub.prototype['createOwnModbus2MqttRepo']
-})
-async function testWait(github: M2mGitHub): Promise<void> {
-  const hasGhToken = await github.init()
-  expect(hasGhToken).toBeTruthy()
-  const title = 'Test'
-  const content = 'Some Text'
-  await github.deleteSpecBranch('waterleveltransmitter')
-  await github.commitFiles(
-    ConfigSpecification.getPublicDir(),
-    'waterleveltransmitter',
-    [
-      'specifications/waterleveltransmitter.yaml',
-      'specifications/files/waterleveltransmitter/files.yaml',
-      'specifications/files/waterleveltransmitter/IMG_1198.jpg',
-    ],
-    title,
-    content
-  )
-  debug('Commit created successfully')
-  await github.createPullrequest(title, content, 'waterleveltransmitter')
-}
-it('checkFiles existing file OK, missing file skipped', () => {
-  const localRoot = ConfigSpecification.getLocalDir()
-  const github = new M2mGitHub(null, localRoot)
-  const oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
-  M2mGitHub.prototype['uploadFileAndCreateTreeParameter'] = jest
-    .fn<(root: string, filemname: string) => Promise<any>>()
-    .mockResolvedValue({})
-  const a = github['checkFiles'](localRoot, [
-    '/specifications/waterleveltransmitter.json',
-    '/specifications/files/waterleveltransmitter/test.png',
-  ])
-  expect(a.length).toBe(1)
-  M2mGitHub.prototype['uploadFileAndCreateTreeParameter'] = oldFn
-})
-
-it('checkFiles files.yaml does not exist => Exception', () => {
-  const localRoot = ConfigSpecification.getLocalDir()
-  const github = new M2mGitHub(null, localRoot)
-  const oldFn = M2mGitHub.prototype['uploadFileAndCreateTreeParameter']
-  M2mGitHub.prototype['uploadFileAndCreateTreeParameter'] = jest
-    .fn<(root: string, filemname: string) => Promise<any>>()
-    .mockResolvedValue({})
-  const t: () => void = () => {
-    github['checkFiles'](localRoot, [
-      '/specifications/files/notexists/files.yaml',
-      '/specifications/files/waterleveltransmitter/test.png',
-    ])
-  }
-  expect(t).toThrow()
-  M2mGitHub.prototype['uploadFileAndCreateTreeParameter'] = oldFn
-})
-
-describe.skip('skipped because github tests require NODE_AUTH_TOKEN', () => {
-  it('init with no github token', async () => {
-    const publictestdir = join(ConfigSpecification.dataDir, 'publictest')
-    const github = new M2mGitHub(null, publictestdir)
-    github['ownOwner'] = 'modbus2mqtt'
-    const hasGhToken = await github.init()
-    expect(hasGhToken).toBeFalsy()
-    fs.rmSync(publictestdir, { recursive: true })
+describe('M2mGitHub', () => {
+  beforeEach(() => {
+    mockExecFile.mockReset()
+    vi.clearAllMocks()
   })
 
-  it('init', async () => {
-    const github = new M2mGitHub(process.env.GITHUB_TOKEN, join(configDir, 'publictest'))
-    github['ownOwner'] = 'modbus2mqtt'
-    await testWait(github)
-    // github.deleteRepository().then(() => {
-    //     testWait(github, done)
-    // }).catch(e => {
-    //     testWait(github, done)
-    // })
-  }, 10000)
+  describe('constructor', () => {
+    it('creates instance with token and publicRoot', () => {
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      expect(gh).toBeDefined()
+    })
+
+    it('creates instance without token', () => {
+      const gh = new M2mGitHub(null, '/tmp/public')
+      expect(gh).toBeDefined()
+    })
+  })
+
+  describe('fetchPublicFiles', () => {
+    it('clones repo when publicRoot does not exist', () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false)
+      vi.mocked(execSync).mockReturnValue(Buffer.from('Cloning...'))
+
+      const gh = new M2mGitHub(null, '/tmp/public')
+      gh.fetchPublicFiles()
+
+      expect(execSync).toHaveBeenCalledWith(expect.stringContaining('git clone'))
+    })
+
+    it('pulls when publicRoot is a git repo', () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true)
+      vi.mocked(execSync).mockReturnValue(Buffer.from('Already up to date.'))
+
+      const gh = new M2mGitHub(null, '/tmp/public')
+      gh.fetchPublicFiles()
+
+      expect(execSync).toHaveBeenCalledWith('git pull', expect.objectContaining({ cwd: '/tmp/public' }))
+    })
+  })
+
+  describe('getPullRequestUrl', () => {
+    it('returns correct URL', () => {
+      const url = M2mGitHub.getPullRequestUrl(42)
+      expect(url).toBe('https://github.com/modbus2mqtt/modbus2mqtt.config/pull/42')
+    })
+  })
+
+  describe('hasSpecBranch', () => {
+    it('returns true when branch exists', async () => {
+      mockExecFile.mockResolvedValueOnce({ stdout: 'refs/heads/test-branch', stderr: '' })
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+      const result = await gh.hasSpecBranch('test-branch')
+
+      expect(result).toBe(true)
+    })
+
+    it('returns false when branch does not exist (404)', async () => {
+      mockExecFile.mockRejectedValueOnce(new Error('HTTP 404: Not Found'))
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+      const result = await gh.hasSpecBranch('nonexistent')
+
+      expect(result).toBe(false)
+    })
+
+    it('throws when no token configured', async () => {
+      const gh = new M2mGitHub(null, '/tmp/public')
+      await expect(gh.hasSpecBranch('test')).rejects.toThrow('No Github token configured')
+    })
+  })
+
+  describe('deleteSpecBranch', () => {
+    it('deletes branch when it exists', async () => {
+      mockExecFile
+        .mockResolvedValueOnce({ stdout: 'refs/heads/test-branch', stderr: '' }) // hasSpecBranch
+        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // delete
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+      await gh.deleteSpecBranch('test-branch')
+
+      expect(mockExecFile).toHaveBeenCalledTimes(2)
+      expect(mockExecFile).toHaveBeenLastCalledWith(
+        'gh',
+        expect.arrayContaining(['-X', 'DELETE']),
+        expect.anything()
+      )
+    })
+
+    it('does nothing when branch does not exist', async () => {
+      mockExecFile.mockRejectedValueOnce(new Error('404'))
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+      await gh.deleteSpecBranch('nonexistent')
+
+      expect(mockExecFile).toHaveBeenCalledTimes(1) // only hasSpecBranch
+    })
+  })
+
+  describe('init', () => {
+    it('returns false when no token', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false)
+      vi.mocked(execSync).mockReturnValue(Buffer.from(''))
+
+      const gh = new M2mGitHub(null, '/tmp/public')
+      const result = await gh.init()
+
+      expect(result).toBe(false)
+    })
+
+    it('authenticates and finds fork when token present', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false)
+      vi.mocked(execSync).mockReturnValue(Buffer.from(''))
+
+      mockExecFile
+        .mockResolvedValueOnce({ stdout: 'testuser\n', stderr: '' }) // gh api user
+        .mockResolvedValueOnce({ stdout: '{"name":"modbus2mqtt.config"}', stderr: '' }) // repo view (fork exists)
+        .mockResolvedValueOnce({ stdout: '', stderr: '' }) // sync fork
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      const result = await gh.init()
+
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('getPullRequest', () => {
+    it('returns PR status info', async () => {
+      const prInfo = { merged: true, closed_at: '2024-01-01', html_url: 'https://github.com/...' }
+      mockExecFile.mockResolvedValueOnce({ stdout: JSON.stringify(prInfo), stderr: '' })
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      const result = await gh.getPullRequest(42)
+
+      expect(result.merged).toBe(true)
+      expect(result.closed_at).toBe('2024-01-01')
+    })
+
+    it('throws when no token', async () => {
+      const gh = new M2mGitHub(null, '/tmp/public')
+      await expect(gh.getPullRequest(42)).rejects.toThrow('No Github token configured')
+    })
+  })
+
+  describe('createPullrequest', () => {
+    it('creates issue and PR', async () => {
+      mockExecFile
+        .mockResolvedValueOnce({ stdout: '123\n', stderr: '' }) // create issue
+        .mockResolvedValueOnce({ stdout: '456\n', stderr: '' }) // create PR
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+      const prNumber = await gh.createPullrequest('Title', 'Content', 'test-branch')
+
+      expect(prNumber).toBe(456)
+      expect(mockExecFile).toHaveBeenCalledTimes(2)
+    })
+
+    it('throws when no token', async () => {
+      const gh = new M2mGitHub(null, '/tmp/public')
+      await expect(gh.createPullrequest('T', 'C', 'b')).rejects.toThrow('No Github token configured')
+    })
+  })
+
+  describe('deleteRepository', () => {
+    it('calls gh repo delete', async () => {
+      mockExecFile.mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+      await gh.deleteRepository()
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'gh',
+        ['repo', 'delete', 'testuser/modbus2mqtt.config', '--yes'],
+        expect.anything()
+      )
+    })
+
+    it('throws when no token', async () => {
+      const gh = new M2mGitHub(null, '/tmp/public')
+      await expect(gh.deleteRepository()).rejects.toThrow('No Github token configured')
+    })
+  })
+
+  describe('commitFiles', () => {
+    it('clones, creates branch, copies files, commits, and pushes', async () => {
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+
+      // Bypass polling - directly resolve waitForOwnModbus2MqttRepo
+      vi.spyOn(gh as any, 'waitForOwnModbus2MqttRepo').mockResolvedValue(undefined)
+
+      mockExecFile
+        // hasSpecBranch - 404 means branch doesn't exist
+        .mockRejectedValueOnce(new Error('Not Found'))
+        // git clone
+        .mockResolvedValueOnce({ stdout: '', stderr: '' })
+        // git checkout -b
+        .mockResolvedValueOnce({ stdout: '', stderr: '' })
+        // git add
+        .mockResolvedValueOnce({ stdout: '', stderr: '' })
+        // git commit
+        .mockResolvedValueOnce({ stdout: '', stderr: '' })
+        // git rev-parse HEAD
+        .mockResolvedValueOnce({ stdout: 'abc123\n', stderr: '' })
+        // git push
+        .mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+      vi.mocked(fs.existsSync).mockReturnValue(true)
+
+      const sha = await gh.commitFiles('/source', 'test-branch', ['specifications/test.json'], 'Title', 'Message')
+
+      expect(sha).toBe('abc123')
+      expect(fs.copyFileSync).toHaveBeenCalled()
+      expect(fs.rmSync).toHaveBeenCalled()
+    })
+
+    it('throws when branch already exists', async () => {
+      const gh = new M2mGitHub('test-token', '/tmp/public')
+      gh['ownOwner'] = 'testuser'
+
+      vi.spyOn(gh as any, 'waitForOwnModbus2MqttRepo').mockResolvedValue(undefined)
+
+      // hasSpecBranch - branch exists
+      mockExecFile.mockResolvedValueOnce({ stdout: 'refs/heads/test-branch', stderr: '' })
+
+      await expect(
+        gh.commitFiles('/source', 'test-branch', ['specifications/test.json'], 'Title', 'Message')
+      ).rejects.toThrow('already a branch named test-branch')
+    })
+  })
 })

@@ -58,7 +58,6 @@
     "test:spec-install": "bash scripts/test-spec-install.sh"
   },
   "dependencies": {
-    "@octokit/rest": "^20.1.1",
     "adm-zip": "^0.5.16",
     "assert": "^2.1.0",
     "async-mutex": "^0.5.0",

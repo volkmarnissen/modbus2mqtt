@@ -30,7 +30,7 @@ import {
   Iselect,
   Itext,
 } from '../shared/specification/index.js'
-import { ConfigSpecification, getSpecificationImageOrDocumentUrl } from './configspec.js'
+import { ConfigSpecification } from './configspec.js'
 import { ConverterMap } from './convertermap.js'
 import { LogLevelEnum, Logger } from './log.js'
 import { Observable, Subject } from 'rxjs'
@@ -330,14 +330,8 @@ export class M2mSpecification implements IspecificationValidator {
     spec.files.forEach((file) => {
       const filePath = file.url.replace(/^\//g, '')
       if (file.fileLocation == FileLocation.Local && fs.existsSync(join(localDir, filePath))) files.push(filePath)
-      // The file can also be already published. Then it's not neccessary to push it again
-      // In this case, it's in the public directory and not in local directory
     })
-    if (spec.files.length > 0) {
-      const filesName = join(getSpecificationImageOrDocumentUrl('', spec.filename, 'files.yaml'))
-      files.push(filesName.replace(/^\//g, ''))
-    }
-    files.push(join('specifications', spec.filename + '.yaml'))
+    files.push(join('specifications', spec.filename + '.json'))
     return files
   }
 
