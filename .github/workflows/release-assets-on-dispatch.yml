@@ -85,6 +85,14 @@ jobs:
           (cd frontend && pnpm install --frozen-lockfile)
           pnpm run build
 
+      - name: Run backend unit tests
+        run: cd backend && pnpm run test
+
+      - name: Run integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cd backend && pnpm run test:integration
+
       - name: Create npm pack tarball
         run: |
           npm pack --pack-destination docker/

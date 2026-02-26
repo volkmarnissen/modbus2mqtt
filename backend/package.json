@@ -11,11 +11,11 @@
     "build": "tsc --project tsconfig.production.json",
     "test": "vitest run --config vitest.config.mts",
     "test:watch": "vitest --config vitest.config.mts",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
     "lint": "eslint \"src/**/*.{ts,mts,cts,tsx}\" \"tests/**/*.{ts,mts,cts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{ts,mts,cts,tsx}\" \"tests/**/*.{ts,mts,cts,tsx}\""
   },
   "dependencies": {
-    "@octokit/rest": "^20.1.1",
     "adm-zip": "^0.5.16",
     "assert": "^2.1.0",
     "async-mutex": "^0.5.0",
