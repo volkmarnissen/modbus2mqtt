@@ -90,7 +90,7 @@ jobs:
 
       - name: Run integration tests
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: cd backend && pnpm run test:integration
 
       - name: Create npm pack tarball

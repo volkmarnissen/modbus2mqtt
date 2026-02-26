@@ -14,8 +14,8 @@ export interface IpullRequest {
 export class M2mGithubValidate {
   private repo: string
 
-  constructor() {
-    this.repo = `${githubPublicNames.publicModbus2mqttOwner}/${githubPublicNames.modbus2mqttRepo}`
+  constructor(repo?: string) {
+    this.repo = repo ?? `${githubPublicNames.publicModbus2mqttOwner}/${githubPublicNames.modbus2mqttRepo}`
   }
 
   async listPullRequestFiles(_owner: string, pull_number: number): Promise<{ pr_number: number; files: string[] }> {
