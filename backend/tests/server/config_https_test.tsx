@@ -1,4 +1,4 @@
-import { expect, it, describe, afterEach, beforeAll } from 'vitest'
+import { expect, it, describe, afterEach, beforeAll, afterAll } from 'vitest'
 import { Config } from '../../src/server/config.js'
 import { setConfigsDirsForTest } from './configsbase.js'
 import { TempConfigDirHelper } from './testhelper.js'
@@ -26,48 +26,45 @@ afterEach(() => {
   new Config().writeConfiguration(cfg)
 })
 
-import { afterAll } from 'vitest'
 afterAll(() => {
   if (tempHelper) tempHelper.cleanup()
 })
 
 describe('HTTPS configuration', () => {
-  it('should not set httpsPort by default', () => {
-    const cfg = Config.getConfiguration()
-    expect(cfg.httpsPort).toBeUndefined()
-  })
-
-  it('should set httpsPort from environment variable', () => {
-    process.env.MODBUS2MQTT_HTTPS_PORT = '3443'
+  it('should default httpsPort to 3443', () => {
     const cfg = Config.getConfiguration()
     expect(cfg.httpsPort).toBe(3443)
   })
 
-  it('should set default certificate filenames when httpsPort is configured', () => {
-    process.env.MODBUS2MQTT_HTTPS_PORT = '3443'
+  it('should always set default certificate filenames (Let\'s Encrypt / HA convention)', () => {
     const cfg = Config.getConfiguration()
     expect(cfg.httpsCertFile).toBe('fullchain.pem')
     expect(cfg.httpsKeyFile).toBe('privkey.pem')
   })
 
-  it('should ignore invalid MODBUS2MQTT_HTTPS_PORT values', () => {
-    process.env.MODBUS2MQTT_HTTPS_PORT = 'notanumber'
+  it('should set httpsPort from environment variable', () => {
+    process.env.MODBUS2MQTT_HTTPS_PORT = '9443'
     const cfg = Config.getConfiguration()
-    expect(cfg.httpsPort).toBeUndefined()
+    expect(cfg.httpsPort).toBe(9443)
   })
 
-  it('should ignore zero or negative MODBUS2MQTT_HTTPS_PORT', () => {
+  it('should use default port when MODBUS2MQTT_HTTPS_PORT is invalid', () => {
+    process.env.MODBUS2MQTT_HTTPS_PORT = 'notanumber'
+    const cfg = Config.getConfiguration()
+    expect(cfg.httpsPort).toBe(3443)
+  })
+
+  it('should use default port when MODBUS2MQTT_HTTPS_PORT is zero or negative', () => {
     process.env.MODBUS2MQTT_HTTPS_PORT = '0'
     const cfg = Config.getConfiguration()
-    expect(cfg.httpsPort).toBeUndefined()
+    expect(cfg.httpsPort).toBe(3443)
 
     process.env.MODBUS2MQTT_HTTPS_PORT = '-1'
     const cfg2 = Config.getConfiguration()
-    expect(cfg2.httpsPort).toBeUndefined()
+    expect(cfg2.httpsPort).toBe(3443)
   })
 
   it('should disable httpsPort in addon mode (HASSIO_TOKEN set)', () => {
-    process.env.MODBUS2MQTT_HTTPS_PORT = '3443'
     process.env.HASSIO_TOKEN = 'some-token'
     const cfg = Config.getConfiguration()
     expect(cfg.httpsPort).toBeUndefined()
@@ -82,10 +79,6 @@ describe('HTTPS configuration', () => {
     // Re-read and verify
     const cfg2 = Config.getConfiguration()
     expect(cfg2.httpsPort).toBe(8443)
-
-    // Clean up: remove httpsPort
-    cfg.httpsPort = undefined
-    new Config().writeConfiguration(cfg)
   })
 
   it('should let env var override YAML httpsPort', () => {
@@ -98,15 +91,10 @@ describe('HTTPS configuration', () => {
     process.env.MODBUS2MQTT_HTTPS_PORT = '9443'
     const cfg2 = Config.getConfiguration()
     expect(cfg2.httpsPort).toBe(9443)
-
-    // Clean up
-    cfg.httpsPort = undefined
-    new Config().writeConfiguration(cfg)
   })
 
   it('should allow custom certificate filenames', () => {
     const cfg = Config.getConfiguration()
-    cfg.httpsPort = 3443
     cfg.httpsCertFile = 'custom.crt'
     cfg.httpsKeyFile = 'custom.key'
     new Config().writeConfiguration(cfg)
@@ -114,11 +102,5 @@ describe('HTTPS configuration', () => {
     const cfg2 = Config.getConfiguration()
     expect(cfg2.httpsCertFile).toBe('custom.crt')
     expect(cfg2.httpsKeyFile).toBe('custom.key')
-
-    // Clean up
-    cfg.httpsPort = undefined
-    cfg.httpsCertFile = undefined
-    cfg.httpsKeyFile = undefined
-    new Config().writeConfiguration(cfg)
   })
 })

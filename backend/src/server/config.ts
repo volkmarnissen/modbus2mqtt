@@ -166,7 +166,11 @@ export class Config {
           : process.env.HASSIO_TOKEN != undefined && process.env.HASSIO_TOKEN.length > 0
       Config.config.supervisor_host = Config.config.supervisor_host ? Config.config.supervisor_host : 'supervisor'
 
-      // HTTPS configuration: env var takes precedence over YAML
+      // HTTPS configuration
+      // Default certificate filenames (Let's Encrypt / Home Assistant convention)
+      Config.config.httpsCertFile = Config.config.httpsCertFile ? Config.config.httpsCertFile : 'fullchain.pem'
+      Config.config.httpsKeyFile = Config.config.httpsKeyFile ? Config.config.httpsKeyFile : 'privkey.pem'
+      // Default HTTPS port; env var takes precedence over YAML
       const envHttpsPort = process.env.MODBUS2MQTT_HTTPS_PORT
       if (envHttpsPort) {
         const parsed = parseInt(envHttpsPort, 10)
@@ -174,11 +178,7 @@ export class Config {
           Config.config.httpsPort = parsed
         }
       }
-      // Default certificate filenames when HTTPS is configured
-      if (Config.config.httpsPort) {
-        Config.config.httpsCertFile = Config.config.httpsCertFile ? Config.config.httpsCertFile : 'fullchain.pem'
-        Config.config.httpsKeyFile = Config.config.httpsKeyFile ? Config.config.httpsKeyFile : 'privkey.pem'
-      }
+      Config.config.httpsPort = Config.config.httpsPort ? Config.config.httpsPort : 3443
       // Disable HTTPS in addon mode
       if (Config.config.mqttusehassio) {
         Config.config.httpsPort = undefined

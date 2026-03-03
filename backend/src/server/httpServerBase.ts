@@ -69,12 +69,13 @@ export class HttpServerBase {
     const httpsPort = config.httpsPort
 
     if (httpsPort) {
+      // Auto-detect: check if certificate files exist in sslDir
       const persistence = new ConfigPersistence()
       const certData = persistence.readCertificateFile(config.httpsCertFile)
       const keyData = persistence.readCertificateFile(config.httpsKeyFile)
 
       if (certData && keyData) {
-        // Start HTTPS server with the app
+        // Certificates found — start HTTPS server with the app
         this.httpsServer = https.createServer({ cert: certData, key: keyData }, this.app)
         this.httpsServer.listen(httpsPort, () => {
           log.log(LogLevelEnum.info, `HTTPS listening on port ${httpsPort}`)
@@ -94,14 +95,13 @@ export class HttpServerBase {
         return
       } else {
         log.log(
-          LogLevelEnum.warn,
-          `HTTPS configured on port ${httpsPort} but certificate files not found ` +
-            `(${config.httpsCertFile}, ${config.httpsKeyFile} in ${ConfigPersistence.sslDir}). Falling back to HTTP only.`
+          LogLevelEnum.info,
+          `HTTPS disabled: certificate files not found (${config.httpsCertFile}, ${config.httpsKeyFile} in ${ConfigPersistence.sslDir})`
         )
       }
     }
 
-    // Default: plain HTTP
+    // No HTTPS: HTTP server serves the app directly
     this.server = this.app.listen(config.httpport, listenFunction)
   }
   close() {
